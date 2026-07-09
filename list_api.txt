@@ -1,0 +1,142 @@
+LIST API UNTUK VERIFIKASI CHUCKER (MANUAL CHECK)
+==================================================
+Silakan gunakan daftar ini sebagai checklist untuk memverifikasi bahwa setiap endpoint 
+berhasil tertangkap oleh Chucker/Dio.
+
+
+// Tanggal 4 Februari 2026
+--------------------------------------------------
+[✅] 1. AUTHENTICATION & PROFILE
+--------------------------------------------------
+- [✅] Login (POST)
+      Endpoint: /api/v1/auth/login
+- [✅] Refresh Token (PUT)
+      Endpoint: /api/v1/auth/refresh_token
+- [✅] Logout (GET)
+      Endpoint: /api/v1/auth/logout
+- [✅] Forgot Password (POST)
+      Endpoint: /api/v1/auth/forget_password
+- [✅] Change Password (PUT)
+      Endpoint: /api/v1/auth/profile/change_password
+- [✅] Get Profile (GET)
+      Endpoint: /api/v1/auth/profile
+
+--------------------------------------------------
+[✅] 2. TALENT MANAGEMENT
+--------------------------------------------------
+- [✅] My Talents List (GET)
+      Endpoint: /api/v1/mobile/talents
+- [✅] Request Unhire (POST)
+      Endpoint: /api/v1/mobile/talents/request-unhire
+- [✅] Talent Recommendation (GET)
+      Endpoint: /api/v1/mobile/talent_pool/talents
+
+--------------------------------------------------
+[✅] 3. INVOICES & EVALUATIONS
+--------------------------------------------------
+- [✅] Invoice List (GET)
+      Endpoint: /api/v1/mobile/invoices
+- [✅] Invoice Detail (GET)
+      Endpoint: /api/v1/mobile/invoices/detail
+- [✅] Check Evaluation (GET)
+      Endpoint: /api/v1/mobile/evaluations/check_evaluations
+- [✅] Submit Rating/Evaluation (POST)
+      Endpoint: /api/v1/mobile/evaluations/store
+- [✅] Download Invoice (GET)
+      Endpoint: /api/v1/mobile/invoices/download
+
+--------------------------------------------------
+[ ] 4. KOMPAY & TOPUP (KEUANGAN)
+--------------------------------------------------
+- [✅] Balance Analytics (GET)
+      Endpoint: /api/v1/kmpoin/balance_analytics
+- [✅] Bank List (GET)
+      Endpoint: /api/v1/mobile/transaction/bank_accounts
+- [✅] TopUp KomPoin (POST)
+      Endpoint: /api/v1/mobile/transaction/topup
+- [✅] TopUp QRIS (POST)
+      Endpoint: /api/v1/mobile/transaction/topup/qris
+- [ ✅] Withdrawal (POST)
+      Endpoint: /api/v1/mobile/transaction/withdraw
+- [✅ ] Cancel TopUp (POST)
+      Endpoint: /api/v1/mobile/transaction/cancel_topup
+- [✅] Check Transaction Status (GET)
+      Endpoint: /api/v1/mobile/transaction/check
+- [✅] TopUp Detail (GET)
+      Endpoint: /api/v1/mobile/transaction
+- [✅] Payment KomPay (POST)
+      Endpoint: /api/v1/mobile/transaction/kompay
+
+// Tanggal 5 Februari 2026
+--------------------------------------------------
+[✅] 5. PIN & SECURITY
+--------------------------------------------------
+- [✅] Check PIN Existing (GET)
+      Endpoint: /api/v1/mobile/pin/check
+- [✅] Verify PIN (POST)
+      Endpoint: /api/v1/mobile/pin/verify
+- [✅] Save PIN (POST)
+      Endpoint: /api/v1/mobile/pin/save
+- [✅] Verify OTP (POST)
+      Endpoint: /api/v1/mobile/otp/verify
+- [✅] Send Forgot PIN (POST)
+      Endpoint: /api/v1/mobile/pin/send_forgot_confirmation
+
+--------------------------------------------------
+[✅] 6. SHOPPING (BELANJA)
+--------------------------------------------------
+- [✅] Shopping List (GET)
+      Endpoint: /api/v1/mobile/shopping_requests
+- [✅] Shopping Detail (GET)
+      Endpoint: /api/v1/mobile/shopping_requests/{id}/detail
+- [✅] Pay Shopping (POST)
+      Endpoint: /api/v1/mobile/shopping_requests/pay
+- [✅] Cancel Shopping (POST)
+      Endpoint: /api/v1/mobile/shopping_requests/{id}/cancel
+
+--------------------------------------------------
+[✅] 7. ATTENDANCE (ABSENSI)
+--------------------------------------------------
+- [✅] List Attendance (GET)
+      Endpoint: /api/v1/mobile/presences/list
+- [✅] List Fail/Ticket (GET)
+      Endpoint: /api/v1/mobile/presences/ticket/list
+- [✅] List Absence (GET)
+      Endpoint: /api/v1/mobile/presences/absences/list
+- [✅] Export/Download Attendance (GET)
+      Endpoint: /api/v1/mobile/presences/export
+
+--------------------------------------------------
+[✅] 8. FEED & NOTIFICATIONS
+--------------------------------------------------
+- [✅] List Feed/News (GET)
+      Endpoint: /api/v1/mobile/news
+- [✅] List Notifications (GET)
+      Endpoint: /api/v1/mobile/notifications
+- [✅] Count Unread Notifications (GET)
+      Endpoint: /api/v1/mobile/notifications/count
+
+--------------------------------------------------
+[✅] 9. REPORT PERFORMANCE
+--------------------------------------------------
+- [✅] List Talent Performance (GET)
+      Endpoint: /api/v1/mobile/talent_performance/list
+- [✅] Product Performance (GET)
+      Endpoint: /api/v1/mobile/partners/products
+- [✅] Weekly Performance (GET)
+      Endpoint: /api/v1/mobile/talent_performance/weekly
+- [✅] Monthly Performance (GET)
+      Endpoint: /api/v1/mobile/talent_performance/monthly
+
+--------------------------------------------------
+[✅] 10. TRANSACTION HISTORY
+--------------------------------------------------
+- [✅] Transaction History (GET)
+      Endpoint: /api/v1/mobile/transaction/history
+- [✅] Transaction Need Process (GET)
+      Endpoint: /api/v1/mobile/transaction/need_process
+
+
+// Tanggal 6 Februari 2026
+--------------------------------------------------
+Select All API yang sudah di check

@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Komtim Partner Dev",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--flavor",
+                "dev",
+                "--dart-define=FLAVOR=dev"
+            ]
+        },
+        {
+            "name": "Komtim Partner Staging",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--flavor",
+                "staging",
+                "--dart-define=FLAVOR=staging"
+            ]
+        },
+        {
+            "name": "Komtim Partner Production",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--flavor",
+                "production",
+                "--dart-define=FLAVOR=production"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+import 'package:dartz/dartz.dart';
+import 'package:komtim_partner/core/domain/entities/talents_model.dart';
+
+import '../../../common/failure.dart';
+import '../repositories/talent_repository.dart';
+
+class GetTalensUseCase {
+  final TalentRepository _repository;
+
+  const GetTalensUseCase(this._repository);
+
+  Future<Either<Failure, TalentsModel>> execute() {
+    return _repository.getTalents();
+  }
+}

@@ -1,0 +1,39 @@
+image: instrumentisto/flutter:latest
+stages:
+  - build
+
+variables:
+  ANDROID_SDK_ROOT: "/opt/android/sdk"
+
+before_script:
+  - echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+
+build_dev:
+  stage: build  
+  only:
+    - development
+  script:
+    - flutter build apk --flavor dev --dart-define=FLAVOR=dev
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/app-dev-release.apk
+
+build_staging:
+  stage: build  
+  only:
+    - staging
+  script:
+    - flutter build apk --flavor staging --dart-define=FLAVOR=staging
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/app-staging-release.apk
+
+build_production:
+  stage: build  
+  only:
+    - main
+  script:
+    - flutter build apk --flavor production --dart-define=FLAVOR=production
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/app-production-release.apk
