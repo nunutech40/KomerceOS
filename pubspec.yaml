@@ -26,6 +26,7 @@ dependencies:
   equatable: ^2.0.5
   dartz: ^0.10.1
   flutter_bloc: ^8.0.1
+  provider: ^6.1.2
   shared_preferences: ^2.2.0
   connectivity_plus: ^4.0.1
   cached_network_image: ^3.3.0
@@ -56,7 +57,7 @@ dependencies:
   widgetbook_annotation: ^3.11.0
   widgetbook: ^3.22.0
   recaptcha_enterprise_flutter: 18.8.1
-
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   bloc_test: ^9.1.7
@@ -73,7 +74,10 @@ flutter:
   assets:
     - assets/fonts/
     - assets/images/
+    - assets/images/superapp/
     - assets/images/superapp/auth/
+    - assets/images/superapp/home/
+    - assets/images/superapp/home/navbar/
     - assets/json/
   fonts:
     - family: PlusJakartaSans

@@ -1,0 +1,199 @@
+import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
+
+import '../../myapp/view/my_app_page.dart';
+import '../widget/setting_menu_item.dart';
+
+class SettingPage extends StatelessWidget {
+  const SettingPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.md),
+              // Left-aligned Page Title
+              Text(
+                'Pengaturan',
+                style: AppTypography.headingLg.copyWith(
+                  color: AppColors.black,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Centered Profile Section
+              Center(
+                child: Column(
+                  children: [
+                    // Profile Photo Container
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFFFF0E6),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(45),
+                        child: Image.network(
+                          "https://img.magnific.com/vektor-gratis/ilustrasi-ikon-vektor-kartun-anak-laki-laki-keren-lucu-berpose-dabbing-konsep-ikon-mode-orang-terpencil_138676-5680.jpg?semt=ais_hybrid&w=740&q=80",
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person_rounded,
+                              size: 48,
+                              color: AppColors.primaryBase,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    // Profile Name
+                    Text(
+                      'John Doe Assegaf',
+                      style: AppTypography.headingXs.copyWith(
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Profile Email
+                    Text(
+                      'johndoe@gmail.com',
+                      style: AppTypography.bodyMdRegular.copyWith(
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Group 1: Informasi Akun, Aplikasiku, Tutorial & FAQ
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.alwaysWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE5E5E5)),
+                  ),
+                  child: Column(
+                    children: [
+                      SettingMenuItem(
+                        leadingBackgroundColor: AppColors.bgLight,
+                        leadingIcon: Image.asset(
+                          'assets/images/superapp/home/navbar/ic_setting_inactive.png',
+                        ),
+                        title: 'Informasi Akun',
+                        titleColor: AppColors.alwaysBlack,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                        onTap: () {},
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Divider(height: 1, color: Color(0xFFF2F2F2)),
+                      ),
+                      SettingMenuItem(
+                        leadingBackgroundColor: AppColors.bgLight,
+                        leadingIcon: Image.asset(
+                          'assets/images/superapp/ic_application.png',
+                        ),
+                        title: 'Aplikasiku',
+                        titleColor: AppColors.alwaysBlack,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyAppPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Divider(height: 1, color: Color(0xFFF2F2F2)),
+                      ),
+                      SettingMenuItem(
+                        leadingBackgroundColor: AppColors.bgLight,
+                        leadingIcon: Image.asset(
+                          'assets/images/superapp/ic_faq.png',
+                        ),
+                        title: 'Tutorial & FAQ',
+                        titleColor: AppColors.alwaysBlack,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(18),
+                          bottomRight: Radius.circular(18),
+                        ),
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Group 2: Check for Update
+              ClipRRect(
+                borderRadius: BorderRadius.circular(99),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.alwaysWhite,
+                    borderRadius: BorderRadius.circular(99),
+                    border: Border.all(color: const Color(0xFFE5E5E5)),
+                  ),
+                  child: SettingMenuItem(
+                    leadingBackgroundColor: AppColors.bgLight,
+                    leadingIcon: Image.asset(
+                      'assets/images/superapp/ic_check_update.png',
+                    ),
+                    title: 'Check for Update',
+                    titleColor: AppColors.alwaysBlack,
+                    trailingText: 'V 1.2.0',
+                    borderRadius: BorderRadius.circular(99),
+                    onTap: () {},
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Group 3: Keluar (Logout)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(99),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.alwaysWhite,
+                    borderRadius: BorderRadius.circular(99),
+                    border: Border.all(color: const Color(0xFFE5E5E5)),
+                  ),
+                  child: SettingMenuItem(
+                    leadingIcon: Image.asset(
+                      'assets/images/superapp/ic_logout.png',
+                    ),
+                    leadingBackgroundColor: const Color(0xFFFEEBEC),
+                    title: 'Keluar',
+                    titleColor: AppColors.errorBase,
+                    borderRadius: BorderRadius.circular(99),
+                    onTap: () {},
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

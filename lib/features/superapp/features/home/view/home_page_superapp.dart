@@ -1,0 +1,496 @@
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/app_spacing.dart';
+import 'package:komtim_partner/common/global/design_system/app_typography.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_tablayout.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_chart.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_info_balance.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_menu_icon.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_menu_item.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_transaction_tile.dart';
+import 'package:komtim_partner/features/superapp/features/home/widgets/ds_home_header.dart';
+import 'package:komtim_partner/features/superapp/features/notification/view/notification_page.dart';
+
+class HomePageSuperapp extends StatefulWidget {
+  const HomePageSuperapp({super.key});
+
+  @override
+  State<HomePageSuperapp> createState() => _HomePageSuperappState();
+}
+
+class _HomePageSuperappState extends State<HomePageSuperapp> {
+  final PageController _pageController = PageController();
+  int _currentSwipePage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Definisi data transaksi terakhir
+    final List<DsTransactionItem> transactions = const [
+      DsTransactionItem(
+        title: 'Tiktok ads payment',
+        cardName: 'Tiktok Card',
+        amount: 'Rp 50.000',
+        date: '20 april 2025',
+      ),
+      DsTransactionItem(
+        title: 'Tiktok ads payment',
+        cardName: 'Tiktok Card',
+        amount: 'Rp 50.000',
+        date: '20 april 2025',
+      ),
+      DsTransactionItem(
+        title: 'Facebook ads',
+        cardName: 'Tiktok Card',
+        amount: 'Rp 50.000',
+        date: '20 april 2025',
+      ),
+      DsTransactionItem(
+        title: 'Shopee payment product des...',
+        cardName: 'Tiktok Card',
+        amount: 'Rp 99.999.999',
+        date: '20 april 2025',
+      ),
+      DsTransactionItem(
+        title: 'Tiktok ads payment',
+        cardName: 'Tiktok Card',
+        amount: 'Rp 50.000',
+        date: '20 april 2025',
+      ),
+    ];
+
+    // Definisi list pages untuk PageView secara dinamis (bisa 2, 3, dst.)
+    final List<Widget> swipePages = [
+      // PAGE 1: KOMSHIP COMPONENT
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.alwaysWhite,
+            border: Border.all(color: const Color(0xFFE5E5E5)),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset(
+                    'assets/images/superapp/home/ic_logo_komship.png',
+                    height: 28,
+                    fit: BoxFit.contain,
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.alwaysWhite,
+                        border: Border.all(color: const Color(0xFFE5E5E5)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/superapp/home/ic_share.png',
+                            width: 16,
+                            height: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Share',
+                            style: AppTypography.bodyMdMedium.copyWith(
+                              color: const Color(0xFF0A0A0A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Performa Omset & Orderan',
+                style: AppTypography.bodyLgBold.copyWith(
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Pantau semua pendapatan kamu disini',
+                style: AppTypography.bodyMdRegular.copyWith(
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.alwaysWhite,
+                  border: Border.all(color: const Color(0xFFE5E5E5)),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Column(
+                  children: [
+                    Text('Total Omset'),
+                    Text('Rp 0'),
+                    SizedBox(height: 16),
+                    DefaultTabController(
+                      length: 3,
+                      child: AppTabLayout(
+                        tabs: [
+                          Tab(text: 'Semua'),
+                          Tab(text: 'COD'),
+                          Tab(text: 'Non COD'),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    DsChart(
+                      omzet: [
+                        FlSpot(19, 10),
+                        FlSpot(21, 4),
+                        FlSpot(23, 27),
+                        FlSpot(25, 22),
+                        FlSpot(29, 21),
+                        FlSpot(30, 30),
+                      ],
+                      orders: [
+                        FlSpot(19, 7),
+                        FlSpot(21, 3),
+                        FlSpot(23, 21),
+                        FlSpot(25, 17),
+                        FlSpot(27, 25),
+                        FlSpot(29, 16),
+                      ],
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+      // PAGE 2: SWIPE 2 PLACEHOLDER (READY FOR DATA SWIPE 2)
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.alwaysWhite,
+            border: Border.all(color: const Color(0xFFE5E5E5)),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Center(
+            child: Text(
+              'Swipe 2 Data Placeholder',
+              style: AppTypography.bodyLgMedium.copyWith(
+                color: AppColors.textDark,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ];
+
+    return Scaffold(
+      backgroundColor: AppColors.alwaysWhite,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              DsHomeHeader(
+                profileUrl:
+                    "https://img.magnific.com/vektor-gratis/ilustrasi-ikon-vektor-kartun-anak-laki-laki-keren-lucu-berpose-dabbing-konsep-ikon-mode-orang-terpencil_138676-5680.jpg?semt=ais_hybrid&w=740&q=80",
+                notificationCount: 10,
+                type: PartnerType.komship,
+                savingsAmount: 'Rp. 5.000.000',
+                onNotificationPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationPage(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.alwaysWhite,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Left part: Balance info
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8, top: 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "Kompay",
+                                  style: AppTypography.bodyMdRegular.copyWith(
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xxs),
+                                Text(
+                                  "Rp 999.999.999",
+                                  style: AppTypography.numericXl.copyWith(
+                                    color: AppColors.black,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xs2),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Kompoint",
+                                      style:
+                                          AppTypography.bodyMdRegular.copyWith(
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    SvgPicture.asset(
+                                      'assets/images/ic_kompoint.svg',
+                                      width: 16.0,
+                                      height: 16.0,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      "50.000",
+                                      style:
+                                          AppTypography.bodySmSemiBold.copyWith(
+                                        color: AppColors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Right part: Action buttons (Top Up, Penarikan)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            DsMenuItem(
+                              title: "Top Up",
+                              icon: SvgPicture.asset(
+                                'assets/images/superapp/home/ic_plus.svg',
+                              ),
+                              onTap: () {},
+                              backgroundColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.xs2,
+                                vertical: AppSpacing.xs,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            DsMenuItem(
+                              title: "Penarikan",
+                              icon: SvgPicture.asset(
+                                'assets/images/superapp/home/ic_withdraw.svg',
+                              ),
+                              onTap: () {},
+                              backgroundColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.xs2,
+                                vertical: AppSpacing.xs,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    AppInfoCard(
+                      backgroundColor: AppColors.bgLight,
+                      children: [
+                        HighlightText(
+                          prefix: "Saldo Pending : ",
+                          highlight: "Rp 20.500.124",
+                          style: AppTypography.bodyMdRegular.copyWith(
+                            color: AppColors.textDark,
+                          ),
+                          highlightStyle: AppTypography.bodyMdBold.copyWith(
+                            color: AppColors.black,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        HighlightText(
+                          prefix: "Dari nilai tersebut, ",
+                          highlight: "Rp 12.800.999",
+                          suffix: ",- nya perlu dimonitor",
+                          style: AppTypography.bodyMdRegular.copyWith(
+                            color: AppColors.textDark,
+                          ),
+                          highlightStyle: AppTypography.bodyMdSemiBold.copyWith(
+                            color: AppColors.primaryBase,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.0,
+                  children: [
+                    DsMenuIcon(
+                      icon: Image.asset(
+                          'assets/images/superapp/home/ic_team.png'),
+                      title: "Team",
+                      onTap: () {},
+                    ),
+                    DsMenuIcon(
+                      icon: Image.asset(
+                          'assets/images/superapp/home/ic_order.png'),
+                      title: "Order",
+                      onTap: () {},
+                    ),
+                    DsMenuIcon(
+                      icon: Image.asset(
+                          'assets/images/superapp/home/ic_problem.png'),
+                      title: "Kendala",
+                      onTap: () {},
+                    ),
+                    DsMenuIcon(
+                      icon: Image.asset(
+                          'assets/images/superapp/home/ic_card.png'),
+                      title: "Kartu",
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              // PAGEVIEW CAROUSEL
+              SizedBox(
+                height: 680,
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentSwipePage = index;
+                    });
+                  },
+                  children: swipePages,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // SWIPE INDICATOR DOTS
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(swipePages.length, (index) {
+                  final isActive = _currentSwipePage == index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 12,
+                    width: isActive ? 32 : 12,
+                    decoration: BoxDecoration(
+                      color:
+                          isActive ? AppColors.primaryBase : AppColors.grey350,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.alwaysWhite,
+                    border: Border.all(color: const Color(0xFFE5E5E5)),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Text(
+                          'Transaksi Terakhir Kartu',
+                          style: AppTypography.headingSm.copyWith(
+                            color: AppColors.textDark,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E5E5)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: List.generate(transactions.length, (index) {
+                            final item = transactions[index];
+                            final isLast = index == transactions.length - 1;
+                            return Column(
+                              children: [
+                                DsTransactionTile(item: item),
+                                if (!isLast)
+                                  const Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: Color(0xFFE5E5E5),
+                                  ),
+                              ],
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
