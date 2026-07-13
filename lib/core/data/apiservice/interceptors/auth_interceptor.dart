@@ -114,6 +114,9 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
       return handler.next(err);
     }
 
+    // TEMPORARY: Refresh token logic dinonaktifkan karena endpoint login saat ini
+    // tidak me-return refresh_token. Langsung kembalikan error dan logout.
+    /*
     _isRefreshing = true;
     _refreshCompleter = Completer<String?>();
     try {
@@ -196,6 +199,9 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
       }
       return _handleLogout(handler, err);
     }
+    */
+    
+    return _handleLogout(handler, err);
   }
 
   /// Menangani proses logout jika refresh token gagal atau expired.

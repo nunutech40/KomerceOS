@@ -95,6 +95,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void loadData() async {
+    // TEMPORARY: Di-comment sementara karena endpoint ini men-trigger 401
+    // yang menyebabkan user terlempar ke login saat Hot Restart.
+    /*
     // Invoke Bloc event after initial frame is rendered
     await _bloc.add(const HomePageDidload());
     await _bloc.add(
@@ -102,6 +105,7 @@ class _SplashScreenState extends State<SplashScreen> {
     //loadbloc withdarawal
     await _bloc.add(LoadDataCecktransactionTopUpEvent(
         typeCheckTrasaction: checktransaction));
+    */
   }
 
   void _initializeBloc() {

@@ -321,10 +321,8 @@ class _LoginPageState extends State<LoginPage> {
         context.read<LoginBloc>().add(LoginStatusResetEvent());
       }
     } else if (state.status == RequestStatus.success) {
-      // Navigasi ke halaman beranda
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Berhasil!')),
-      );
+      // Navigasi ke halaman beranda sudah di-handle oleh GoRouter via AuthBloc.
+      // Tidak perlu menampilkan SnackBar sukses.
     }
   }
 

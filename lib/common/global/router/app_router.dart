@@ -49,7 +49,7 @@ import '../../../features/auth/bloc/change_password_bloc.dart';
 import '../../../features/superapp/features/authentication/bloc/login_bloc.dart';
 import '../../../features/auth/splash_screen.dart';
 import '../../../features/auth/view/change_password_page.dart';
-import '../../../features/home/view/main_page.dart';
+import '../../../features/superapp/features/home/view/main_page.dart';
 import '../../../features/pin/bloc/pin_bloc.dart';
 import '../../../features/profile/bloc/profile_bloc.dart';
 import '../../../features/profile/view/profile_info_update_page.dart';
@@ -138,11 +138,7 @@ class AppRouter {
         path: PAGES.main.screenPath,
         name: PAGES.main.screenName,
         builder: (context, state) {
-          final fromWithdrawal =
-              int.tryParse(state.queryParameters['withdrawal'] ?? '0') ?? 0;
-          return MainPage(
-            withdarwal: fromWithdrawal,
-          );
+          return const MainPageSuperApp();
         },
       ),
       GoRoute(

@@ -22,7 +22,9 @@ class DoLoginUseCase {
       if (r.data != null) {
         authBloc.add(AuthLoginRequested(r.data!));
       }
-      await getProfileUseCase.execute();
+      // TEMPORARY: Di-comment sementara karena endpoint profile ini yang men-trigger 401
+      // dan membuat user terlempar ke login lagi.
+      // await getProfileUseCase.execute();
     });
     return dataLogin;
   }

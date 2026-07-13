@@ -375,7 +375,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                   crossAxisCount: 4,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  childAspectRatio: 1.0,
+                  childAspectRatio: 0.85,
                   children: [
                     DsMenuIcon(
                       icon: Image.asset(
