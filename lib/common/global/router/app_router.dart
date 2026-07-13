@@ -6,7 +6,8 @@ import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/core/domain/entities/auth_state.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
-import 'package:komtim_partner/core/domain/managers/authentication_manager.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/router/go_router_refresh_stream.dart';
 import 'package:komtim_partner/features/attendance/view/attendance_pages.dart';
 import 'package:komtim_partner/features/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/feed/view/feed_detail_pages.dart';
@@ -70,8 +71,7 @@ import 'router_utils.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final AuthenticationManager _authManager =
-      di.locator<AuthenticationManager>();
+  static final AuthBloc _authBloc = di.locator<AuthBloc>();
 
   /// Route yang hanya pantas dibuka saat user belum login.
   /// Jika user sudah authenticated dan membuka route ini, router akan
@@ -103,9 +103,9 @@ class AppRouter {
     debugLogDiagnostics: true,
     navigatorKey: _rootNavigatorKey,
     initialLocation: PAGES.splash.screenPath,
-    refreshListenable: _authManager,
+    refreshListenable: GoRouterRefreshStream(_authBloc.stream),
     redirect: (context, state) {
-      final authStatus = _authManager.status;
+      final authStatus = _authBloc.state.status;
       final location = state.matchedLocation;
 
       if (authStatus == AuthStatus.initial ||

@@ -176,15 +176,16 @@ class _LoginPageState extends State<LoginPage> {
       // Error lain (user not registered, user is non partner) tetap tampilkan via bottom sheet.
       final isCheckEmailPhase =
           !state.isEmailChecked && state.passwordErrorMessage.isEmpty;
-      final isLoginOnlyError = lowerError.contains('login_attempt') ||
-          lowerError.contains('lock') ||
-          lowerError.contains('please wait 24 hour') ||
-          lowerError.contains('incorrect password') ||
-          lowerError.contains('wrong password');
 
-      if (isCheckEmailPhase && isLoginOnlyError) {
-        // Error login-specific muncul di fase check email → abaikan, sudah tampil inline
-        return;
+      // Saat fase check email, error ditampilkan INLINE di bawah TextField.
+      // Kecuali error khusus yang butuh Bottom Sheet (seperti user not registered), kita abaikan SnackBar.
+      if (isCheckEmailPhase) {
+        if (!lowerError.contains('user not registered') &&
+            !lowerError.contains('user is non partner')) {
+          // Reset status agar tidak terus-terusan trigger failure state, tapi biarkan usernameErrorMessage
+          context.read<LoginBloc>().add(LoginStatusResetEvent());
+          return;
+        }
       }
 
       if (lowerError.contains('login_attempt') ||

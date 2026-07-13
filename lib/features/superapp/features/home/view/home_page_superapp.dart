@@ -33,7 +33,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
   @override
   Widget build(BuildContext context) {
     // Definisi data transaksi terakhir
-    final List<DsTransactionItem> transactions = const [
+    const List<DsTransactionItem> transactions = [
       DsTransactionItem(
         title: 'Tiktok ads payment',
         cardName: 'Tiktok Card',

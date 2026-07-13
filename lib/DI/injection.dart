@@ -115,7 +115,6 @@ import '../core/data/repositories/auth_repository_impl.dart';
 import '../core/data/repositories/profile_repository_impl.dart';
 import '../core/data/services/firebase_logout_cleanup_service.dart';
 import '../core/data/shared/payload.dart';
-import '../core/domain/managers/authentication_manager.dart';
 import '../core/domain/repositories/auth_repository.dart';
 import '../core/domain/repositories/profile_repository.dart';
 import '../core/domain/services/logout_cleanup_service.dart';
@@ -138,6 +137,9 @@ import '../features/profile/bloc/profile_bloc.dart';
 import '../features/ratetalent/bloc/rate_talent_bloc.dart';
 import '../features/superapp/features/authentication/bloc/check_email_bloc.dart';
 import '../features/superapp/features/authentication/bloc/verification_bloc.dart';
+
+import '../common/global/bloc/auth/auth_bloc.dart';
+import '../common/global/bloc/global_alert/global_alert_bloc.dart';
 
 final locator = GetIt.instance;
 
@@ -428,7 +430,8 @@ Future<void> initDependencies() async {
   // Dio Service
   locator.registerLazySingleton(() => AuthInterceptor(
         tokenProvider: locator(),
-        authenticationManager: locator(),
+        authBloc: locator(),
+        globalAlertBloc: locator(),
       ));
   locator.registerLazySingleton(() => DioResponseParser());
   locator.registerLazySingleton(() => DioClient(
@@ -436,9 +439,12 @@ Future<void> initDependencies() async {
         authInterceptor: locator(),
       ));
 
+  // Global Blocs
+  locator.registerLazySingleton<AuthBloc>(
+      () => AuthBloc(sharedPref: locator()));
+  locator.registerLazySingleton<GlobalAlertBloc>(() => GlobalAlertBloc());
+
   // Domain Managers
-  locator.registerLazySingleton<AuthenticationManager>(
-      () => AuthenticationManager(sharedPref: locator()));
   locator.registerLazySingleton<SharedDataService>(() => SharedDataService());
   locator.registerLazySingleton<LogoutCleanupService>(
       () => FirebaseLogoutCleanupService());

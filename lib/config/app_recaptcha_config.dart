@@ -13,7 +13,7 @@ class AppRecaptchaConfig {
       );
     } else if (flavor == 'staging') {
       return AppRecaptchaConfig(
-        "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx", // TODO: Ganti dengan key asli staging
+        "6Lf-J0wtAAAAAKb1A7msYBRbJICXYQ1qkBTWpjdT", // TODO: Ganti dengan key asli staging
         "YOUR_IOS_SITE_KEY", // TODO: Ganti dengan key asli staging
       );
     }

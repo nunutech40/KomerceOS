@@ -1,18 +1,19 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../common/failure.dart';
-import '../managers/authentication_manager.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
 import '../repositories/auth_repository.dart';
 import '../services/logout_cleanup_service.dart';
 
 class DoLogoutUseCase {
   final AuthRepository repository;
-  final AuthenticationManager authenticationManager;
+  final AuthBloc authBloc;
   final LogoutCleanupService? logoutCleanupService;
 
   DoLogoutUseCase(
     this.repository,
-    this.authenticationManager, {
+    this.authBloc, {
     this.logoutCleanupService,
   });
 
@@ -23,7 +24,7 @@ class DoLogoutUseCase {
     } catch (_) {
       // Push token cleanup is best-effort. Auth logout must still complete.
     }
-    await authenticationManager.logout();
+    authBloc.add(AuthLogoutRequested());
     return result;
   }
 }

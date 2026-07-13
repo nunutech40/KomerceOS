@@ -6,17 +6,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/app_life_cycle_manager.dart';
-import 'package:komtim_partner/core/domain/managers/authentication_manager.dart'
-    as auth_mgr;
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/firebase_options.dart';
 import 'package:provider/provider.dart';
-import 'package:upgrader/upgrader.dart'; // make sure you have this import
-
+import 'package:upgrader/upgrader.dart';
 import 'common/global/router/app_router.dart';
 import 'common/global/router/router_utils.dart';
 import 'common/global/widgets/connectivity_wrapper.dart';
 import 'core/services/deep_link_service.dart';
-import 'core/services/server_error_service.dart';
+import 'common/global/bloc/auth/auth_bloc.dart';
+import 'common/global/bloc/auth/auth_event.dart';
+import 'common/global/bloc/global_alert/global_alert_bloc.dart';
+import 'common/global/bloc/global_alert/global_alert_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+bool _isServerErrorShowing = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +41,7 @@ void main() async {
   }
 
   await di.initDependencies();
-  await di.locator<auth_mgr.AuthenticationManager>().checkLoginStatus();
+  di.locator<AuthBloc>().add(AuthCheckRequested());
 
   // Initialize date locale
   await initializeDateFormatting('id_ID', null);
@@ -102,18 +107,52 @@ class MyApp extends StatelessWidget {
             return const MaterialApp(
                 home: Scaffold(body: Center(child: Text('Error occurred'))));
           } else {
-            // Retrieve the AuthenticationManager from DI
-            final authManager = di.locator<auth_mgr.AuthenticationManager>();
-
-            // Set navigatorKey ke ServerErrorService agar bisa dipakai oleh interceptor
-            ServerErrorService().setNavigatorKey(AppRouter.navigatorKey);
-
-            return ChangeNotifierProvider<auth_mgr.AuthenticationManager>.value(
-              value: authManager,
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthBloc>.value(value: di.locator<AuthBloc>()),
+                BlocProvider<GlobalAlertBloc>.value(
+                    value: di.locator<GlobalAlertBloc>()),
+              ],
               child: ConnectivityWrapper(
                 navigatorKey: AppRouter.navigatorKey,
                 child: UpgradeAlert(
-                  child: MaterialApp.router(
+                  child: BlocListener<GlobalAlertBloc, GlobalAlertState>(
+                    listener: (context, state) {
+                      if (state is GlobalAlertShowServerError) {
+                        if (_isServerErrorShowing) return;
+                        
+                        final navContext = AppRouter.navigatorKey.currentContext;
+                        if (navContext == null) return;
+
+                        _isServerErrorShowing = true;
+                        DsBottomSheet.show(
+                          context: navContext,
+                          isDismissible: true,
+                          title: 'Server Error',
+                          description:
+                              'Terjadi kendala pada sistem. Silakan\ncoba kembali beberapa saat lagi.',
+                          image: SvgPicture.asset(
+                            'assets/images/superapp/auth/server_error.svg',
+                            width: 160,
+                            height: 200,
+                          ),
+                          secondaryButtonText: 'Kembali',
+                          onSecondaryPressed: () {
+                            Navigator.pop(navContext);
+                          },
+                          primaryButtonText: 'Coba Lagi',
+                          onPrimaryPressed: () {
+                            Navigator.pop(navContext);
+                          },
+                          onClosePressed: () {
+                            Navigator.pop(navContext);
+                          },
+                        ).whenComplete(() {
+                          _isServerErrorShowing = false;
+                        });
+                      }
+                    },
+                    child: MaterialApp.router(
                     title: 'Komtim Partner',
                     debugShowCheckedModeBanner: false,
                     theme: ThemeData(
@@ -131,6 +170,7 @@ class MyApp extends StatelessWidget {
                     routeInformationParser:
                         AppRouter.router.routeInformationParser,
                     routerDelegate: AppRouter.router.routerDelegate,
+                    ),
                   ),
                 ),
               ),

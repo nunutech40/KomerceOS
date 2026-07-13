@@ -5,19 +5,23 @@ import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:komtim_partner/core/data/apiservice/constat_endpoint.dart';
 import 'package:komtim_partner/core/data/apiservice/token_provider.dart';
-import 'package:komtim_partner/core/domain/managers/authentication_manager.dart';
-import 'package:komtim_partner/core/services/server_error_service.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
+import 'package:komtim_partner/common/global/bloc/global_alert/global_alert_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/global_alert/global_alert_event.dart';
 
 class AuthInterceptor extends QueuedInterceptorsWrapper {
   final TokenProvider tokenProvider;
-  final AuthenticationManager authenticationManager;
+  final AuthBloc authBloc;
+  final GlobalAlertBloc globalAlertBloc;
   Dio? _dio;
   bool _isRefreshing = false;
   Completer<String?>? _refreshCompleter;
 
   AuthInterceptor({
     required this.tokenProvider,
-    required this.authenticationManager,
+    required this.authBloc,
+    required this.globalAlertBloc,
   });
 
   static List<String> get _publicEndpoints => [
@@ -88,7 +92,7 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
 
     // Intercept server errors (5xx) — tampilkan global Server Error bottom sheet
     if (statusCode >= 500) {
-      ServerErrorService().showServerError();
+      globalAlertBloc.add(ShowServerErrorEvent());
       return handler.next(err);
     }
 
@@ -200,7 +204,7 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
   /// 3. Me-reject request asli dengan error.
   Future<void> _handleLogout(
       ErrorInterceptorHandler handler, DioException err) async {
-    await authenticationManager.logout();
+    authBloc.add(AuthLogoutRequested());
     return handler.reject(err);
   }
 
