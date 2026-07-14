@@ -137,6 +137,11 @@ import '../features/profile/bloc/profile_bloc.dart';
 import '../features/ratetalent/bloc/rate_talent_bloc.dart';
 import '../features/superapp/features/authentication/bloc/check_email_bloc.dart';
 import '../features/superapp/features/authentication/bloc/verification_bloc.dart';
+import '../features/superapp/features/myapp/bloc/aplikasiku_bloc.dart';
+import '../features/superapp/features/myapp/domain/usecases/get_aplikasiku_list_usecase.dart';
+import '../features/superapp/features/myapp/domain/repositories/aplikasiku_repository.dart';
+import '../features/superapp/features/myapp/data/repositories/aplikasiku_repository_impl.dart';
+import '../features/superapp/features/myapp/data/datasource/aplikasiku_remote_datasource.dart';
 
 import '../common/global/bloc/auth/auth_bloc.dart';
 import '../common/global/bloc/global_alert/global_alert_bloc.dart';
@@ -264,6 +269,12 @@ Future<void> initDependencies() async {
         getReportPerformanceMonthlyUseCase: locator(),
       ));
 
+  locator.registerFactory(() => AplikasikuBloc(
+        getAplikasikuListUseCase: locator(),
+        resendVerificationUseCase: locator(),
+        getLocaleProfileUseCase: locator(),
+      ));
+
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
   locator.registerLazySingleton(() => CheckEmailLoginUseCase(locator()));
@@ -336,6 +347,7 @@ Future<void> initDependencies() async {
       .registerLazySingleton(() => GetTalentRecommendationUseCase(locator()));
   locator.registerLazySingleton(() => GetIdealBalanceUseCase(locator()));
   locator.registerLazySingleton(() => GetTalentEvaluationsUseCase(locator()));
+  locator.registerLazySingleton(() => GetAplikasikuListUseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<AuthRepository>(() =>
@@ -371,6 +383,8 @@ Future<void> initDependencies() async {
       () => TalentRecomendationRepositoryImpl(
             remoteDataSource: locator(),
           ));
+  locator.registerLazySingleton<AplikasikuRepository>(
+      () => AplikasikuRepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
@@ -408,6 +422,9 @@ Future<void> initDependencies() async {
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<TalentRecomendationRemoteDataSource>(() =>
       TalentRecomendationRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<AplikasikuRemoteDataSource>(() =>
+      AplikasikuRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
 
   // Register SharedPreferences

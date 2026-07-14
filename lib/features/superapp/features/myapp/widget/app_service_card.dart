@@ -41,7 +41,7 @@ class AppServiceCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                leading,
+                SizedBox(width: 32, height: 32, child: leading),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

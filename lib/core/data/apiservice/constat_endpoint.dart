@@ -23,6 +23,8 @@ class Endpoints {
       '$_BaseURL/api/v1/auth/profile/change_password';
   static String get resetPassword =>
       '$_BaseURLSuperApp/auth/api/v1/auth/change-password';
+  static String get aplikasiku =>
+      '$_BaseURLSuperApp/auth/api/v1/user/aplikasiku';
 
   // Profile Endpoints
   static String get getProfile => '$_BaseURL/api/v1/auth/profile';
