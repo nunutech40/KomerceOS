@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
-import 'package:provider/provider.dart';
-import 'home_page_superapp.dart';
 import 'package:komtim_partner/features/superapp/features/setting/view/setting_page.dart';
+import 'package:provider/provider.dart';
+
+import 'home_page_superapp.dart';
 
 class NavItem {
   final Widget activeIcon;
@@ -69,83 +70,102 @@ class _MainPageStateSuperApp extends State<MainPageSuperApp> {
         builder: (context, nav, child) {
           return Scaffold(
             backgroundColor: Colors.grey.shade50,
-            body: PageTransitionSwitcher(
-              currentIndex: nav.currentIndex,
-              child: nav.items[nav.currentIndex].page,
-            ),
-            bottomNavigationBar: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: SizedBox(
-                  height: 72,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(40),
-                            border: Border.all(
-                              color: Colors.grey.shade300, // Sesuaikan warna garis
-                              width: 1.5,                  // Sesuaikan ketebalan garis
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: .08),
-                                blurRadius: 20,
-                                offset: const Offset(0, 6),
-                              )
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: List.generate(nav.items.length, (index) {
-                              final item = nav.items[index];
-                              final isSelected = nav.currentIndex == index;
-                              return Expanded(
-                                child: NavButton(
-                                  icon: isSelected ? item.activeIcon : item.inactiveIcon,
-                                  title: item.title,
-                                  selected: isSelected,
-                                  onTap: () => nav.updateIndex(index),
+            body: Stack(
+              children: [
+                // Body content
+                IndexedStack(
+                  index: nav.currentIndex,
+                  children: nav.items.map((item) => item.page).toList(),
+                ),
+                // Floating navbar overlay (transparent background)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: SizedBox(
+                        height: 72,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(40),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: .08),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 6),
+                                    )
+                                  ],
                                 ),
-                              );
-                            }),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Container(
-                        height: 64,
-                        width: 64,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2.0,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: .15),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children:
+                                      List.generate(nav.items.length, (index) {
+                                    final item = nav.items[index];
+                                    final isSelected =
+                                        nav.currentIndex == index;
+                                    return Expanded(
+                                      child: NavButton(
+                                        icon: isSelected
+                                            ? item.activeIcon
+                                            : item.inactiveIcon,
+                                        title: item.title,
+                                        selected: isSelected,
+                                        onTap: () => nav.updateIndex(index),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Container(
+                              height: 64,
+                              width: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2.0,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: .15),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: FloatingActionButton(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                onPressed: () {},
+                                shape: const CircleBorder(),
+                                child: Image.asset(
+                                    'assets/images/superapp/home/ic_live_chat.png'),
+                              ),
                             ),
                           ],
                         ),
-                        child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          onPressed: () {},
-                          shape: const CircleBorder(),
-                          child: Image.asset('assets/images/superapp/home/ic_live_chat.png'),
-                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           );
         },
@@ -168,7 +188,7 @@ class PageTransitionSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.fastOutSlowIn, 
+      switchInCurve: Curves.fastOutSlowIn,
       switchOutCurve: Curves.fastOutSlowIn,
       transitionBuilder: (Widget child, Animation<double> animation) {
         return SlideTransition(
@@ -193,7 +213,8 @@ class PageTransitionSwitcher extends StatelessWidget {
 class HomePageContent extends StatelessWidget {
   const HomePageContent({super.key});
   @override
-  Widget build(BuildContext context) => const Center(child: Text("Halaman Utama"));
+  Widget build(BuildContext context) =>
+      const Center(child: Text("Halaman Utama"));
 }
 
 class MutasiPage extends StatelessWidget {
@@ -222,7 +243,8 @@ class ShortcutPage extends StatelessWidget {
     return GridView.count(
       padding: const EdgeInsets.all(20),
       crossAxisCount: 2,
-      children: List.generate(4, (index) => const Card(child: Icon(Icons.shortcut, size: 40))),
+      children: List.generate(
+          4, (index) => const Card(child: Icon(Icons.shortcut, size: 40))),
     );
   }
 }
@@ -251,14 +273,16 @@ class NavButton extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           AnimatedContainer(
-            duration: const Duration(milliseconds: 300), // Dibuat sedikit lebih natural
-            curve: Curves.fastOutSlowIn, // Curve yang lebih mengalir dari easeOutCubic
+            duration: const Duration(
+                milliseconds: 300), // Dibuat sedikit lebih natural
+            curve: Curves
+                .fastOutSlowIn, // Curve yang lebih mengalir dari easeOutCubic
             margin: const EdgeInsets.symmetric(horizontal: 8),
             height: 56.0,
             decoration: BoxDecoration(
               // FIX: Gunakan warna target dengan opacity 0 alih-alih Colors.transparent (hitam)
-              color: selected 
-                  ? const Color(0xFFFFF0E6) 
+              color: selected
+                  ? const Color(0xFFFFF0E6)
                   : const Color(0xFFFFF0E6).withValues(alpha: 0.0),
               borderRadius: BorderRadius.circular(28),
             ),
