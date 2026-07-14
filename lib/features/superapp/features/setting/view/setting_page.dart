@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../myapp/view/my_app_page.dart';
 import '../widget/setting_menu_item.dart';
 
@@ -136,7 +138,12 @@ class SettingPage extends StatelessWidget {
                           bottomLeft: Radius.circular(18),
                           bottomRight: Radius.circular(18),
                         ),
-                        onTap: () {},
+                        onTap: () async {
+                          final uri = Uri.parse('https://bantuan.komerce.id/id/');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
                       ),
                     ],
                   ),
