@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/widgets/custom_toast.dart';
@@ -234,8 +235,8 @@ class SettingPage extends StatelessWidget {
                         title: 'Keluar Akun?',
                         description:
                             'Kamu akan keluar dari akun saat ini dan dapat masuk kembali kapan saja?',
-                        image: Image.asset(
-                          'assets/images/superapp/setting/failed_img.png',
+                        image: SvgPicture.asset(
+                          'assets/images/superapp/setting/failed_img.svg',
                           width: 240,
                           height: 240,
                         ),
