@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:in_app_update/in_app_update.dart';
+import 'package:komtim_partner/features/update/widget/update_complete.dart';
+import 'package:komtim_partner/common/global/widgets/custom_toast.dart';
 import '../../myapp/view/my_app_page.dart';
 import '../widget/setting_menu_item.dart';
 
@@ -169,7 +172,37 @@ class SettingPage extends StatelessWidget {
                     titleColor: AppColors.alwaysBlack,
                     trailingText: 'V 1.2.0',
                     borderRadius: BorderRadius.circular(99),
-                    onTap: () {},
+                    onTap: () async {
+                      if (Platform.isIOS) {
+                        final Uri uri = Uri.parse(
+                            "https://apps.apple.com/id/app/komtim/id6473518650");
+                        if (await canLaunchUrl(uri)) {
+                          launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      } else {
+                        InAppUpdate.checkForUpdate().then((updateInfo) {
+                          if (updateInfo.updateAvailability ==
+                              UpdateAvailability.updateAvailable) {
+                            if (updateInfo.immediateUpdateAllowed) {
+                              InAppUpdate.performImmediateUpdate()
+                                  .then((appUpdateResult) {
+                                if (appUpdateResult ==
+                                    AppUpdateResult.success) {
+                                  if (!context.mounted) return;
+                                  bottomSheetUpdateSuccess(context);
+                                }
+                              });
+                            }
+                          } else {
+                            if (!context.mounted) return;
+                            showToast(context, 'Aplikasi sudah versi terbaru');
+                          }
+                        }).catchError((e) {
+                          if (!context.mounted) return;
+                          showToast(context, 'Gagal memeriksa update');
+                        });
+                      }
+                    },
                   ),
                 ),
               ),

@@ -487,6 +487,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                   ),
                 ),
               ),
+              const SizedBox(height: 120),
             ],
           ),
         ),
