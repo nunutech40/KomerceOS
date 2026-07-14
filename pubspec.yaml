@@ -78,6 +78,7 @@ flutter:
     - assets/images/superapp/auth/
     - assets/images/superapp/home/
     - assets/images/superapp/home/navbar/
+    - assets/images/superapp/setting/
     - assets/json/
   fonts:
     - family: PlusJakartaSans

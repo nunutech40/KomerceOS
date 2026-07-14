@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:komtim_partner/features/update/widget/update_complete.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/widgets/custom_toast.dart';
+import 'package:komtim_partner/features/update/widget/update_complete.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../myapp/view/my_app_page.dart';
 import '../widget/setting_menu_item.dart';
 
@@ -142,9 +143,11 @@ class SettingPage extends StatelessWidget {
                           bottomRight: Radius.circular(18),
                         ),
                         onTap: () async {
-                          final uri = Uri.parse('https://bantuan.komerce.id/id/');
+                          final uri =
+                              Uri.parse('https://bantuan.komerce.id/id/');
                           if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
                           }
                         },
                       ),
@@ -225,11 +228,34 @@ class SettingPage extends StatelessWidget {
                     title: 'Keluar',
                     titleColor: AppColors.errorBase,
                     borderRadius: BorderRadius.circular(99),
-                    onTap: () {},
+                    onTap: () {
+                      DsBottomSheet.show(
+                        context: context,
+                        title: 'Keluar Akun?',
+                        description:
+                            'Kamu akan keluar dari akun saat ini dan dapat masuk kembali kapan saja?',
+                        image: Image.asset(
+                          'assets/images/superapp/setting/failed_img.png',
+                          width: 240,
+                          height: 240,
+                        ),
+                        primaryButtonText: 'Keluar',
+                        onPrimaryPressed: () {
+                          // Dummy logout endpoint action
+                          Navigator.of(context).pop();
+                          showToast(context,
+                              "Proses logout sedang dalam pengembangan.");
+                        },
+                        secondaryButtonText: 'Batal',
+                        onSecondaryPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 120),
             ],
           ),
         ),
