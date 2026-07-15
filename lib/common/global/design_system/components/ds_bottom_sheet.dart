@@ -13,6 +13,7 @@ class DsBottomSheet extends StatelessWidget {
   final Widget? image;
   final String primaryButtonText;
   final VoidCallback onPrimaryPressed;
+  final DsButtonState primaryButtonState;
   final String? secondaryButtonText;
   final VoidCallback? onSecondaryPressed;
   
@@ -30,6 +31,7 @@ class DsBottomSheet extends StatelessWidget {
     required this.description,
     required this.primaryButtonText,
     required this.onPrimaryPressed,
+    this.primaryButtonState = DsButtonState.enabled,
     this.image,
     this.secondaryButtonText,
     this.onSecondaryPressed,
@@ -48,6 +50,7 @@ class DsBottomSheet extends StatelessWidget {
     required String description,
     required String primaryButtonText,
     required VoidCallback onPrimaryPressed,
+    DsButtonState primaryButtonState = DsButtonState.enabled,
     Widget? image,
     String? secondaryButtonText,
     VoidCallback? onSecondaryPressed,
@@ -67,6 +70,7 @@ class DsBottomSheet extends StatelessWidget {
         description: description,
         primaryButtonText: primaryButtonText,
         onPrimaryPressed: onPrimaryPressed,
+        primaryButtonState: primaryButtonState,
         image: image,
         secondaryButtonText: secondaryButtonText,
         onSecondaryPressed: onSecondaryPressed,
@@ -177,6 +181,7 @@ class DsBottomSheet extends StatelessWidget {
                 DsButton(
                   text: primaryButtonText,
                   onPressed: onPrimaryPressed,
+                  state: primaryButtonState,
                 ),
               ],
             ),

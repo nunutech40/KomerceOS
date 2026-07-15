@@ -160,6 +160,14 @@ import 'package:komtim_partner/core/domain/repositories/expire_invoice_repositor
 import 'package:komtim_partner/core/data/repositories/expire_invoice_repository_impl.dart';
 import 'package:komtim_partner/core/data/datasources/remote/expire_invoice_remote_datasource.dart';
 
+import '../features/superapp/features/topup/bloc/create_invoice_bloc.dart';
+import '../core/domain/usecases/create_invoice_use_case.dart';
+import '../core/data/repositories/create_invoice_repository.dart';
+import '../core/data/datasources/remote/create_invoice_remote_datasource.dart';
+import '../features/superapp/features/topup/bloc/create_qrcode_bloc.dart';
+import '../core/domain/usecases/create_qrcode_use_case.dart';
+import '../core/data/repositories/create_qrcode_repository.dart';
+import '../core/data/datasources/remote/create_qrcode_remote_datasource.dart';
 import '../common/global/bloc/auth/auth_bloc.dart';
 import '../common/global/bloc/global_alert/global_alert_bloc.dart';
 
@@ -295,6 +303,8 @@ Future<void> initDependencies() async {
   locator.registerFactory(() => CheckBillBloc(checkBillUseCase: locator()));
   locator.registerFactory(() => ExpireQrcodeBloc(expireQrcodeUseCase: locator()));
   locator.registerFactory(() => ExpireInvoiceBloc(expireInvoiceUseCase: locator()));
+  locator.registerFactory(() => CreateInvoiceBloc(createInvoiceUseCase: locator()));
+  locator.registerFactory(() => CreateQrcodeBloc(useCase: locator()));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -372,6 +382,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => CheckBillUseCase(locator()));
   locator.registerLazySingleton(() => ExpireQrcodeUseCase(locator()));
   locator.registerLazySingleton(() => ExpireInvoiceUseCase(repository: locator()));
+  locator.registerLazySingleton(() => CreateInvoiceUseCase(locator()));
+  locator.registerLazySingleton(() => CreateQrcodeUseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<AuthRepository>(() =>
@@ -415,6 +427,10 @@ Future<void> initDependencies() async {
       () => ExpireQrcodeRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<ExpireInvoiceRepository>(
       () => ExpireInvoiceRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CreateInvoiceRepository>(
+      () => CreateInvoiceRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CreateQrcodeRepository>(
+      () => CreateQrcodeRepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
@@ -464,6 +480,12 @@ Future<void> initDependencies() async {
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<ExpireInvoiceRemoteDataSource>(() =>
       ExpireInvoiceRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CreateInvoiceRemoteDataSource>(() =>
+      CreateInvoiceRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CreateQrcodeRemoteDataSource>(() =>
+      CreateQrcodeRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
 
   // Register SharedPreferences

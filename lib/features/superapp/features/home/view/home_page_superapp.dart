@@ -16,6 +16,7 @@ import 'package:komtim_partner/features/superapp/features/topup/bloc/check_bill_
 import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_invoice_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/barcode_qris_page.dart';
+import 'package:komtim_partner/features/superapp/features/topup/view/web_view_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
 import 'package:lottie/lottie.dart';
 
@@ -330,14 +331,31 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                           secondaryAction: DsButton(
                             text: 'Bayar Sekarang',
                             onPressed: () {
-                              Navigator.pushReplacement(
-                                innerContext,
-                                MaterialPageRoute(
-                                  builder: (_) => BarcodeQrisPage(
-                                    amount: state.data.qrAmount ?? 0,
+                              final invoiceUrl = state.data.invoiceXenditUrl;
+                              final qrString = state.data.qrXenditQrstring;
+                              
+                              if (invoiceUrl != null && invoiceUrl.isNotEmpty) {
+                                Navigator.pushReplacement(
+                                  innerContext,
+                                  MaterialPageRoute(
+                                    builder: (_) => WebViewPage(url: invoiceUrl),
                                   ),
-                                ),
-                              );
+                                );
+                              } else if (qrString != null && qrString.isNotEmpty) {
+                                Navigator.pushReplacement(
+                                  innerContext,
+                                  MaterialPageRoute(
+                                    builder: (_) => BarcodeQrisPage(
+                                      amount: state.data.qrAmount ?? 0,
+                                      qrString: qrString,
+                                      expiresAt: state.data.qrExpireDate ?? '',
+                                      qrId: state.data.qrXenditId ?? '',
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                Navigator.pop(innerContext);
+                              }
                             },
                           ),
                         ),
