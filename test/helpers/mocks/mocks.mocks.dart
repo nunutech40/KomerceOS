@@ -5,12 +5,13 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 import 'dart:typed_data' as _i23;
-import 'dart:ui' as _i37;
+import 'dart:ui' as _i38;
 
 import 'package:dartz/dartz.dart' as _i13;
 import 'package:dio/dio.dart' as _i4;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i6;
 import 'package:komtim_partner/common/failure.dart' as _i28;
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart' as _i17;
 import 'package:komtim_partner/core/data/apiservice/dio_client.dart' as _i18;
 import 'package:komtim_partner/core/data/apiservice/dio_response_parser.dart'
     as _i19;
@@ -46,7 +47,7 @@ import 'package:komtim_partner/core/domain/entities/invoices_model.dart'
 import 'package:komtim_partner/core/domain/entities/login_model.dart' as _i32;
 import 'package:komtim_partner/core/domain/entities/profile_model.dart' as _i34;
 import 'package:komtim_partner/core/domain/managers/authentication_manager.dart'
-    as _i17;
+    as _i37;
 import 'package:komtim_partner/core/domain/repositories/attendance_repository.dart'
     as _i35;
 import 'package:komtim_partner/core/domain/repositories/auth_repository.dart'
@@ -56,20 +57,20 @@ import 'package:komtim_partner/core/domain/repositories/invoice_repository.dart'
 import 'package:komtim_partner/core/domain/repositories/profile_repository.dart'
     as _i33;
 import 'package:komtim_partner/core/domain/usecases/change_password_use_case.dart'
-    as _i41;
+    as _i42;
 import 'package:komtim_partner/core/domain/usecases/do_login_use_case.dart'
-    as _i38;
-import 'package:komtim_partner/core/domain/usecases/do_logout_use_case.dart'
     as _i39;
+import 'package:komtim_partner/core/domain/usecases/do_logout_use_case.dart'
+    as _i40;
 import 'package:komtim_partner/core/domain/usecases/get_profile_use_case.dart'
     as _i16;
 import 'package:komtim_partner/core/domain/usecases/recaptcha_use_case.dart'
-    as _i42;
+    as _i43;
 import 'package:komtim_partner/core/domain/usecases/send_forgot_password_use_case.dart'
-    as _i40;
+    as _i41;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i20;
-import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart' as _i43;
+import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart' as _i44;
 import 'package:shared_preferences/shared_preferences.dart' as _i10;
 
 // ignore_for_file: type=lint
@@ -318,9 +319,8 @@ class _FakeGetProfileUseCase_21 extends _i1.SmartFake
         );
 }
 
-class _FakeAuthenticationManager_22 extends _i1.SmartFake
-    implements _i17.AuthenticationManager {
-  _FakeAuthenticationManager_22(
+class _FakeAuthBloc_22 extends _i1.SmartFake implements _i17.AuthBloc {
+  _FakeAuthBloc_22(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -1238,6 +1238,22 @@ class MockAuthRemoteDataSource extends _i1.Mock
       ) as _i5.Future<bool>);
 
   @override
+  _i5.Future<bool> resetPassword(
+    String? code,
+    String? password,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #resetPassword,
+          [
+            code,
+            password,
+          ],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
   _i5.Future<bool> resendVerification(
     String? email,
     String? productName,
@@ -1781,6 +1797,32 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
       ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
 
   @override
+  _i5.Future<_i13.Either<_i28.Failure, bool>> resetPassword(
+    String? code,
+    String? password,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #resetPassword,
+          [
+            code,
+            password,
+          ],
+        ),
+        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
+            _FakeEither_18<_i28.Failure, bool>(
+          this,
+          Invocation.method(
+            #resetPassword,
+            [
+              code,
+              password,
+            ],
+          ),
+        )),
+      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+
+  @override
   _i5.Future<_i13.Either<_i28.Failure, bool>> resendVerification(
     String? email,
     String? productName,
@@ -2002,7 +2044,7 @@ class MockAttendanceRepostiory extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAuthenticationManager extends _i1.Mock
-    implements _i17.AuthenticationManager {
+    implements _i37.AuthenticationManager {
   MockAuthenticationManager() {
     _i1.throwOnMissingStub(this);
   }
@@ -2077,7 +2119,7 @@ class MockAuthenticationManager extends _i1.Mock
       ) as _i5.Future<void>);
 
   @override
-  void addListener(_i37.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i38.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -2086,7 +2128,7 @@ class MockAuthenticationManager extends _i1.Mock
       );
 
   @override
-  void removeListener(_i37.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i38.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -2116,7 +2158,7 @@ class MockAuthenticationManager extends _i1.Mock
 /// A class which mocks [DoLoginUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDoLoginUseCase extends _i1.Mock implements _i38.DoLoginUseCase {
+class MockDoLoginUseCase extends _i1.Mock implements _i39.DoLoginUseCase {
   MockDoLoginUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -2140,13 +2182,13 @@ class MockDoLoginUseCase extends _i1.Mock implements _i38.DoLoginUseCase {
       ) as _i16.GetProfileUseCase);
 
   @override
-  _i17.AuthenticationManager get authenticationManager => (super.noSuchMethod(
-        Invocation.getter(#authenticationManager),
-        returnValue: _FakeAuthenticationManager_22(
+  _i17.AuthBloc get authBloc => (super.noSuchMethod(
+        Invocation.getter(#authBloc),
+        returnValue: _FakeAuthBloc_22(
           this,
-          Invocation.getter(#authenticationManager),
+          Invocation.getter(#authBloc),
         ),
-      ) as _i17.AuthenticationManager);
+      ) as _i17.AuthBloc);
 
   @override
   _i5.Future<_i13.Either<_i28.Failure, _i32.LoginModel>> execute(
@@ -2182,7 +2224,7 @@ class MockDoLoginUseCase extends _i1.Mock implements _i38.DoLoginUseCase {
 /// A class which mocks [DoLogoutUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDoLogoutUseCase extends _i1.Mock implements _i39.DoLogoutUseCase {
+class MockDoLogoutUseCase extends _i1.Mock implements _i40.DoLogoutUseCase {
   MockDoLogoutUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -2197,13 +2239,13 @@ class MockDoLogoutUseCase extends _i1.Mock implements _i39.DoLogoutUseCase {
       ) as _i15.AuthRepository);
 
   @override
-  _i17.AuthenticationManager get authenticationManager => (super.noSuchMethod(
-        Invocation.getter(#authenticationManager),
-        returnValue: _FakeAuthenticationManager_22(
+  _i17.AuthBloc get authBloc => (super.noSuchMethod(
+        Invocation.getter(#authBloc),
+        returnValue: _FakeAuthBloc_22(
           this,
-          Invocation.getter(#authenticationManager),
+          Invocation.getter(#authBloc),
         ),
-      ) as _i17.AuthenticationManager);
+      ) as _i17.AuthBloc);
 
   @override
   _i5.Future<_i13.Either<_i28.Failure, bool>> execute() => (super.noSuchMethod(
@@ -2226,7 +2268,7 @@ class MockDoLogoutUseCase extends _i1.Mock implements _i39.DoLogoutUseCase {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockSendForgotPasswordUseCase extends _i1.Mock
-    implements _i40.SendForgotPasswordUseCase {
+    implements _i41.SendForgotPasswordUseCase {
   MockSendForgotPasswordUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -2267,7 +2309,7 @@ class MockSendForgotPasswordUseCase extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockChangePasswordUseCase extends _i1.Mock
-    implements _i41.ChangePasswordUseCase {
+    implements _i42.ChangePasswordUseCase {
   MockChangePasswordUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -2341,7 +2383,7 @@ class MockGetProfileUseCase extends _i1.Mock implements _i16.GetProfileUseCase {
 /// A class which mocks [RecaptchaUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockRecaptchaUseCase extends _i1.Mock implements _i42.RecaptchaUseCase {
+class MockRecaptchaUseCase extends _i1.Mock implements _i43.RecaptchaUseCase {
   MockRecaptchaUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -2363,7 +2405,7 @@ class MockRecaptchaUseCase extends _i1.Mock implements _i42.RecaptchaUseCase {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<String> getToken(_i43.RecaptchaAction? action) =>
+  _i5.Future<String> getToken(_i44.RecaptchaAction? action) =>
       (super.noSuchMethod(
         Invocation.method(
           #getToken,
