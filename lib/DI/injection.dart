@@ -143,6 +143,23 @@ import '../features/superapp/features/myapp/domain/repositories/aplikasiku_repos
 import '../features/superapp/features/myapp/data/repositories/aplikasiku_repository_impl.dart';
 import '../features/superapp/features/myapp/data/datasource/aplikasiku_remote_datasource.dart';
 
+import '../features/superapp/features/topup/bloc/check_bill_bloc.dart';
+import '../core/domain/usecases/check_bill_use_case.dart';
+import '../core/domain/repositories/check_bill_repository.dart';
+import '../core/data/repositories/check_bill_repository_impl.dart';
+import '../core/data/datasources/remote/check_bill_remote_datasource.dart';
+
+import '../features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
+import '../core/domain/usecases/expire_qrcode_use_case.dart';
+import '../core/domain/repositories/expire_qrcode_repository.dart';
+import '../core/data/repositories/expire_qrcode_repository_impl.dart';
+import '../core/data/datasources/remote/expire_qrcode_remote_datasource.dart';
+import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_invoice_bloc.dart';
+import 'package:komtim_partner/core/domain/usecases/expire_invoice_use_case.dart';
+import 'package:komtim_partner/core/domain/repositories/expire_invoice_repository.dart';
+import 'package:komtim_partner/core/data/repositories/expire_invoice_repository_impl.dart';
+import 'package:komtim_partner/core/data/datasources/remote/expire_invoice_remote_datasource.dart';
+
 import '../common/global/bloc/auth/auth_bloc.dart';
 import '../common/global/bloc/global_alert/global_alert_bloc.dart';
 
@@ -275,6 +292,10 @@ Future<void> initDependencies() async {
         getLocaleProfileUseCase: locator(),
       ));
 
+  locator.registerFactory(() => CheckBillBloc(checkBillUseCase: locator()));
+  locator.registerFactory(() => ExpireQrcodeBloc(expireQrcodeUseCase: locator()));
+  locator.registerFactory(() => ExpireInvoiceBloc(expireInvoiceUseCase: locator()));
+
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
   locator.registerLazySingleton(() => CheckEmailLoginUseCase(locator()));
@@ -348,6 +369,9 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => GetIdealBalanceUseCase(locator()));
   locator.registerLazySingleton(() => GetTalentEvaluationsUseCase(locator()));
   locator.registerLazySingleton(() => GetAplikasikuListUseCase(locator()));
+  locator.registerLazySingleton(() => CheckBillUseCase(locator()));
+  locator.registerLazySingleton(() => ExpireQrcodeUseCase(locator()));
+  locator.registerLazySingleton(() => ExpireInvoiceUseCase(repository: locator()));
 
   // inject repository
   locator.registerLazySingleton<AuthRepository>(() =>
@@ -385,6 +409,12 @@ Future<void> initDependencies() async {
           ));
   locator.registerLazySingleton<AplikasikuRepository>(
       () => AplikasikuRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CheckBillRepository>(
+      () => CheckBillRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<ExpireQrcodeRepository>(
+      () => ExpireQrcodeRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<ExpireInvoiceRepository>(
+      () => ExpireInvoiceRepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
@@ -425,6 +455,15 @@ Future<void> initDependencies() async {
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<AplikasikuRemoteDataSource>(() =>
       AplikasikuRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CheckBillRemoteDataSource>(() =>
+      CheckBillRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<ExpireQrcodeRemoteDataSource>(() =>
+      ExpireQrcodeRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<ExpireInvoiceRemoteDataSource>(() =>
+      ExpireInvoiceRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
 
   // Register SharedPreferences

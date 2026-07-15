@@ -56,6 +56,12 @@ class Endpoints {
   static String get topupDetail => '$_BaseURL/api/v1/mobile/transaction';
   static String get topupCeckTransaction =>
       '$_BaseURL/api/v1/mobile/transaction/check';
+  static String get checkBill =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/bill/check-bill/komship';
+  static String expireQrcode(String id) =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/expire-qrcode/$id';
+  static String expireInvoice(String id) =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/expire-invoice/$id';
 
 // PIN
   static String get checkPinExisting => '$_BaseURL/api/v1/mobile/pin/check';

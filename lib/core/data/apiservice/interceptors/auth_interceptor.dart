@@ -63,6 +63,29 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     super.onRequest(options, handler);
   }
 
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    final responseBody = response.data;
+    if (responseBody is Map<String, dynamic>) {
+      final code = responseBody['code'];
+      final meta = responseBody['meta'];
+      final metaCode = (meta is Map<String, dynamic>) ? meta['code'] : null;
+
+      if (code == 500 || metaCode == 500) {
+        globalAlertBloc.add(ShowServerErrorEvent());
+        return handler.reject(
+          DioException(
+            requestOptions: response.requestOptions,
+            response: response,
+            type: DioExceptionType.badResponse,
+            error: Exception(responseBody['message'] ?? (meta is Map ? meta['message'] : null) ?? 'Server Error'),
+          ),
+        );
+      }
+    }
+    super.onResponse(response, handler);
+  }
+
   /// Interceptor method yang menangani error response.
   /// Fokus utama adalah menangani error 401 (Unauthorized).
   ///
