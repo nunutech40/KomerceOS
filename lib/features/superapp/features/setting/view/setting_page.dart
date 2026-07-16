@@ -247,7 +247,7 @@ class SettingPage extends StatelessWidget {
                           showToast(context,
                               "Proses logout sedang dalam pengembangan.");
                         },
-                        secondaryButtonText: 'Batal',
+                        secondaryButtonText: 'Kembali',
                         onSecondaryPressed: () {
                           Navigator.of(context).pop();
                         },
