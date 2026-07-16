@@ -19,6 +19,7 @@ import 'common/global/bloc/auth/auth_bloc.dart';
 import 'common/global/bloc/auth/auth_event.dart';
 import 'common/global/bloc/global_alert/global_alert_bloc.dart';
 import 'common/global/bloc/global_alert/global_alert_state.dart';
+import 'common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 bool _isServerErrorShowing = false;
@@ -112,6 +113,8 @@ class MyApp extends StatelessWidget {
                 BlocProvider<AuthBloc>.value(value: di.locator<AuthBloc>()),
                 BlocProvider<GlobalAlertBloc>.value(
                     value: di.locator<GlobalAlertBloc>()),
+                BlocProvider<SuperappProfileBloc>.value(
+                    value: di.locator<SuperappProfileBloc>()),
               ],
               child: ConnectivityWrapper(
                 navigatorKey: AppRouter.navigatorKey,

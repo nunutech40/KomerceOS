@@ -28,6 +28,8 @@ class Endpoints {
 
   // Profile Endpoints
   static String get getProfile => '$_BaseURL/api/v1/auth/profile';
+  static String get superappGetProfile =>
+      '$_BaseURLSuperApp/auth/api/v1/user/partner/get-profile-mobile';
 
   // Talents Endpoint
   static String get talents => '$_BaseURL/api/v1/mobile/talents';

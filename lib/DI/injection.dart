@@ -174,6 +174,9 @@ import '../core/data/repositories/check_qrcode_repository.dart';
 import '../core/data/datasources/remote/check_qrcode_remote_datasource.dart';
 import '../common/global/bloc/auth/auth_bloc.dart';
 import '../common/global/bloc/global_alert/global_alert_bloc.dart';
+import '../common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
+import '../core/data/datasources/remote/superapp_profile_remote_datasource.dart';
+import '../core/data/repositories/superapp_profile_repository_impl.dart';
 
 final locator = GetIt.instance;
 
@@ -438,7 +441,16 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<CreateQrcodeRepository>(
       () => CreateQrcodeRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<CheckQrcodeRepository>(
-      () => CheckQrcodeRepositoryImpl(remoteDataSource: locator()));
+      () => CheckQrcodeRepositoryImpl(
+            remoteDataSource: locator(),
+            superappProfileRepository: locator(),
+          ));
+
+  locator.registerLazySingleton<SuperappProfileRepositoryImpl>(
+      () => SuperappProfileRepositoryImpl(
+            remoteDataSource: locator(),
+            sharedPreferences: locator.getAsync<SharedPreferences>(),
+          ));
 
   // inject datasource
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
@@ -498,6 +510,9 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<CheckQrcodeRemoteDataSource>(() =>
       CheckQrcodeRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<SuperappProfileRemoteDataSource>(() =>
+      SuperappProfileRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
 
   // Register SharedPreferences
   locator.registerSingletonAsync<SharedPreferences>(
@@ -532,6 +547,13 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<AuthBloc>(
       () => AuthBloc(sharedPref: locator()));
   locator.registerLazySingleton<GlobalAlertBloc>(() => GlobalAlertBloc());
+  // SuperappProfileBloc: lazySingleton, di-init manual setelah allReady()
+  // agar AuthBloc & SuperappProfileRepositoryImpl sudah siap
+  locator.registerLazySingleton<SuperappProfileBloc>(
+      () => SuperappProfileBloc(
+            repository: locator(),
+            authBloc: locator(),
+          ));
 
   // Domain Managers
   locator.registerLazySingleton<SharedDataService>(() => SharedDataService());
@@ -540,4 +562,8 @@ Future<void> initDependencies() async {
 
   // Ensure SharedPreferences is ready
   await locator.allReady();
+
+  // Force init SuperappProfileBloc agar tidak miss event dari AuthBloc
+  // (karena singleton lazy bisa miss event kalau baru di-init setelah authenticated di-emit)
+  locator<SuperappProfileBloc>();
 }

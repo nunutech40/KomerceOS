@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/DI/injection.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_app_result_page.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_chart.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_info_balance.dart';
@@ -10,6 +11,7 @@ import 'package:komtim_partner/common/global/design_system/components/ds_menu_ic
 import 'package:komtim_partner/common/global/design_system/components/ds_menu_item.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_transaction_tile.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/ds_home_header.dart';
 import 'package:komtim_partner/features/superapp/features/notification/view/notification_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/bloc/check_bill_bloc.dart';
@@ -389,18 +391,31 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      DsHomeHeader(
-                        profileUrl:
-                            "https://img.magnific.com/vektor-gratis/ilustrasi-ikon-vektor-kartun-anak-laki-laki-keren-lucu-berpose-dabbing-konsep-ikon-mode-orang-terpencil_138676-5680.jpg?semt=ais_hybrid&w=740&q=80",
-                        notificationCount: 10,
-                        type: PartnerType.komship,
-                        savingsAmount: 'Rp. 5.000.000',
-                        onNotificationPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const NotificationPage(),
-                            ),
+                      // Header — nama & foto dari profile cache (muncul instan)
+                      BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                        buildWhen: (prev, curr) =>
+                            prev.displayProfile?.photoProfileUrl !=
+                                curr.displayProfile?.photoProfileUrl ||
+                            prev.displayProfile?.fullName !=
+                                curr.displayProfile?.fullName,
+                        builder: (context, profileState) {
+                          return DsHomeHeader(
+                            profileUrl: profileState.displayProfile
+                                    ?.photoProfileUrl ??
+                                '',
+                            notificationCount: 10,
+                            type: PartnerType.komship,
+                            savingsAmount:
+                                profileState.displayProfile?.fullName ?? '',
+                            onNotificationPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NotificationPage(),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -427,64 +442,121 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Left part: Balance info
+                                // Left part: Balance info (reactive)
                                 Expanded(
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.only(left: 8, top: 8),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          "Kompay",
-                                          style: AppTypography.bodyMdRegular
-                                              .copyWith(
-                                            color: AppColors.textDark,
-                                          ),
-                                        ),
-                                        const SizedBox(height: AppSpacing.xxs),
-                                        Text(
-                                          "Rp 999.999.999",
-                                          style:
-                                              AppTypography.numericXl.copyWith(
-                                            color: AppColors.black,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        const SizedBox(height: AppSpacing.xs2),
-                                        Row(
+                                  child: BlocBuilder<SuperappProfileBloc,
+                                      SuperappProfileState>(
+                                    buildWhen: (prev, curr) =>
+                                        prev.displaySaldo != curr.displaySaldo ||
+                                        prev.displayKompoints !=
+                                            curr.displayKompoints ||
+                                        prev.isBalanceLoading !=
+                                            curr.isBalanceLoading ||
+                                        prev.isBalanceError !=
+                                            curr.isBalanceError,
+                                    builder: (context, profileState) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 8, top: 8),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              "Kompoint",
+                                              "Kompay",
                                               style: AppTypography.bodyMdRegular
                                                   .copyWith(
                                                 color: AppColors.textDark,
                                               ),
                                             ),
                                             const SizedBox(
-                                                width: AppSpacing.xs),
-                                            SvgPicture.asset(
-                                              'assets/images/ic_kompoint.svg',
-                                              width: 16.0,
-                                              height: 16.0,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            const SizedBox(
-                                                width: AppSpacing.xs),
-                                            Text(
-                                              "50.000",
-                                              style: AppTypography
-                                                  .bodySmSemiBold
-                                                  .copyWith(
-                                                color: AppColors.black,
+                                                height: AppSpacing.xxs),
+                                            // Saldo: shimmer saat loading, error saat gagal, nilai saat berhasil
+                                            if (profileState.isBalanceLoading)
+                                              Container(
+                                                width: 140,
+                                                height: 24,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.grey200,
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                              )
+                                            else if (profileState.isBalanceError)
+                                              GestureDetector(
+                                                onTap: () => context
+                                                    .read<SuperappProfileBloc>()
+                                                    .add(
+                                                        const FetchSuperappProfileEvent()),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      "-- ",
+                                                      style: AppTypography
+                                                          .numericXl
+                                                          .copyWith(
+                                                        color: AppColors.grey350,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                    const Icon(
+                                                      Icons.refresh_rounded,
+                                                      size: 18,
+                                                      color: AppColors.primaryBase,
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            else
+                                              Text(
+                                                CurrencyFormat.convertToIdr(
+                                                    profileState.displaySaldo ??
+                                                        0,
+                                                    0),
+                                                style: AppTypography.numericXl
+                                                    .copyWith(
+                                                  color: AppColors.black,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
                                               ),
+                                            const SizedBox(
+                                                height: AppSpacing.xs2),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Kompoint",
+                                                  style: AppTypography
+                                                      .bodyMdRegular
+                                                      .copyWith(
+                                                    color: AppColors.textDark,
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                    width: AppSpacing.xs),
+                                                SvgPicture.asset(
+                                                  'assets/images/ic_kompoint.svg',
+                                                  width: 16.0,
+                                                  height: 16.0,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                const SizedBox(
+                                                    width: AppSpacing.xs),
+                                                Text(
+                                                  '${profileState.displayKompoints ?? 0}',
+                                                  style: AppTypography
+                                                      .bodySmSemiBold
+                                                      .copyWith(
+                                                    color: AppColors.black,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      );
+                                    },
                                   ),
                                 ),
 
