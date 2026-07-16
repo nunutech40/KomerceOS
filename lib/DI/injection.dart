@@ -168,6 +168,10 @@ import '../features/superapp/features/topup/bloc/create_qrcode_bloc.dart';
 import '../core/domain/usecases/create_qrcode_use_case.dart';
 import '../core/data/repositories/create_qrcode_repository.dart';
 import '../core/data/datasources/remote/create_qrcode_remote_datasource.dart';
+import '../features/superapp/features/topup/bloc/check_qrcode_bloc.dart';
+import '../core/domain/usecases/check_qrcode_use_case.dart';
+import '../core/data/repositories/check_qrcode_repository.dart';
+import '../core/data/datasources/remote/check_qrcode_remote_datasource.dart';
 import '../common/global/bloc/auth/auth_bloc.dart';
 import '../common/global/bloc/global_alert/global_alert_bloc.dart';
 
@@ -305,6 +309,7 @@ Future<void> initDependencies() async {
   locator.registerFactory(() => ExpireInvoiceBloc(expireInvoiceUseCase: locator()));
   locator.registerFactory(() => CreateInvoiceBloc(createInvoiceUseCase: locator()));
   locator.registerFactory(() => CreateQrcodeBloc(useCase: locator()));
+  locator.registerFactory(() => CheckQrcodeBloc(useCase: locator()));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -384,6 +389,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => ExpireInvoiceUseCase(repository: locator()));
   locator.registerLazySingleton(() => CreateInvoiceUseCase(locator()));
   locator.registerLazySingleton(() => CreateQrcodeUseCase(locator()));
+  locator.registerLazySingleton(() => CheckQrcodeUseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<AuthRepository>(() =>
@@ -431,6 +437,8 @@ Future<void> initDependencies() async {
       () => CreateInvoiceRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<CreateQrcodeRepository>(
       () => CreateQrcodeRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CheckQrcodeRepository>(
+      () => CheckQrcodeRepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
@@ -486,6 +494,9 @@ Future<void> initDependencies() async {
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<CreateQrcodeRemoteDataSource>(() =>
       CreateQrcodeRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CheckQrcodeRemoteDataSource>(() =>
+      CheckQrcodeRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
 
   // Register SharedPreferences

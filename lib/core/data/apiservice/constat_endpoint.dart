@@ -62,6 +62,8 @@ class Endpoints {
       '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/create-invoice/komship';
   static String get createQrcode =>
       '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/create-qrcode/komship';
+  static String get checkQrcode =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/get-qrcode';
   static String expireQrcode(String id) =>
       '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/expire-qrcode/$id';
   static String expireInvoice(String id) =>
