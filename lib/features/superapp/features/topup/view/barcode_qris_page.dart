@@ -301,14 +301,14 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                                         children: [
                                           Text(
                                             'QR Code Standar',
-                                            style: AppTypography.bodyMdMedium
+                                            style: AppTypography.bodySmMedium
                                                 .copyWith(
                                               color: AppColors.alwaysBlack,
                                             ),
                                           ),
                                           Text(
                                             'Pembayaran Nasional',
-                                            style: AppTypography.bodyMdMedium
+                                            style: AppTypography.bodySmMedium
                                                 .copyWith(
                                               color: AppColors.alwaysBlack,
                                             ),
@@ -323,14 +323,14 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                                       Text(
                                         'Bayar Sebelum',
                                         style:
-                                            AppTypography.bodyMdMedium.copyWith(
+                                            AppTypography.bodySmMedium.copyWith(
                                           color: AppColors.alwaysBlack,
                                         ),
                                       ),
                                       Text(
                                         _getExpiryText(),
                                         style:
-                                            AppTypography.bodyMdMedium.copyWith(
+                                            AppTypography.bodySmMedium.copyWith(
                                           color: AppColors.errorBase,
                                         ),
                                       ),
@@ -343,7 +343,7 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                               // Merchant Name
                               Text(
                                 'Komerce.id',
-                                style: AppTypography.headingXs.copyWith(
+                                style: AppTypography.headingMd.copyWith(
                                   color: AppColors.black,
                                 ),
                               ),
@@ -395,7 +395,7 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                                     children: [
                                       Text(
                                         'Scan dari ponsel ini',
-                                        style: AppTypography.bodyMdSemiBold
+                                        style: AppTypography.bodyMdRegular
                                             .copyWith(
                                           color: AppColors.primaryBase,
                                         ),
@@ -421,7 +421,7 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                               _showConfirmBottomSheet(innerContext),
                           child: Text(
                             'Batalkan Pembayaran',
-                            style: AppTypography.bodyMdSemiBold.copyWith(
+                            style: AppTypography.bodyMdRegular.copyWith(
                               color: AppColors.primaryBase,
                             ),
                           ),

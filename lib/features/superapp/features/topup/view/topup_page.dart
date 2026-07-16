@@ -321,11 +321,13 @@ class _TopupViewState extends State<TopupView> {
             } else if (state is CreateQrcodeSuccess) {
               _hideLoadingDialog();
 
-              final amountStr = state.data.amount ?? 0;
+              final amountStr = (state.data.amount != null && state.data.amount! > 0)
+                  ? state.data.amount!
+                  : _getCleanedAmount();
               final qrString = state.data.qrString ?? '';
               final expiresAt = state.data.expiresAt ?? '';
               final qrId = state.data.id ?? '';
-              
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -548,19 +550,22 @@ class _TopupViewState extends State<TopupView> {
                     });
                   },
                 ),
-                if (!isQrisDisabled) ...[
-                  const SizedBox(height: AppSpacing.md3),
-                  DsRadioButton(
-                    title: 'QRIS',
-                    icon: Image.asset('assets/images/superapp/ic_qr_code.png'),
-                    selected: _selectedPaymentMethod == 'qris',
-                    onTap: () {
-                      setState(() {
-                        _selectedPaymentMethod = 'qris';
-                      });
-                    },
-                  ),
-                ],
+                const SizedBox(height: AppSpacing.md3),
+                DsRadioButton(
+                  title: 'QRIS',
+                  icon: isQrisDisabled
+                      ? Image.asset(
+                          'assets/images/superapp/ic_qr-code_disable.png')
+                      : Image.asset('assets/images/superapp/ic_qr_code.png'),
+                  selected: _selectedPaymentMethod == 'qris',
+                  isDisabled: isQrisDisabled,
+                  onTap: () {
+                    if (isQrisDisabled) return;
+                    setState(() {
+                      _selectedPaymentMethod = 'qris';
+                    });
+                  },
+                ),
 
                 const SizedBox(height: AppSpacing.xl),
               ],
@@ -574,7 +579,8 @@ class _TopupViewState extends State<TopupView> {
               builder: (context) {
                 final invoiceState = context.watch<CreateInvoiceBloc>().state;
                 final qrcodeState = context.watch<CreateQrcodeBloc>().state;
-                final isLoading = invoiceState is CreateInvoiceLoading || qrcodeState is CreateQrcodeLoading;
+                final isLoading = invoiceState is CreateInvoiceLoading ||
+                    qrcodeState is CreateQrcodeLoading;
 
                 return DsButton(
                   text: 'Top Up',
@@ -595,8 +601,10 @@ class _TopupViewState extends State<TopupView> {
                       description: '',
                       primaryButtonText: 'Bayar',
                       onPrimaryPressed: () {
-                        if (context.read<CreateInvoiceBloc>().state is CreateInvoiceLoading ||
-                            context.read<CreateQrcodeBloc>().state is CreateQrcodeLoading) return;
+                        if (context.read<CreateInvoiceBloc>().state
+                                is CreateInvoiceLoading ||
+                            context.read<CreateQrcodeBloc>().state
+                                is CreateQrcodeLoading) return;
                         if (isClicked) return;
                         isClicked = true;
 
