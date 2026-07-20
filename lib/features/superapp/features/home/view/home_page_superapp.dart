@@ -252,7 +252,21 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => locator<CheckBillBloc>()),
-        BlocProvider(create: (context) => locator<BalanceSummaryBloc>()),
+        BlocProvider(
+          create: (context) {
+            final bloc = locator<BalanceSummaryBloc>();
+            final profile = context.read<SuperappProfileBloc>().state.displayProfile;
+            final isKomship = profile?.isKomship == 1 &&
+                (profile?.productMailVerifications.any((e) =>
+                        e.productName?.toLowerCase() == 'komship' &&
+                        e.isVerified == true) ??
+                    false);
+            if (isKomship && profile?.id != null) {
+              bloc.add(FetchBalanceSummaryEvent(profile!.id.toString()));
+            }
+            return bloc;
+          },
+        ),
       ],
       child: BlocListener<CheckBillBloc, CheckBillState>(
         listener: (context, state) {
