@@ -21,17 +21,20 @@ import 'package:komtim_partner/features/superapp/features/authentication/views/e
 class VerificationRequiredBottomSheet extends StatelessWidget {
   final String email;
   final List<PartnerProductModel> partnerProducts;
+  final String buttonLabel;
 
   const VerificationRequiredBottomSheet({
     super.key,
     required this.email,
     required this.partnerProducts,
+    this.buttonLabel = 'Masuk',
   });
 
   static Future<T?> show<T>({
     required BuildContext context,
     required String email,
     required List<PartnerProductModel> partnerProducts,
+    String buttonLabel = 'Masuk',
   }) {
     return showModalBottomSheet<T>(
       context: context,
@@ -51,6 +54,7 @@ class VerificationRequiredBottomSheet extends StatelessWidget {
         child: VerificationRequiredBottomSheet(
           email: email,
           partnerProducts: partnerProducts,
+          buttonLabel: buttonLabel,
         ),
       ),
     );
@@ -220,6 +224,7 @@ class VerificationRequiredBottomSheet extends StatelessWidget {
             child: EmailVerifSentPage(
               email: email,
               productName: productName,
+              buttonLabel: buttonLabel,
             ),
           ),
         ),
@@ -238,6 +243,7 @@ class VerificationRequiredBottomSheet extends StatelessWidget {
               email: email,
               productName: productName,
               initialCountDown: state.countDown,
+              buttonLabel: buttonLabel,
             ),
           ),
         ),

@@ -178,6 +178,12 @@ import '../common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import '../core/data/datasources/remote/superapp_profile_remote_datasource.dart';
 import '../core/data/repositories/superapp_profile_repository_impl.dart';
 
+import '../features/superapp/features/home/bloc/balance_summary_bloc.dart';
+import '../core/domain/usecases/get_balance_summary_use_case.dart';
+import '../core/domain/repositories/balance_summary_repository.dart';
+import '../core/data/repositories/balance_summary_repository_impl.dart';
+import '../core/data/datasources/remote/balance_summary_remote_datasource.dart';
+
 final locator = GetIt.instance;
 
 Future<void> initDependencies() async {
@@ -216,6 +222,9 @@ Future<void> initDependencies() async {
         getNotifCountUseCase: locator(),
         getTalentRecommendationUseCase: locator(),
       ));
+
+  locator.registerFactory(
+      () => BalanceSummaryBloc(getBalanceSummaryUseCase: locator()));
 
   locator.registerFactory(() => HistoryPageBloc(
         getTransactionHistoryUseCase: locator(),
@@ -394,7 +403,12 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => CreateQrcodeUseCase(locator()));
   locator.registerLazySingleton(() => CheckQrcodeUseCase(locator()));
 
+  locator.registerLazySingleton(() => GetBalanceSummaryUseCase(locator()));
+
   // inject repository
+  locator.registerLazySingleton<BalanceSummaryRepository>(
+      () => BalanceSummaryRepositoryImpl(remoteDataSource: locator()));
+
   locator.registerLazySingleton<AuthRepository>(() =>
       AuthRepositoryImpl(remoteDataSource: locator(), sharedPref: locator()));
   locator.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(
@@ -453,6 +467,10 @@ Future<void> initDependencies() async {
           ));
 
   // inject datasource
+  locator.registerLazySingleton<BalanceSummaryRemoteDataSource>(() =>
+      BalanceSummaryRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
       AuthRemoteDataSourceImpl(client: locator(), responseParser: locator()));
   locator.registerLazySingleton<ProfileRemoteDataSource>(() =>

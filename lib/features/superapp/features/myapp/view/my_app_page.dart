@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/DI/injection.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/widgets/custom_toast.dart';
+import 'package:komtim_partner/core/domain/entities/partner_product_model.dart';
+import 'package:komtim_partner/features/superapp/features/authentication/widgets/verification_required_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../bloc/aplikasiku_bloc.dart';
@@ -270,10 +273,25 @@ class _MyAppPageState extends State<MyAppPage> {
                                         if (item.active &&
                                             !item.verified &&
                                             !item.learnMore) {
-                                          _aplikasikuBloc.add(
-                                              ResendVerificationAplikasiEvent(
-                                                  item.key));
-                                        } else if (!item.active && item.deepLink.isNotEmpty) {
+                                          final email = context
+                                                  .read<SuperappProfileBloc>()
+                                                  .state
+                                                  .displayProfile
+                                                  ?.email ??
+                                              '';
+                                          VerificationRequiredBottomSheet.show(
+                                              context: context,
+                                              email: email,
+                                              partnerProducts: [
+                                                PartnerProductModel(
+                                                  id: 1, // Optional, can be any non-null for selection
+                                                  productName: item.key,
+                                                  isVerified: item.verified,
+                                                  urlLogo: item.logoUrl,
+                                                )
+                                              ]);
+                                        } else if (!item.active &&
+                                            item.deepLink.isNotEmpty) {
                                           _launchUrl(item.deepLink);
                                         }
                                       },

@@ -12,6 +12,8 @@ import 'package:komtim_partner/common/global/design_system/components/ds_menu_it
 import 'package:komtim_partner/common/global/design_system/components/ds_transaction_tile.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
+import 'package:komtim_partner/core/domain/entities/partner_product_model.dart';
+import 'package:komtim_partner/features/superapp/features/home/bloc/balance_summary_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/ds_home_header.dart';
 import 'package:komtim_partner/features/superapp/features/notification/view/notification_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/bloc/check_bill_bloc.dart';
@@ -20,6 +22,7 @@ import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_invo
 import 'package:komtim_partner/features/superapp/features/topup/view/barcode_qris_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/web_view_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
+import 'package:komtim_partner/features/superapp/features/authentication/widgets/verification_required_bottom_sheet.dart';
 import 'package:lottie/lottie.dart';
 
 class HomePageSuperapp extends StatefulWidget {
@@ -33,6 +36,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
   final PageController _pageController = PageController();
   int _currentSwipePage = 0;
   Route? _loadingRoute;
+  bool _hasShownVerificationBottomSheet = false;
 
   void _showLoading(BuildContext context) {
     if (_loadingRoute != null) return;
@@ -245,8 +249,11 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
       ),
     ];
 
-    return BlocProvider(
-      create: (context) => locator<CheckBillBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => locator<CheckBillBloc>()),
+        BlocProvider(create: (context) => locator<BalanceSummaryBloc>()),
+      ],
       child: BlocListener<CheckBillBloc, CheckBillState>(
         listener: (context, state) {
           if (state is CheckBillLoading) {
@@ -388,32 +395,127 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
             return Scaffold(
               backgroundColor: AppColors.alwaysWhite,
               body: SafeArea(
-                child: SingleChildScrollView(
-                  child: Column(
+                child: RefreshIndicator(
+                  color: AppColors.primaryBase,
+                  onRefresh: () async {
+                    // Refresh profile
+                    context.read<SuperappProfileBloc>().add(
+                          const FetchSuperappProfileEvent(),
+                        );
+                    // Refresh balance jika komship & verified
+                    final profile = context
+                        .read<SuperappProfileBloc>()
+                        .state
+                        .displayProfile;
+                    final isKomship = profile?.isKomship == 1 &&
+                        (profile?.productMailVerifications.any((e) =>
+                                e.productName?.toLowerCase() == 'komship' &&
+                                e.isVerified == true) ??
+                            false);
+                    if (isKomship && profile?.id != null) {
+                      context.read<BalanceSummaryBloc>().add(
+                            FetchBalanceSummaryEvent(profile!.id.toString()),
+                          );
+                    }
+                    // Tunggu minimal 500ms agar indicator tidak langsung hilang
+                    await Future.delayed(const Duration(milliseconds: 500));
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
                     children: [
                       // Header — nama & foto dari profile cache (muncul instan)
-                      BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                      BlocConsumer<SuperappProfileBloc, SuperappProfileState>(
+                        listener: (context, profileState) {
+                          final profile = profileState.displayProfile;
+
+                          // Tampilkan BottomSheet Verifikasi Email
+                          if (!_hasShownVerificationBottomSheet && profile != null) {
+                            final rawUnverified = profile.productMailVerifications
+                                .where((e) => e.isVerified == false)
+                                .toList();
+                            final unverifiedProducts = List.generate(
+                              rawUnverified.length,
+                              (i) => PartnerProductModel(
+                                id: i + 1, // id unik agar Radio groupValue bekerja
+                                productName: rawUnverified[i].productName,
+                                isVerified: rawUnverified[i].isVerified,
+                              ),
+                            );
+                            
+                            if (unverifiedProducts.isNotEmpty) {
+                              _hasShownVerificationBottomSheet = true;
+                              Future.microtask(() {
+                                VerificationRequiredBottomSheet.show(
+                                  context: context,
+                                  email: profile.email ?? '',
+                                  partnerProducts: unverifiedProducts,
+                                  buttonLabel: 'Kembali',
+                                );
+                              });
+                            }
+                          }
+
+                          // Fetch balance summary jika komship true & terverifikasi
+                          final isKomship = profile?.isKomship == 1 &&
+                              (profile?.productMailVerifications.any((e) =>
+                                      e.productName?.toLowerCase() == 'komship' &&
+                                      e.isVerified == true) ??
+                                  false);
+                                  
+                          if (isKomship && profile?.id != null) {
+                            context.read<BalanceSummaryBloc>().add(
+                                FetchBalanceSummaryEvent(profile!.id.toString()));
+                          }
+                        },
                         buildWhen: (prev, curr) =>
                             prev.displayProfile?.photoProfileUrl !=
                                 curr.displayProfile?.photoProfileUrl ||
                             prev.displayProfile?.fullName !=
-                                curr.displayProfile?.fullName,
+                                curr.displayProfile?.fullName ||
+                            prev.displayProfile?.isKomship !=
+                                curr.displayProfile?.isKomship,
                         builder: (context, profileState) {
-                          return DsHomeHeader(
-                            profileUrl: profileState.displayProfile
-                                    ?.photoProfileUrl ??
-                                '',
-                            notificationCount: 10,
-                            type: PartnerType.komship,
-                            savingsAmount:
-                                profileState.displayProfile?.fullName ?? '',
-                            onNotificationPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const NotificationPage(),
-                                ),
+                          final profile = profileState.displayProfile;
+                          final isKomship = profile?.isKomship == 1 &&
+                              (profile?.productMailVerifications.any((e) =>
+                                      e.productName?.toLowerCase() == 'komship' &&
+                                      e.isVerified == true) ??
+                                  false);
+
+                          return BlocBuilder<BalanceSummaryBloc, BalanceSummaryState>(
+                            builder: (context, balanceState) {
+                              String formatNominal(num value) {
+                                if (value == 0) return 'Rp 0';
+                                if (value % 1 == 0) return CurrencyFormat.convertToIdrNum(value, 0);
+                                return CurrencyFormat.convertToIdrNum(value, 2);
+                              }
+
+                              String savings = 'Rp 0';
+                              if (balanceState is BalanceSummaryLoaded) {
+                                savings = formatNominal(balanceState.data.totalEarnCashback ?? 0);
+                              }
+
+                              return DsHomeHeader(
+                                profileUrl: profileState.displayProfile
+                                        ?.photoProfileUrl ??
+                                    '',
+                                partnerName:
+                                    profileState.displayProfile?.fullName ?? '',
+                                notificationCount: 10,
+                                type: isKomship
+                                    ? PartnerType.komship
+                                    : PartnerType.regular,
+                                savingsAmount: savings,
+                                onNotificationPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const NotificationPage(),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           );
@@ -597,35 +699,67 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: AppSpacing.lg),
-                            AppInfoCard(
-                              backgroundColor: AppColors.bgLight,
-                              children: [
-                                HighlightText(
-                                  prefix: "Saldo Pending : ",
-                                  highlight: "Rp 20.500.124",
-                                  style: AppTypography.bodyMdRegular.copyWith(
-                                    color: AppColors.textDark,
-                                  ),
-                                  highlightStyle:
-                                      AppTypography.bodyMdBold.copyWith(
-                                    color: AppColors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.xs),
-                                HighlightText(
-                                  prefix: "Dari nilai tersebut, ",
-                                  highlight: "Rp 12.800.999",
-                                  suffix: ",- nya perlu dimonitor",
-                                  style: AppTypography.bodyMdRegular.copyWith(
-                                    color: AppColors.textDark,
-                                  ),
-                                  highlightStyle:
-                                      AppTypography.bodyMdSemiBold.copyWith(
-                                    color: AppColors.primaryBase,
-                                  ),
-                                ),
-                              ],
+                            BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                              builder: (context, profileState) {
+                                final profile = profileState.displayProfile;
+                                final isKomship = profile?.isKomship == 1 &&
+                                    (profile?.productMailVerifications.any((e) =>
+                                            e.productName?.toLowerCase() == 'komship' &&
+                                            e.isVerified == true) ??
+                                        false);
+
+                                if (!isKomship) return const SizedBox.shrink();
+
+                                return BlocBuilder<BalanceSummaryBloc, BalanceSummaryState>(
+                                  builder: (context, balanceState) {
+                                    String formatNominal(num value) {
+                                      if (value == 0) return 'Rp 0';
+                                      if (value % 1 == 0) return CurrencyFormat.convertToIdrNum(value, 0);
+                                      return CurrencyFormat.convertToIdrNum(value, 2);
+                                    }
+
+                                    String pendingBalance = "Rp 0";
+                                    String pendingProblem = "Rp 0";
+                                    if (balanceState is BalanceSummaryLoaded) {
+                                      pendingBalance = formatNominal(balanceState.data.pendingBalance ?? 0);
+                                      pendingProblem = formatNominal(balanceState.data.pendingBalanceOnProblem ?? 0);
+                                    }
+
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: AppSpacing.lg),
+                                        AppInfoCard(
+                                          backgroundColor: AppColors.bgLight,
+                                          children: [
+                                            HighlightText(
+                                              prefix: "Saldo Pending : ",
+                                              highlight: pendingBalance,
+                                              style: AppTypography.bodyMdRegular.copyWith(
+                                                color: AppColors.textDark,
+                                              ),
+                                              highlightStyle: AppTypography.bodyMdBold.copyWith(
+                                                color: AppColors.black,
+                                              ),
+                                            ),
+                                            const SizedBox(height: AppSpacing.xs),
+                                            HighlightText(
+                                              prefix: "Dari nilai tersebut, ",
+                                              highlight: pendingProblem,
+                                              suffix: ",- nya perlu dimonitor",
+                                              style: AppTypography.bodyMdRegular.copyWith(
+                                                color: AppColors.textDark,
+                                              ),
+                                              highlightStyle: AppTypography.bodyMdSemiBold.copyWith(
+                                                color: AppColors.primaryBase,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -633,39 +767,61 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                       const SizedBox(height: AppSpacing.md),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                          childAspectRatio: 0.85,
-                          children: [
-                            DsMenuIcon(
-                              icon: Image.asset(
-                                  'assets/images/superapp/home/ic_team.png'),
-                              title: "Team",
-                              onTap: () {},
-                            ),
-                            DsMenuIcon(
-                              icon: Image.asset(
-                                  'assets/images/superapp/home/ic_order.png'),
-                              title: "Order",
-                              onTap: () {},
-                            ),
-                            DsMenuIcon(
-                              icon: Image.asset(
-                                  'assets/images/superapp/home/ic_problem.png'),
-                              title: "Kendala",
-                              onTap: () {},
-                            ),
-                            DsMenuIcon(
-                              icon: Image.asset(
-                                  'assets/images/superapp/home/ic_card.png'),
-                              title: "Kartu",
-                              onTap: () {},
-                            ),
-                          ],
+                        child: BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                          buildWhen: (prev, curr) =>
+                              prev.displayProfile?.isKomship !=
+                                  curr.displayProfile?.isKomship ||
+                              prev.displayProfile?.productMailVerifications !=
+                                  curr.displayProfile?.productMailVerifications,
+                          builder: (context, profileState) {
+                            final profile = profileState.displayProfile;
+
+                            // Cek apakah punya Komship dan terverifikasi
+                            final hasKomship = profile?.isKomship == 1 &&
+                                (profile?.productMailVerifications.any((e) =>
+                                        e.productName?.toLowerCase() == 'komship' &&
+                                        e.isVerified == true) ??
+                                    false);
+
+                            List<Widget> menuItems = [
+                              // Menu Team selalu tersedia
+                              DsMenuIcon(
+                                icon: Image.asset(
+                                    'assets/images/superapp/home/ic_team.png'),
+                                title: "Team",
+                                onTap: () {},
+                              ),
+                            ];
+
+                            if (hasKomship) {
+                              menuItems.addAll([
+                                DsMenuIcon(
+                                  icon: Image.asset(
+                                      'assets/images/superapp/home/ic_order.png'),
+                                  title: "Order",
+                                  onTap: () {},
+                                ),
+                                DsMenuIcon(
+                                  icon: Image.asset(
+                                      'assets/images/superapp/home/ic_problem.png'),
+                                  title: "Kendala",
+                                  onTap: () {},
+                                ),
+                              ]);
+                            }
+
+                            // Menu Kartu (Komcard) tidak ditampilkan untuk v1
+
+                            return GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                              childAspectRatio: 0.85,
+                              children: menuItems,
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
@@ -758,6 +914,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                       const SizedBox(height: 120),
                     ],
                   ),
+                ),
                 ),
               ),
             );

@@ -60,12 +60,16 @@ class AplikasikuBloc extends Bloc<AplikasikuEvent, AplikasikuState> {
           isResending: false,
           resendMessage: failure.message,
           resendCountDown: countDown > 0 ? countDown : null,
+          resendEmail: email,
+          resendProductName: event.productName,
         ));
       },
       (_) => emit(currentState.copyWith(
         isResending: false,
         resendMessage: 'Email verifikasi berhasil dikirim',
         resendCountDown: null,
+        resendEmail: email,
+        resendProductName: event.productName,
       )),
     );
   }

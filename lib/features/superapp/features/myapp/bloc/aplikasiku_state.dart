@@ -16,12 +16,16 @@ class AplikasikuLoaded extends AplikasikuState {
   final bool isResending;
   final String? resendMessage;
   final int? resendCountDown;
+  final String? resendEmail;
+  final String? resendProductName;
 
   const AplikasikuLoaded(
     this.data, {
     this.isResending = false,
     this.resendMessage,
     this.resendCountDown,
+    this.resendEmail,
+    this.resendProductName,
   });
 
   AplikasikuLoaded copyWith({
@@ -29,17 +33,21 @@ class AplikasikuLoaded extends AplikasikuState {
     bool? isResending,
     String? resendMessage,
     int? resendCountDown,
+    String? resendEmail,
+    String? resendProductName,
   }) {
     return AplikasikuLoaded(
       data ?? this.data,
       isResending: isResending ?? this.isResending,
       resendMessage: resendMessage,
       resendCountDown: resendCountDown,
+      resendEmail: resendEmail,
+      resendProductName: resendProductName,
     );
   }
 
   @override
-  List<Object?> get props => [data, isResending, resendMessage, resendCountDown];
+  List<Object?> get props => [data, isResending, resendMessage, resendCountDown, resendEmail, resendProductName];
 }
 
 class AplikasikuError extends AplikasikuState {

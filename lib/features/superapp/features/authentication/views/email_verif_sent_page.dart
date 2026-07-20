@@ -19,12 +19,14 @@ class EmailVerifSentPage extends StatefulWidget {
   final String email;
   final String productName;
   final int initialCountDown;
+  final String buttonLabel;
 
   const EmailVerifSentPage({
     super.key,
     required this.email,
     this.productName = '',
     this.initialCountDown = 0,
+    this.buttonLabel = 'Masuk',
   });
 
   @override
@@ -196,7 +198,7 @@ class _EmailVerifSentPageState extends State<EmailVerifSentPage> {
                     ),
                   const SizedBox(height: 24),
                   DsButton(
-                    text: 'Masuk',
+                    text: widget.buttonLabel,
                     onPressed: () {
                       Navigator.pop(context);
                     },

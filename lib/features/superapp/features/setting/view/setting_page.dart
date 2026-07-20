@@ -1,8 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/widgets/custom_toast.dart';
 import 'package:komtim_partner/features/update/widget/update_complete.dart';
@@ -36,51 +40,85 @@ class SettingPage extends StatelessWidget {
               const SizedBox(height: 28),
 
               // Centered Profile Section
-              Center(
-                child: Column(
-                  children: [
-                    // Profile Photo Container
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFFFF0E6),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(45),
-                        child: Image.network(
-                          "https://img.magnific.com/vektor-gratis/ilustrasi-ikon-vektor-kartun-anak-laki-laki-keren-lucu-berpose-dabbing-konsep-ikon-mode-orang-terpencil_138676-5680.jpg?semt=ais_hybrid&w=740&q=80",
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.person_rounded,
-                              size: 48,
-                              color: AppColors.primaryBase,
-                            );
-                          },
+              BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                buildWhen: (prev, curr) =>
+                    prev.displayProfile?.photoProfileUrl !=
+                        curr.displayProfile?.photoProfileUrl ||
+                    prev.displayProfile?.fullName !=
+                        curr.displayProfile?.fullName ||
+                    prev.displayProfile?.email != curr.displayProfile?.email,
+                builder: (context, profileState) {
+                  final profile = profileState.displayProfile;
+                  return Center(
+                    child: Column(
+                      children: [
+                        // Profile Photo Container
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFFFFF0E6),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(45),
+                            child: (profile?.photoProfileUrl != null &&
+                                    profile!.photoProfileUrl!.isNotEmpty)
+                                ? Image.network(
+                                    profile.photoProfileUrl!,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return const Center(
+                                        child: SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    AppColors.primaryBase),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.person_rounded,
+                                        size: 48,
+                                        color: AppColors.primaryBase,
+                                      );
+                                    },
+                                  )
+                                : const Icon(
+                                    Icons.person_rounded,
+                                    size: 48,
+                                    color: AppColors.primaryBase,
+                                  ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 14),
+                        // Profile Name
+                        Text(
+                          profile?.fullName ?? '-',
+                          style: AppTypography.headingXs.copyWith(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // Profile Email
+                        Text(
+                          profile?.email ?? '-',
+                          style: AppTypography.bodyMdRegular.copyWith(
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 14),
-                    // Profile Name
-                    Text(
-                      'John Doe Assegaf',
-                      style: AppTypography.headingXs.copyWith(
-                        color: AppColors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Profile Email
-                    Text(
-                      'johndoe@gmail.com',
-                      style: AppTypography.bodyMdRegular.copyWith(
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 28),
 
@@ -242,10 +280,14 @@ class SettingPage extends StatelessWidget {
                         ),
                         primaryButtonText: 'Keluar',
                         onPrimaryPressed: () {
-                          // Dummy logout endpoint action
+                          // Clear profile cache
+                          context
+                              .read<SuperappProfileBloc>()
+                              .add(const ClearSuperappProfileEvent());
+                          // Trigger logout to AuthBloc (clears session & redirects)
+                          context.read<AuthBloc>().add(AuthLogoutRequested());
+
                           Navigator.of(context).pop();
-                          showToast(context,
-                              "Proses logout sedang dalam pengembangan.");
                         },
                         secondaryButtonText: 'Kembali',
                         onSecondaryPressed: () {
