@@ -135,8 +135,8 @@ class SettingPage extends StatelessWidget {
                     children: [
                       SettingMenuItem(
                         leadingBackgroundColor: AppColors.bgLight,
-                        leadingIcon: Image.asset(
-                          'assets/images/superapp/home/navbar/ic_setting_inactive.png',
+                        leadingIcon: SvgPicture.asset(
+                          'assets/images/superapp/setting/ic_account_setting.svg',
                         ),
                         title: 'Informasi Akun',
                         titleColor: AppColors.alwaysBlack,
@@ -152,8 +152,8 @@ class SettingPage extends StatelessWidget {
                       ),
                       SettingMenuItem(
                         leadingBackgroundColor: AppColors.bgLight,
-                        leadingIcon: Image.asset(
-                          'assets/images/superapp/ic_application.png',
+                        leadingIcon: SvgPicture.asset(
+                          'assets/images/superapp/setting/ic_app_setting.svg',
                         ),
                         title: 'Aplikasiku',
                         titleColor: AppColors.alwaysBlack,
@@ -172,8 +172,8 @@ class SettingPage extends StatelessWidget {
                       ),
                       SettingMenuItem(
                         leadingBackgroundColor: AppColors.bgLight,
-                        leadingIcon: Image.asset(
-                          'assets/images/superapp/ic_faq.png',
+                        leadingIcon: SvgPicture.asset(
+                          'assets/images/superapp/setting/ic_tutorial_faq.svg',
                         ),
                         title: 'Tutorial & FAQ',
                         titleColor: AppColors.alwaysBlack,
@@ -207,8 +207,8 @@ class SettingPage extends StatelessWidget {
                   ),
                   child: SettingMenuItem(
                     leadingBackgroundColor: AppColors.bgLight,
-                    leadingIcon: Image.asset(
-                      'assets/images/superapp/ic_check_update.png',
+                    leadingIcon: SvgPicture.asset(
+                      'assets/images/superapp/setting/ic_logo_check_update.svg',
                     ),
                     title: 'Check for Update',
                     titleColor: AppColors.alwaysBlack,
@@ -260,8 +260,8 @@ class SettingPage extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFE5E5E5)),
                   ),
                   child: SettingMenuItem(
-                    leadingIcon: Image.asset(
-                      'assets/images/superapp/ic_logout.png',
+                     leadingIcon: SvgPicture.asset(
+                      'assets/images/superapp/setting/ic_logout.svg',
                     ),
                     leadingBackgroundColor: const Color(0xFFFEEBEC),
                     title: 'Keluar',

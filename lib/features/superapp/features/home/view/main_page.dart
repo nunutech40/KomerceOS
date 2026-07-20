@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
 import 'package:komtim_partner/features/superapp/features/setting/view/setting_page.dart';
 import 'package:provider/provider.dart';
 
@@ -18,20 +20,20 @@ class NavigationData extends ChangeNotifier {
   int _currentIndex = 0;
   final List<NavItem> _items = [
     NavItem(
-      Image.asset('assets/images/superapp/home/navbar/ic_home_active.png'),
-      Image.asset('assets/images/superapp/home/navbar/ic_home_inactive.png'),
+      SvgPicture.asset('assets/images/superapp/home/navbar/ic_home_active.svg'),
+      SvgPicture.asset('assets/images/superapp/home/navbar/ic_home_inactive.svg'),
       "Home",
       const HomePageSuperapp(),
     ),
     NavItem(
-      Image.asset('assets/images/superapp/home/navbar/ic_finance_inactive.png'),
-      Image.asset('assets/images/superapp/home/navbar/ic_finance_inactive.png'),
+      SvgPicture.asset('assets/images/superapp/home/navbar/ic_finance_active.svg'),
+      SvgPicture.asset('assets/images/superapp/home/navbar/ic_finance_inactive.svg'),
       "Mutasi",
       const MutasiPage(),
     ),
     NavItem(
-      Image.asset('assets/images/superapp/home/navbar/ic_setting_active.png'),
-      Image.asset('assets/images/superapp/home/navbar/ic_setting_inactive.png'),
+      SvgPicture.asset('assets/images/superapp/home/navbar/ic_setting_active.svg'),
+      SvgPicture.asset('assets/images/superapp/setting/ic_account_setting.svg'),
       "Pengaturan",
       const SettingPage(),
     ),
@@ -155,8 +157,12 @@ class _MainPageStateSuperApp extends State<MainPageSuperApp> {
                                 elevation: 0,
                                 onPressed: () {},
                                 shape: const CircleBorder(),
-                                child: Image.asset(
-                                    'assets/images/superapp/home/ic_live_chat.png'),
+                                child: const DsAppImage(
+                                  source:
+                                      'assets/images/superapp/home/ic_livechat.svg',
+                                  width: 56,
+                                  height: 56,
+                                ),
                               ),
                             ),
                           ],
