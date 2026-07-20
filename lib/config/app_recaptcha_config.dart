@@ -8,7 +8,7 @@ class AppRecaptchaConfig {
 
     if (flavor == 'production') {
       return AppRecaptchaConfig(
-        "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx", // TODO: Ganti dengan key asli production
+        "J0wtAAAAAKb1A7msYBRbJICXYQ1qkBTWpjdT", // TODO: Ganti dengan key asli production
         "YOUR_IOS_SITE_KEY", // TODO: Ganti dengan key asli production
       );
     } else if (flavor == 'staging') {
@@ -20,7 +20,7 @@ class AppRecaptchaConfig {
 
     // Default / dev
     return AppRecaptchaConfig(
-      "J0wtAAAAAKb1A7msYBRbJICXYQ1qkBTWpjdT",
+      "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx",
       "YOUR_IOS_SITE_KEY",
     );
   }
