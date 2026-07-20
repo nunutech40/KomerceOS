@@ -60,23 +60,13 @@ class _MyAppPageState extends State<MyAppPage> {
 
   Widget _buildLeading(AplikasiItemEntity item) {
     if (item.logoUrl.isNotEmpty) {
-      if (item.logoUrl.toLowerCase().endsWith('.svg')) {
-        return SvgPicture.network(
-          item.logoUrl,
-          width: 32,
-          height: 32,
-          placeholderBuilder: (context) => const Icon(Icons.image, size: 28),
-        );
-      } else {
-        return CachedNetworkImage(
-          imageUrl: item.logoUrl,
-          width: 32,
-          height: 32,
-          placeholder: (context, url) => const Icon(Icons.image, size: 28),
-          errorWidget: (context, url, error) =>
-              const Icon(Icons.broken_image, size: 28),
-        );
-      }
+      return DsAppImage(
+        source: item.logoUrl,
+        width: 200,
+        height: 100,
+        placeholder: const Icon(Icons.image, size: 28),
+        errorWidget: const Icon(Icons.broken_image, size: 28),
+      );
     }
     return const Icon(
       Icons.apps,
@@ -261,8 +251,6 @@ class _MyAppPageState extends State<MyAppPage> {
                                     final item = state.data[index];
                                     return AppServiceCard(
                                       leading: _buildLeading(item),
-                                      title:
-                                          item.key, // UI uses the key for title
                                       description: _descriptions[item.key] ??
                                           'Layanan dari Komerce.id',
                                       trailing: _buildTrailing(

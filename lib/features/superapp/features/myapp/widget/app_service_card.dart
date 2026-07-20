@@ -4,7 +4,6 @@ import 'package:komtim_partner/common/global/design_system/app_typography.dart';
 
 class AppServiceCard extends StatelessWidget {
   final Widget leading;
-  final String title;
   final String description;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -12,7 +11,6 @@ class AppServiceCard extends StatelessWidget {
   const AppServiceCard({
     super.key,
     required this.leading,
-    required this.title,
     required this.description,
     this.trailing,
     this.onTap,
@@ -40,17 +38,9 @@ class AppServiceCard extends StatelessWidget {
               ],
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(width: 32, height: 32, child: leading),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: AppTypography.labelMdSemiBold.copyWith(
-                      color: AppColors.alwaysBlack,
-                    ),
-                  ),
-                ),
+                SizedBox(width: 120, height: 20, child: leading),
                 if (trailing != null) trailing!,
               ],
             ),

@@ -128,10 +128,10 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset(
-                    'assets/images/superapp/home/ic_logo_komship.png',
-                    height: 28,
-                    fit: BoxFit.contain,
+                  const DsAppImage(
+                    source: 'assets/images/superapp/home/ic_logo_komship.svg',
+                    height: 24,
+                    width: 112,
                   ),
                   GestureDetector(
                     onTap: () {},
