@@ -75,7 +75,7 @@ android {
             }
             production {
                 dimension "version"
-                applicationId "id.android.kmpartner.production"
+                applicationId "id.android.kmpartner"
                 versionName "1.3.20"
                 versionCode 44
 

@@ -20,7 +20,7 @@ class AppRecaptchaConfig {
 
     // Default / dev
     return AppRecaptchaConfig(
-      "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx",
+      "J0wtAAAAAKb1A7msYBRbJICXYQ1qkBTWpjdT",
       "YOUR_IOS_SITE_KEY",
     );
   }
