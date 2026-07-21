@@ -23,6 +23,7 @@ import 'package:komtim_partner/features/superapp/features/topup/view/barcode_qri
 import 'package:komtim_partner/features/superapp/features/topup/view/web_view_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/widgets/verification_required_bottom_sheet.dart';
+import 'package:komtim_partner/features/superapp/features/notification/bloc/notification_info_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class HomePageSuperapp extends StatefulWidget {
@@ -267,6 +268,10 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
             return bloc;
           },
         ),
+        BlocProvider(
+          create: (context) => locator<NotificationInfoBloc>()
+            ..add(const FetchNotificationInfoEvent()),
+        ),
       ],
       child: BlocListener<CheckBillBloc, CheckBillState>(
         listener: (context, state) {
@@ -431,6 +436,10 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                             FetchBalanceSummaryEvent(profile!.id.toString()),
                           );
                     }
+                    // Refresh notification count
+                    context.read<NotificationInfoBloc>().add(
+                          const FetchNotificationInfoEvent(),
+                        );
                     // Tunggu minimal 500ms agar indicator tidak langsung hilang
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
@@ -510,24 +519,39 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                 savings = formatNominal(balanceState.data.totalEarnCashback ?? 0);
                               }
 
-                              return DsHomeHeader(
-                                profileUrl: profileState.displayProfile
-                                        ?.photoProfileUrl ??
-                                    '',
-                                partnerName:
-                                    profileState.displayProfile?.fullName ?? '',
-                                notificationCount: 10,
-                                type: isKomship
-                                    ? PartnerType.komship
-                                    : PartnerType.regular,
-                                savingsAmount: savings,
-                                onNotificationPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const NotificationPage(),
-                                    ),
+                              return BlocBuilder<NotificationInfoBloc, NotificationInfoState>(
+                                builder: (context, notifState) {
+                                  int notifCount = 0;
+                                  if (notifState is NotificationInfoLoaded) {
+                                    notifCount = notifState.data.unreadCount;
+                                  }
+
+                                  return DsHomeHeader(
+                                    profileUrl: profileState.displayProfile
+                                            ?.photoProfileUrl ??
+                                        '',
+                                    partnerName:
+                                        profileState.displayProfile?.fullName ?? '',
+                                    notificationCount: notifCount,
+                                    type: isKomship
+                                        ? PartnerType.komship
+                                        : PartnerType.regular,
+                                    savingsAmount: savings,
+                                    onNotificationPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const NotificationPage(),
+                                        ),
+                                      ).then((_) {
+                                        if (context.mounted) {
+                                          context.read<NotificationInfoBloc>().add(
+                                                const FetchNotificationInfoEvent(),
+                                              );
+                                        }
+                                      });
+                                    },
                                   );
                                 },
                               );

@@ -184,6 +184,14 @@ import '../core/domain/repositories/balance_summary_repository.dart';
 import '../core/data/repositories/balance_summary_repository_impl.dart';
 import '../core/data/datasources/remote/balance_summary_remote_datasource.dart';
 
+import '../features/superapp/features/notification/bloc/notification_v2_bloc.dart';
+import '../core/domain/usecases/get_notification_v2_list_use_case.dart';
+import '../core/domain/usecases/get_notification_info_use_case.dart';
+import '../core/domain/repositories/notification_v2_repository.dart';
+import '../core/data/repositories/notification_v2_repository_impl.dart';
+import '../core/data/datasources/remote/notification_v2_remote_datasource.dart';
+import '../features/superapp/features/notification/bloc/notification_info_bloc.dart';
+
 final locator = GetIt.instance;
 
 Future<void> initDependencies() async {
@@ -322,6 +330,8 @@ Future<void> initDependencies() async {
   locator.registerFactory(() => CreateInvoiceBloc(createInvoiceUseCase: locator()));
   locator.registerFactory(() => CreateQrcodeBloc(useCase: locator()));
   locator.registerFactory(() => CheckQrcodeBloc(useCase: locator()));
+  locator.registerFactory(() => NotificationV2Bloc(getNotificationV2ListUseCase: locator()));
+  locator.registerFactory(() => NotificationInfoBloc(getNotificationInfoUseCase: locator()));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -404,6 +414,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => CheckQrcodeUseCase(locator()));
 
   locator.registerLazySingleton(() => GetBalanceSummaryUseCase(locator()));
+  locator.registerLazySingleton(() => GetNotificationV2ListUseCase(locator()));
+  locator.registerLazySingleton(() => GetNotificationInfoUseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<BalanceSummaryRepository>(
@@ -465,6 +477,9 @@ Future<void> initDependencies() async {
             remoteDataSource: locator(),
             sharedPreferences: locator.getAsync<SharedPreferences>(),
           ));
+          
+  locator.registerLazySingleton<NotificationV2Repository>(
+      () => NotificationV2RepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
   locator.registerLazySingleton<BalanceSummaryRemoteDataSource>(() =>
@@ -530,6 +545,10 @@ Future<void> initDependencies() async {
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<SuperappProfileRemoteDataSource>(() =>
       SuperappProfileRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+
+  locator.registerLazySingleton<NotificationV2RemoteDataSource>(() =>
+      NotificationV2RemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
 
   // Register SharedPreferences
