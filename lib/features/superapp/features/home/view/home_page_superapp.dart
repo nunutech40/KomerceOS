@@ -22,7 +22,7 @@ import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_invo
 import 'package:komtim_partner/features/superapp/features/topup/view/barcode_qris_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/web_view_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
-import 'package:komtim_partner/features/superapp/features/authentication/widgets/verification_required_bottom_sheet.dart';
+import 'package:komtim_partner/features/superapp/features/home/widgets/home_verification_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/notification/bloc/notification_info_bloc.dart';
 import 'package:lottie/lottie.dart';
 
@@ -469,12 +469,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                             if (unverifiedProducts.isNotEmpty) {
                               _hasShownVerificationBottomSheet = true;
                               Future.microtask(() {
-                                VerificationRequiredBottomSheet.show(
-                                  context: context,
-                                  email: profile.email ?? '',
-                                  partnerProducts: unverifiedProducts,
-                                  buttonLabel: 'Kembali',
-                                );
+                                HomeVerificationBottomSheet.show(context: context);
                               });
                             }
                           }
