@@ -116,7 +116,7 @@ class Endpoints {
   static String get notificationsCount =>
       '$_BaseURL/api/v1/mobile/notifications/count';
   static String get superappNotificationsList =>
-      '$_BaseURL/api/v1/notifications/v2/list';
+      '$_BaseURLSuperApp/komship/api/v1/notifications/v2/list';
   static String get superappNotificationInfo =>
       '$_BaseURLSuperApp/komship/api/v1/notifications/info';
 

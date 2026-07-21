@@ -33,9 +33,7 @@ class NotificationV2Bloc extends Bloc<NotificationV2Event, NotificationV2State> 
         hasReachedMax: false,
       ));
     } else {
-      if (state.offset == 0) {
-        emit(state.copyWith(status: RequestStatus.loading));
-      }
+      emit(state.copyWith(status: RequestStatus.loading));
     }
 
     // Determine actual status query. API expects "read" or "unread", empty for all
