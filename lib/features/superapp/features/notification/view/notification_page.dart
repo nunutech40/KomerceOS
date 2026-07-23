@@ -5,6 +5,7 @@ import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/time_convert.dart';
+
 import '../bloc/notification_v2_bloc.dart';
 import '../widget/app_notification_card.dart';
 import '../widget/notification_icon.dart';
@@ -56,7 +57,9 @@ class _NotificationPageViewState extends State<NotificationPageView>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         final status = _tabController.index == 0 ? '' : 'unread';
-        context.read<NotificationV2Bloc>().add(FilterStatusChangedEvent(status));
+        context
+            .read<NotificationV2Bloc>()
+            .add(FilterStatusChangedEvent(status));
       }
     });
 
@@ -150,9 +153,11 @@ class _NotificationPageViewState extends State<NotificationPageView>
           Expanded(
             child: BlocBuilder<NotificationV2Bloc, NotificationV2State>(
               builder: (context, state) {
-                if (state.status == RequestStatus.loading && state.offset == 0) {
+                if (state.status == RequestStatus.loading &&
+                    state.offset == 0) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (state.status == RequestStatus.failure && state.data.isEmpty) {
+                } else if (state.status == RequestStatus.failure &&
+                    state.data.isEmpty) {
                   return Center(child: Text(state.message));
                 } else if (state.data.isEmpty) {
                   return _buildEmptyState();
@@ -160,7 +165,8 @@ class _NotificationPageViewState extends State<NotificationPageView>
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   itemCount: state.data.length + (state.hasReachedMax ? 0 : 1),
                   itemBuilder: (context, gIdx) {
                     if (gIdx >= state.data.length) {
@@ -191,6 +197,21 @@ class _NotificationPageViewState extends State<NotificationPageView>
                           itemCount: items.length,
                           itemBuilder: (context, itemIdx) {
                             final item = items[itemIdx];
+                            
+                            String displayTitle = item.title ?? '';
+                            String? displayStatus;
+                            Color? displayStatusColor;
+                            
+                            if (displayTitle.toLowerCase().contains('- ditolak')) {
+                              displayStatus = 'Ditolak';
+                              displayStatusColor = const Color(0xFFE53935);
+                              displayTitle = displayTitle.replaceAll(RegExp(r'\s*-\s*ditolak', caseSensitive: false), '');
+                            } else if (displayTitle.toLowerCase().contains('- disetujui')) {
+                              displayStatus = 'Disetujui';
+                              displayStatusColor = const Color(0xFF34A853);
+                              displayTitle = displayTitle.replaceAll(RegExp(r'\s*-\s*disetujui', caseSensitive: false), '');
+                            }
+
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: AppNotificationCard(
@@ -202,16 +223,14 @@ class _NotificationPageViewState extends State<NotificationPageView>
                                     size: 24,
                                   ),
                                 ),
-                                title: item.title ?? '',
-                                status: item.notificationType,
-                                statusColor: item.notificationType == 'info'
-                                    ? const Color(0xFF08A0F7)
-                                    : const Color(0xFF34A853),
+                                title: displayTitle,
+                                status: displayStatus,
+                                statusColor: displayStatusColor,
                                 date: item.createdAt != null
                                     ? dateConvertWithT(item.createdAt!)
                                     : '',
                                 time: item.createdAt != null
-                                    ? timeConvert(item.createdAt!)
+                                    ? timeConvertWithT(item.createdAt!)
                                     : '',
                                 message: item.description ?? '',
                                 isRead: item.isRead == 1,
@@ -262,4 +281,4 @@ class _NotificationPageViewState extends State<NotificationPageView>
       ),
     );
   }
-}
+}

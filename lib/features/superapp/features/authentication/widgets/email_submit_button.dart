@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+
 import 'email_check_status.dart';
 
 class EmailSubmitButton extends StatelessWidget {
@@ -23,7 +24,7 @@ class EmailSubmitButton extends StatelessWidget {
     String text = 'Lanjutkan';
     String loadingText = 'Memverifikasi email...';
     bool forceLoading = isLoading;
-    bool isOutlined = false;
+
     Widget? leftIcon;
 
     if (status == EmailCheckStatus.found) {
@@ -33,7 +34,7 @@ class EmailSubmitButton extends StatelessWidget {
     } else if (status == EmailCheckStatus.unregistered) {
       // Jika unregistered, tombol berubah menjadi outlined "Pilih Produk & Daftar"
       text = 'Pilih Produk & Daftar';
-      isOutlined = true;
+
       leftIcon = SvgPicture.asset(
         'assets/images/superapp/auth/arrow_up_right.svg',
         width: 20,
