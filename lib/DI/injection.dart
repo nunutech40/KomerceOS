@@ -184,6 +184,12 @@ import '../core/domain/repositories/balance_summary_repository.dart';
 import '../core/data/repositories/balance_summary_repository_impl.dart';
 import '../core/data/datasources/remote/balance_summary_remote_datasource.dart';
 
+import '../features/superapp/features/home/bloc/revenue_performance_bloc.dart';
+import '../core/domain/usecases/get_revenue_performance_use_case.dart';
+import '../core/domain/repositories/revenue_performance_repository.dart';
+import '../core/data/repositories/revenue_performance_repository_impl.dart';
+import '../core/data/datasources/remote/revenue_performance_remote_datasource.dart';
+
 import '../features/superapp/features/notification/bloc/notification_v2_bloc.dart';
 import '../core/domain/usecases/get_notification_v2_list_use_case.dart';
 import '../core/domain/usecases/get_notification_info_use_case.dart';
@@ -233,6 +239,8 @@ Future<void> initDependencies() async {
 
   locator.registerFactory(
       () => BalanceSummaryBloc(getBalanceSummaryUseCase: locator()));
+  locator.registerFactory(
+      () => RevenuePerformanceBloc(getRevenuePerformanceUseCase: locator()));
 
   locator.registerFactory(() => HistoryPageBloc(
         getTransactionHistoryUseCase: locator(),
@@ -414,12 +422,15 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => CheckQrcodeUseCase(locator()));
 
   locator.registerLazySingleton(() => GetBalanceSummaryUseCase(locator()));
+  locator.registerLazySingleton(() => GetRevenuePerformanceUseCase(locator()));
   locator.registerLazySingleton(() => GetNotificationV2ListUseCase(locator()));
   locator.registerLazySingleton(() => GetNotificationInfoUseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<BalanceSummaryRepository>(
       () => BalanceSummaryRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<RevenuePerformanceRepository>(
+      () => RevenuePerformanceRepositoryImpl(remoteDataSource: locator()));
 
   locator.registerLazySingleton<AuthRepository>(() =>
       AuthRepositoryImpl(remoteDataSource: locator(), sharedPref: locator()));
@@ -484,6 +495,9 @@ Future<void> initDependencies() async {
   // inject datasource
   locator.registerLazySingleton<BalanceSummaryRemoteDataSource>(() =>
       BalanceSummaryRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<RevenuePerformanceRemoteDataSource>(() =>
+      RevenuePerformanceRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
 
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>

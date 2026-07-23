@@ -142,4 +142,6 @@ class Endpoints {
   // Balance Summary
   static String balanceSummary(String partnerId) =>
       'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/balanceSummary?partner_id=$partnerId';
+  static String get revenueOrderPerformance =>
+      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/revenueOrderPerformance';
 }

@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
@@ -66,7 +67,7 @@ class HomeVerificationBottomSheet extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // --- Title ---
                 Text(
                   'Ada Produk yang\nMenunggu Verifikasi',
@@ -90,7 +91,8 @@ class HomeVerificationBottomSheet extends StatelessWidget {
                 // --- Illustration ---
                 SvgPicture.asset(
                   'assets/images/superapp/auth/account_not_active.svg',
-                  height: 140,
+                  width: 200,
+                  height: 200,
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
