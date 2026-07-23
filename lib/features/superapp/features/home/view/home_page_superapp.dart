@@ -994,155 +994,172 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.md),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: BlocBuilder<SuperappProfileBloc,
-                              SuperappProfileState>(
-                            buildWhen: (prev, curr) =>
-                                prev.displayProfile?.isKomship !=
-                                    curr.displayProfile?.isKomship ||
-                                prev.displayProfile?.productMailVerifications !=
-                                    curr.displayProfile
-                                        ?.productMailVerifications,
-                            builder: (context, profileState) {
-                              final profile = profileState.displayProfile;
+                        BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                          buildWhen: (prev, curr) =>
+                              prev.displayProfile?.isKomship !=
+                                  curr.displayProfile?.isKomship ||
+                              prev.displayProfile?.isKomcards !=
+                                  curr.displayProfile?.isKomcards ||
+                              prev.displayProfile?.productMailVerifications !=
+                                  curr.displayProfile?.productMailVerifications,
+                          builder: (context, profileState) {
+                            final profile = profileState.displayProfile;
 
-                              // Cek apakah punya Komship dan terverifikasi
-                              final hasKomship = profile?.isKomship == 1 &&
-                                  (profile?.productMailVerifications.any((e) =>
-                                          e.productName?.toLowerCase() ==
-                                              'komship' &&
-                                          e.isVerified == true) ??
-                                      false);
+                            // Cek apakah punya Komship dan terverifikasi
+                            final hasKomship = profile?.isKomship == 1 &&
+                                (profile?.productMailVerifications.any((e) =>
+                                        e.productName?.toLowerCase() ==
+                                            'komship' &&
+                                        e.isVerified == true) ??
+                                    false);
 
-                              List<Widget> menuItems = [
-                                // Menu Team selalu tersedia
+                            final hasKomcards = profile?.isKomcards == 1 &&
+                                (profile?.productMailVerifications.any((e) =>
+                                        (e.productName?.toLowerCase() == 'komcard' || e.productName?.toLowerCase() == 'komcards') &&
+                                        e.isVerified == true) ??
+                                    false);
+
+                            List<Widget> menuItems = [
+                              // Menu Team selalu tersedia
+                              DsMenuIcon(
+                                icon: Image.asset(
+                                    'assets/images/superapp/home/ic_team.png'),
+                                title: "Team",
+                                onTap: () {},
+                              ),
+                            ];
+
+                            if (hasKomship) {
+                              menuItems.addAll([
                                 DsMenuIcon(
                                   icon: Image.asset(
-                                      'assets/images/superapp/home/ic_team.png'),
-                                  title: "Team",
+                                      'assets/images/superapp/home/ic_order.png'),
+                                  title: "Order",
                                   onTap: () {},
                                 ),
-                              ];
+                                DsMenuIcon(
+                                  icon: Image.asset(
+                                      'assets/images/superapp/home/ic_problem.png'),
+                                  title: "Kendala",
+                                  onTap: () {},
+                                ),
+                              ]);
+                            }
 
-                              if (hasKomship) {
-                                menuItems.addAll([
-                                  DsMenuIcon(
-                                    icon: Image.asset(
-                                        'assets/images/superapp/home/ic_order.png'),
-                                    title: "Order",
-                                    onTap: () {},
-                                  ),
-                                  DsMenuIcon(
-                                    icon: Image.asset(
-                                        'assets/images/superapp/home/ic_problem.png'),
-                                    title: "Kendala",
-                                    onTap: () {},
-                                  ),
-                                ]);
-                              }
+                            final activeSwipePages = <Widget>[];
+                            if (hasKomship && swipePages.isNotEmpty) {
+                              activeSwipePages.add(swipePages[0]);
+                            }
+                            if (hasKomcards && swipePages.length > 1) {
+                              activeSwipePages.add(swipePages[1]);
+                            }
 
-                              // Menu Kartu (Komcard) tidak ditampilkan untuk v1
-
-                              return GridView.count(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                crossAxisCount: 4,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8,
-                                childAspectRatio: 0.85,
-                                children: menuItems,
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        // PAGEVIEW CAROUSEL
-                        SizedBox(
-                          height: 680,
-                          child: PageView(
-                            controller: _pageController,
-                            onPageChanged: (index) {
-                              setState(() {
-                                _currentSwipePage = index;
-                              });
-                            },
-                            children: swipePages,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // SWIPE INDICATOR DOTS
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(swipePages.length, (index) {
-                            final isActive = _currentSwipePage == index;
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              height: 12,
-                              width: isActive ? 32 : 12,
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? AppColors.primaryBase
-                                    : AppColors.grey350,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            );
-                          }),
-                        ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.alwaysWhite,
-                              border:
-                                  Border.all(color: const Color(0xFFE5E5E5)),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            return Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: Text(
-                                    'Transaksi Terakhir Kartu',
-                                    style: AppTypography.headingSm.copyWith(
-                                      color: AppColors.textDark,
-                                      fontWeight: FontWeight.w700,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: GridView.count(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    crossAxisCount: 4,
+                                    crossAxisSpacing: 8,
+                                    mainAxisSpacing: 8,
+                                    childAspectRatio: 0.85,
+                                    children: menuItems,
+                                  ),
+                                ),
+                                if (activeSwipePages.isNotEmpty) ...[
+                                  const SizedBox(height: AppSpacing.xl),
+                                  // PAGEVIEW CAROUSEL
+                                  SizedBox(
+                                    height: 680,
+                                    child: PageView(
+                                      controller: _pageController,
+                                      onPageChanged: (index) {
+                                        setState(() {
+                                          _currentSwipePage = index;
+                                        });
+                                      },
+                                      children: activeSwipePages,
                                     ),
                                   ),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: const Color(0xFFE5E5E5)),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    children: List.generate(transactions.length,
-                                        (index) {
-                                      final item = transactions[index];
-                                      final isLast =
-                                          index == transactions.length - 1;
-                                      return Column(
+                                  const SizedBox(height: 12),
+                                  // SWIPE INDICATOR DOTS
+                                  if (activeSwipePages.length > 1)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: List.generate(activeSwipePages.length, (index) {
+                                        final isActive = _currentSwipePage == index;
+                                        return AnimatedContainer(
+                                          duration: const Duration(milliseconds: 300),
+                                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                                          height: 12,
+                                          width: isActive ? 32 : 12,
+                                          decoration: BoxDecoration(
+                                            color: isActive
+                                                ? AppColors.primaryBase
+                                                : AppColors.grey350,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                ],
+                                if (hasKomcards) ...[
+                                  const SizedBox(height: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.alwaysWhite,
+                                        border: Border.all(color: const Color(0xFFE5E5E5)),
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          DsTransactionTile(item: item),
-                                          if (!isLast)
-                                            const Divider(
-                                              height: 1,
-                                              thickness: 1,
-                                              color: Color(0xFFE5E5E5),
+                                          Padding(
+                                            padding: const EdgeInsets.only(bottom: 16),
+                                            child: Text(
+                                              'Transaksi Terakhir Kartu',
+                                              style: AppTypography.headingSm.copyWith(
+                                                color: AppColors.textDark,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                             ),
+                                          ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: const Color(0xFFE5E5E5)),
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            child: Column(
+                                              children: List.generate(transactions.length, (index) {
+                                                final item = transactions[index];
+                                                final isLast = index == transactions.length - 1;
+                                                return Column(
+                                                  children: [
+                                                    DsTransactionTile(item: item),
+                                                    if (!isLast)
+                                                      const Divider(
+                                                        height: 1,
+                                                        thickness: 1,
+                                                        color: Color(0xFFE5E5E5),
+                                                      ),
+                                                  ],
+                                                );
+                                              }),
+                                            ),
+                                          ),
                                         ],
-                                      );
-                                    }),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
-                            ),
-                          ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 120),
                       ],

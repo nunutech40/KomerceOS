@@ -43,7 +43,17 @@ class RevenuePerformanceRemoteDataSourceImpl
 
     return responseParser.parseResponse<RevenuePerformanceResponse>(
       response,
-      (json) => RevenuePerformanceResponse.fromJson(json),
+      (json) {
+        if (json is List && json.isEmpty) {
+          return const RevenuePerformanceResponse(
+            paymentMethod: null,
+            totalOrder: 0,
+            totalProfit: 0,
+            dataDays: [],
+          );
+        }
+        return RevenuePerformanceResponse.fromJson(json);
+      },
     );
   }
 }

@@ -47,6 +47,8 @@ class _MyAppPageState extends State<MyAppPage> {
     'komchat': 'Platform chat commerce terintegrasi untuk tim sales kamu.',
     'komcards':
         'Buat kartu virtual tanpa batas untuk bayar iklan. Nikmati cashback dan bebas biaya admin.',
+    'komcard':
+        'Buat kartu virtual tanpa batas untuk bayar iklan. Nikmati cashback dan bebas biaya admin.',
     'komform': 'Buat form order custom untuk toko online kamu.',
     'komplace':
         'Satu dashboard untuk semua toko di marketplacemu. Kelola pesanan, stok, dan chat pelanggan.',
@@ -271,7 +273,7 @@ class _MyAppPageState extends State<MyAppPage> {
                                               partnerProducts: [
                                                 PartnerProductModel(
                                                   id: 1, // Optional, can be any non-null for selection
-                                                  productName: item.key,
+                                                  productName: item.key == 'komcards' ? 'komcard' : item.key,
                                                   isVerified: item.verified,
                                                   urlLogo: item.logoUrl,
                                                 )
