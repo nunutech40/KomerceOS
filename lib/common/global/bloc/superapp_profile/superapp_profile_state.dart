@@ -2,7 +2,7 @@ part of 'superapp_profile_bloc.dart';
 
 enum SuperappProfileStatus {
   initial,
-  loading,         // loading pertama kali, belum ada cache
+  loading, // loading pertama kali, belum ada cache
   loadingWithCache, // loading API, cache sudah tampil
   loaded,
   error,
@@ -51,7 +51,8 @@ class SuperappProfileState extends Equatable {
   int? get displaySaldo => freshProfile?.saldo;
 
   /// Kompoints dari fresh atau cache
-  int? get displayKompoints => freshProfile?.kompoints ?? cachedProfile?.kompoints;
+  int? get displayKompoints =>
+      freshProfile?.kompoints ?? cachedProfile?.kompoints;
 
   /// Data profil terbaik yang tersedia (fresh lebih prioritas dari cache)
   SuperappProfileModel? get displayProfile => freshProfile ?? cachedProfile;
@@ -82,11 +83,9 @@ class SuperappProfileState extends Equatable {
     if (profile == null) return false;
     return profile.isKomship == 1 &&
         (profile.productMailVerifications.any(
-              (e) =>
-                  e.productName?.toLowerCase() == 'komship' &&
-                  e.isVerified == true,
-            ) ??
-            false);
+          (e) =>
+              e.productName?.toLowerCase() == 'komship' && e.isVerified == true,
+        ));
   }
 
   /// true jika user punya Komcards DAN sudah verifikasi email Komcards.
@@ -95,12 +94,11 @@ class SuperappProfileState extends Equatable {
     if (profile == null) return false;
     return profile.isKomcards == 1 &&
         (profile.productMailVerifications.any(
-              (e) =>
-                  (e.productName?.toLowerCase() == 'komcard' ||
-                      e.productName?.toLowerCase() == 'komcards') &&
-                  e.isVerified == true,
-            ) ??
-            false);
+          (e) =>
+              (e.productName?.toLowerCase() == 'komcard' ||
+                  e.productName?.toLowerCase() == 'komcards') &&
+              e.isVerified == true,
+        ));
   }
 
   SuperappProfileState copyWith({

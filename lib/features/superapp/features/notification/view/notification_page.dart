@@ -9,6 +9,7 @@ import 'package:komtim_partner/common/time_convert.dart';
 import '../bloc/notification_v2_bloc.dart';
 import '../widget/app_notification_card.dart';
 import '../widget/notification_icon.dart';
+import '../widget/notification_shimmer.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});
@@ -155,7 +156,8 @@ class _NotificationPageViewState extends State<NotificationPageView>
               builder: (context, state) {
                 if (state.status == RequestStatus.loading &&
                     state.offset == 0) {
-                  return const Center(child: CircularProgressIndicator());
+                  // First load: shimmer penuh menggantikan CircularProgressIndicator
+                  return const NotificationListShimmer();
                 } else if (state.status == RequestStatus.failure &&
                     state.data.isEmpty) {
                   return Center(child: Text(state.message));
@@ -170,10 +172,8 @@ class _NotificationPageViewState extends State<NotificationPageView>
                   itemCount: state.data.length + (state.hasReachedMax ? 0 : 1),
                   itemBuilder: (context, gIdx) {
                     if (gIdx >= state.data.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
+                      // Lazy load footer: shimmer 2 item menggantikan CircularProgressIndicator
+                      return const NotificationLoadMoreShimmer();
                     }
 
                     final group = state.data[gIdx];

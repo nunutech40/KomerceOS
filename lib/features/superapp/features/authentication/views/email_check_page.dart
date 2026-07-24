@@ -61,9 +61,16 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
   void _onEmailChanged() {
     final blocState = context.read<CheckEmailBloc>().state;
 
-    if (blocState is! CheckEmailInitial && blocState is! CheckEmailLoading) {
+    // Reset BLoC saat email berubah — termasuk saat sedang Loading.
+    // Tanpa ini: jika API request lama selesai setelah email berganti,
+    // CheckEmailFailure-nya masih trigger snackbar (race condition).
+    if (blocState is! CheckEmailInitial) {
       context.read<CheckEmailBloc>().add(const CheckEmailReset());
     }
+
+    // Bersihkan snackbar yang mungkin masih di-queue dari halaman sebelumnya
+    // (misal: LoginPage) agar tidak muncul secara anomali di halaman ini.
+    ScaffoldMessenger.of(context).clearSnackBars();
 
     final email = _emailController.text;
 

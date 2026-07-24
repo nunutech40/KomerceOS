@@ -30,12 +30,20 @@ class _LoginPageState extends State<LoginPage> {
   Timer? _debounce;
   bool _wasEmailChecked = false;
   bool _showSuccessAnim = false;
+  /// Guard: cegah listener trigger saat controller baru di-init dengan initial value.
+  /// Tanpa ini, addListener dipanggil saat text berubah dari '' → widget.email,
+  /// yang memicu debounce check email dan menghasilkan snackbar anomali.
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController(text: widget.email);
     _passwordController = TextEditingController();
+    // Set flag setelah init agar listener tidak trigger saat initial value di-set
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isInitialized = true;
+    });
     _emailController.addListener(_onFormChanged);
     _passwordController.addListener(_onFormChanged);
   }
@@ -54,6 +62,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onFormChanged() {
+    // Guard: abaikan panggilan pertama saat controller baru di-init
+    if (!_isInitialized) return;
+
     final blocState = context.read<LoginBloc>().state;
     final email = _emailController.text;
 
