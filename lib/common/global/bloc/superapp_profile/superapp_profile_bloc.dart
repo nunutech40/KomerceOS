@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../common/global/bloc/auth/auth_bloc.dart';
 import '../../../../core/data/repositories/superapp_profile_repository_impl.dart';
 import '../../../../core/domain/entities/auth_state.dart';
+import '../../../../core/domain/entities/partner_product_model.dart';
 import '../../../../core/domain/entities/superapp_profile_model.dart';
 
 part 'superapp_profile_event.dart';

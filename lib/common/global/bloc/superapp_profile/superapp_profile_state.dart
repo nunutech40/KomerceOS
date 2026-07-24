@@ -56,6 +56,53 @@ class SuperappProfileState extends Equatable {
   /// Data profil terbaik yang tersedia (fresh lebih prioritas dari cache)
   SuperappProfileModel? get displayProfile => freshProfile ?? cachedProfile;
 
+  /// Daftar produk yang belum terverifikasi email, sudah di-map ke PartnerProductModel.
+  /// ID otomatis di-assign urut (1-based) agar Radio groupValue bekerja dengan benar.
+  /// Business logic ini terpusat di state — listener UI cukup consume list ini langsung.
+  List<PartnerProductModel> get unverifiedProducts {
+    final profile = displayProfile;
+    if (profile == null) return [];
+    final rawUnverified = profile.productMailVerifications
+        .where((e) => e.isVerified == false)
+        .toList();
+    return List.generate(
+      rawUnverified.length,
+      (i) => PartnerProductModel(
+        id: i + 1, // id unik agar Radio groupValue bekerja
+        productName: rawUnverified[i].productName,
+        isVerified: rawUnverified[i].isVerified,
+      ),
+    );
+  }
+
+  /// true jika user punya Komship DAN sudah verifikasi email Komship.
+  /// Business logic ini terpusat di state, tidak perlu dihitung ulang di UI.
+  bool get isKomshipVerified {
+    final profile = displayProfile;
+    if (profile == null) return false;
+    return profile.isKomship == 1 &&
+        (profile.productMailVerifications.any(
+              (e) =>
+                  e.productName?.toLowerCase() == 'komship' &&
+                  e.isVerified == true,
+            ) ??
+            false);
+  }
+
+  /// true jika user punya Komcards DAN sudah verifikasi email Komcards.
+  bool get isKomcardsVerified {
+    final profile = displayProfile;
+    if (profile == null) return false;
+    return profile.isKomcards == 1 &&
+        (profile.productMailVerifications.any(
+              (e) =>
+                  (e.productName?.toLowerCase() == 'komcard' ||
+                      e.productName?.toLowerCase() == 'komcards') &&
+                  e.isVerified == true,
+            ) ??
+            false);
+  }
+
   SuperappProfileState copyWith({
     SuperappProfileStatus? status,
     SuperappProfileModel? cachedProfile,

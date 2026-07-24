@@ -14,24 +14,23 @@ enum PartnerType {
 
 class DsHomeHeader extends StatelessWidget {
   final PartnerType type;
-  
+
   // Data eksplisit yang turun dari parent [cite: 306]
   final String partnerName;
   final String? savingsAmount; // Contoh: "Rp 2.205.976"
-  final int notificationCount;
   final String? profileUrl;
-  
-  // Event naik ke atas sebagai callback [cite: 306]
-  final VoidCallback onNotificationPressed;
+
+  /// Widget notifikasi di-inject dari luar agar rebuild notif
+  /// tidak mempengaruhi rebuild header & balance.
+  final Widget notificationWidget;
 
   const DsHomeHeader({
     super.key,
     required this.type,
     this.partnerName = 'Partner',
     this.savingsAmount,
-    this.notificationCount = 0,
-    required this.onNotificationPressed,
     this.profileUrl,
+    required this.notificationWidget,
   }) : assert(
          type != PartnerType.komship || savingsAmount != null,
          'savingsAmount wajib diisi jika PartnerType adalah komship',
@@ -57,11 +56,8 @@ class DsHomeHeader extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Kanan: Notification Icon dengan Badge
-          GestureDetector(
-            onTap: onNotificationPressed,
-            child: _buildNotificationIcon(),
-          ),
+          // Kanan: Notification Icon (di-inject dari luar)
+          notificationWidget,
         ],
       ),
     );
@@ -174,48 +170,4 @@ class DsHomeHeader extends StatelessWidget {
     }
   }
 
-  Widget _buildNotificationIcon() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Lingkaran abu-abu dasar
-        Container(
-          width: 40,
-          height: 40,
-          decoration: const BoxDecoration(
-            color: AppColors.bgLight,
-            shape: BoxShape.circle,
-          ),
-          child: Center(child: SvgPicture.asset('assets/images/superapp/home/ic_notification.svg',width: 20,height: 20)),
-        ),
-        
-        // Badge merah dinamis (hanya muncul jika ada notif)
-        if (notificationCount > 0)
-          Positioned(
-            top: -4,
-            right: -4,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFD7EAF6), width: 1),
-                color: AppColors.primaryBase,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 18,
-                minHeight: 18,
-              ),
-              child: Center(
-                child: Text(
-                  // Jika > 99, tampilkan '99+'
-                  notificationCount > 99 ? '99+' : notificationCount.toString(),
-                  style: AppTypography.headingSm.copyWith(color: Colors.white,fontSize: 8),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
 }

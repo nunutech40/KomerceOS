@@ -17,10 +17,12 @@ import 'package:komtim_partner/common/global/design_system/components/ds_menu_it
 import 'package:komtim_partner/common/global/design_system/components/ds_transaction_tile.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
-import 'package:komtim_partner/core/domain/entities/partner_product_model.dart';
+
 import 'package:komtim_partner/features/superapp/features/home/bloc/balance_summary_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/home/bloc/revenue_performance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/ds_home_header.dart';
+import 'package:komtim_partner/features/superapp/features/home/widgets/home_notification_badge.dart';
+import 'package:komtim_partner/features/superapp/features/home/widgets/home_skeleton.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/home_verification_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/notification/bloc/notification_info_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/notification/view/notification_page.dart';
@@ -175,185 +177,156 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
         child: RepaintBoundary(
           key: _captureKey,
           child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.alwaysWhite,
-            border: Border.all(color: const Color(0xFFE5E5E5)),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const DsAppImage(
-                    source: 'assets/images/superapp/home/ic_logo_komship.svg',
-                    height: 24,
-                    width: 112,
-                  ),
-                  if (!_isSavingChart)
-                    GestureDetector(
-                      onTap: _saveChartToGallery,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.alwaysWhite,
-                          border: Border.all(color: const Color(0xFFE5E5E5)),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.asset(
-                              'assets/images/superapp/home/ic_share.png',
-                              width: 16,
-                              height: 16,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Share',
-                              style: AppTypography.bodyMdMedium.copyWith(
-                                color: const Color(0xFF0A0A0A),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.alwaysWhite,
+              border: Border.all(color: const Color(0xFFE5E5E5)),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const DsAppImage(
+                      source: 'assets/images/superapp/home/ic_logo_komship.svg',
+                      height: 24,
+                      width: 112,
                     ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Performa Omset & Orderan',
-                style: AppTypography.bodyLgBold.copyWith(
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Pantau semua pendapatan kamu disini',
-                style: AppTypography.bodyMdRegular.copyWith(
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.alwaysWhite,
-                  border: Border.all(color: const Color(0xFFE5E5E5)),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: DefaultTabController(
-                  length: 3,
-                  child: BlocBuilder<RevenuePerformanceBloc,
-                      RevenuePerformanceState>(
-                    builder: (context, state) {
-                      num totalOmset = 0;
-                      List<FlSpot> omzetSpots = [];
-                      List<FlSpot> orderSpots = [];
-
-                      if (state is RevenuePerformanceLoaded) {
-                        totalOmset = state.data.totalProfit ?? 0;
-                        final days = state.data.dataDays ?? [];
-                        for (int i = 0; i < days.length; i++) {
-                          final dayStr = days[i].day ?? '';
-                          final dayParts = dayStr.split('-');
-                          if (dayParts.length == 3) {
-                            final dayNum = double.tryParse(dayParts[2]) ?? (i.toDouble() + 1);
-                            
-                            final profit = (days[i].totalProfit ?? 0).toDouble();
-                            // Mengirim nilai profit asli (unscaled) ke DsChart, 
-                            // karena DsChart sekarang bisa menghitung skala dan Y-axis secara dinamis
-                            omzetSpots.add(FlSpot(dayNum, profit));
-                            
-                            orderSpots.add(FlSpot(dayNum, (days[i].totalOrder ?? 0).toDouble()));
-                          }
-                        }
-                      }
-
-                      // FlChart mensyaratkan spots harus di-sort berdasarkan X (tanggal) secara ascending
-                      omzetSpots.sort((a, b) => a.x.compareTo(b.x));
-                      orderSpots.sort((a, b) => a.x.compareTo(b.x));
-
-                      // FlChart isCurved: true minimal butuh 2 points
-                      if (omzetSpots.isEmpty) {
-                        omzetSpots = [const FlSpot(1, 0), const FlSpot(31, 0)];
-                        orderSpots = [const FlSpot(1, 0), const FlSpot(31, 0)];
-                      } else if (omzetSpots.length == 1) {
-                        omzetSpots.add(FlSpot(omzetSpots.first.x + 1, omzetSpots.first.y));
-                        orderSpots.add(FlSpot(orderSpots.first.x + 1, orderSpots.first.y));
-                      }
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Total Omset'),
-                          Text(
-                            CurrencyFormat.convertToIdrNum(totalOmset, 0),
-                            style: AppTypography.headingMd.copyWith(
-                              color: AppColors.textDark,
-                            ),
+                    if (!_isSavingChart)
+                      GestureDetector(
+                        onTap: _saveChartToGallery,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.alwaysWhite,
+                            border: Border.all(color: const Color(0xFFE5E5E5)),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          const SizedBox(height: 16),
-                          AppTabLayout(
-                            onTap: (index) {
-                              String? method;
-                              if (index == 1) method = 'cod';
-                              if (index == 2) method = 'bank transfer';
-
-                              final now = DateTime.now();
-                              final startDate =
-                                  DateTime(now.year, now.month, 1);
-                              final endDate =
-                                  DateTime(now.year, now.month + 1, 0);
-                              String format(DateTime d) =>
-                                  '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-                              context.read<RevenuePerformanceBloc>().add(
-                                    FetchRevenuePerformanceEvent(
-                                      startDate: format(startDate),
-                                      endDate: format(endDate),
-                                      paymentMethod: method,
-                                    ),
-                                  );
-                            },
-                            tabs: const [
-                              Tab(text: 'Semua'),
-                              Tab(text: 'COD'),
-                              Tab(text: 'Non COD'),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/images/superapp/home/ic_share.png',
+                                width: 16,
+                                height: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Share',
+                                style: AppTypography.bodyMdMedium.copyWith(
+                                  color: const Color(0xFF0A0A0A),
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          if (state is RevenuePerformanceLoading)
-                            const SizedBox(
-                              height: 200,
-                              child: Center(
-                                  child: CircularProgressIndicator(
-                                      color: AppColors.primaryBase)),
-                            )
-                          else if (state is RevenuePerformanceError)
-                            SizedBox(
-                              height: 200,
-                              child: Center(child: Text(state.message)),
-                            )
-                          else
-                            DsChart(
-                              key: _dsChartKey,
-                              omzet: omzetSpots,
-                              orders: orderSpots,
-                            )
-                        ],
-                      );
-                    },
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Performa Omset & Orderan',
+                  style: AppTypography.bodyLgBold.copyWith(
+                    color: AppColors.textDark,
                   ),
                 ),
-              )
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  'Pantau semua pendapatan kamu disini',
+                  style: AppTypography.bodyMdRegular.copyWith(
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.alwaysWhite,
+                    border: Border.all(color: const Color(0xFFE5E5E5)),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: DefaultTabController(
+                    length: 3,
+                    child: BlocBuilder<RevenuePerformanceBloc,
+                        RevenuePerformanceState>(
+                      builder: (context, state) {
+                        // Semua transformasi data sudah di BLoC state.
+                        // UI hanya consume hasil yang sudah siap pakai.
+                        final totalOmset = state is RevenuePerformanceLoaded
+                            ? state.totalOmset
+                            : 0;
+                        final omzetSpots = state is RevenuePerformanceLoaded
+                            ? state.omzetSpots
+                            : const <FlSpot>[];
+                        final orderSpots = state is RevenuePerformanceLoaded
+                            ? state.orderSpots
+                            : const <FlSpot>[];
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Total Omset'),
+                            Text(
+                              CurrencyFormat.convertToIdrNum(totalOmset, 0),
+                              style: AppTypography.headingMd.copyWith(
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            AppTabLayout(
+                              onTap: (index) {
+                                String? method;
+                                if (index == 1) method = 'cod';
+                                if (index == 2) method = 'bank transfer';
+
+                                final now = DateTime.now();
+                                final startDate =
+                                    DateTime(now.year, now.month, 1);
+                                final endDate =
+                                    DateTime(now.year, now.month + 1, 0);
+                                String format(DateTime d) =>
+                                    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+                                context.read<RevenuePerformanceBloc>().add(
+                                      FetchRevenuePerformanceEvent(
+                                        startDate: format(startDate),
+                                        endDate: format(endDate),
+                                        paymentMethod: method,
+                                      ),
+                                    );
+                              },
+                              tabs: const [
+                                Tab(text: 'Semua'),
+                                Tab(text: 'COD'),
+                                Tab(text: 'Non COD'),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            if (state is RevenuePerformanceLoading)
+                              const HomeChartSkeleton()
+                            else if (state is RevenuePerformanceError)
+                              SizedBox(
+                                height: 200,
+                                child: Center(child: Text(state.message)),
+                              )
+                            else
+                              DsChart(
+                                key: _dsChartKey,
+                                omzet: omzetSpots,
+                                orders: orderSpots,
+                              )
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
-        ),
         ),
       ),
       // PAGE 2: SWIPE 2 PLACEHOLDER (READY FOR DATA SWIPE 2)
@@ -399,15 +372,11 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
         BlocProvider(
           create: (context) {
             final bloc = locator<BalanceSummaryBloc>();
-            final profile =
-                context.read<SuperappProfileBloc>().state.displayProfile;
-            final isKomship = profile?.isKomship == 1 &&
-                (profile?.productMailVerifications.any((e) =>
-                        e.productName?.toLowerCase() == 'komship' &&
-                        e.isVerified == true) ??
-                    false);
-            if (isKomship && profile?.id != null) {
-              bloc.add(FetchBalanceSummaryEvent(profile!.id.toString()));
+            final profileState = context.read<SuperappProfileBloc>().state;
+            if (profileState.isKomshipVerified &&
+                profileState.displayProfile?.id != null) {
+              bloc.add(FetchBalanceSummaryEvent(
+                  profileState.displayProfile!.id.toString()));
             }
             return bloc;
           },
@@ -568,18 +537,13 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                           const FetchSuperappProfileEvent(),
                         );
                     // Refresh balance jika komship & verified
-                    final profile = context
-                        .read<SuperappProfileBloc>()
-                        .state
-                        .displayProfile;
-                    final isKomship = profile?.isKomship == 1 &&
-                        (profile?.productMailVerifications.any((e) =>
-                                e.productName?.toLowerCase() == 'komship' &&
-                                e.isVerified == true) ??
-                            false);
-                    if (isKomship && profile?.id != null) {
+                    final profileState =
+                        context.read<SuperappProfileBloc>().state;
+                    if (profileState.isKomshipVerified &&
+                        profileState.displayProfile?.id != null) {
                       context.read<BalanceSummaryBloc>().add(
-                            FetchBalanceSummaryEvent(profile!.id.toString()),
+                            FetchBalanceSummaryEvent(
+                                profileState.displayProfile!.id.toString()),
                           );
                     }
                     // Refresh notification count
@@ -599,43 +563,23 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                             final profile = profileState.displayProfile;
 
                             // Tampilkan BottomSheet Verifikasi Email
+                            // unverifiedProducts sudah di-compute di State — UI tinggal consume
                             if (!_hasShownVerificationBottomSheet &&
-                                profile != null) {
-                              final rawUnverified = profile
-                                  .productMailVerifications
-                                  .where((e) => e.isVerified == false)
-                                  .toList();
-                              final unverifiedProducts = List.generate(
-                                rawUnverified.length,
-                                (i) => PartnerProductModel(
-                                  id: i +
-                                      1, // id unik agar Radio groupValue bekerja
-                                  productName: rawUnverified[i].productName,
-                                  isVerified: rawUnverified[i].isVerified,
-                                ),
-                              );
-
-                              if (unverifiedProducts.isNotEmpty) {
-                                _hasShownVerificationBottomSheet = true;
-                                Future.microtask(() {
-                                  HomeVerificationBottomSheet.show(
-                                      context: context);
-                                });
-                              }
+                                profileState.unverifiedProducts.isNotEmpty) {
+                              _hasShownVerificationBottomSheet = true;
+                              Future.microtask(() {
+                                HomeVerificationBottomSheet.show(
+                                    context: context);
+                              });
                             }
 
-                            // Fetch balance summary jika komship true & terverifikasi
-                            final isKomship = profile?.isKomship == 1 &&
-                                (profile?.productMailVerifications.any((e) =>
-                                        e.productName?.toLowerCase() ==
-                                            'komship' &&
-                                        e.isVerified == true) ??
-                                    false);
-
-                            if (isKomship && profile?.id != null) {
+                            // Fetch balance summary jika komship verified
+                            if (profileState.isKomshipVerified &&
+                                profileState.displayProfile?.id != null) {
                               context.read<BalanceSummaryBloc>().add(
-                                  FetchBalanceSummaryEvent(
-                                      profile!.id.toString()));
+                                  FetchBalanceSummaryEvent(profileState
+                                      .displayProfile!.id
+                                      .toString()));
                             }
                           },
                           buildWhen: (prev, curr) =>
@@ -646,17 +590,13 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                               prev.displayProfile?.isKomship !=
                                   curr.displayProfile?.isKomship,
                           builder: (context, profileState) {
-                            final profile = profileState.displayProfile;
-                            final isKomship = profile?.isKomship == 1 &&
-                                (profile?.productMailVerifications.any((e) =>
-                                        e.productName?.toLowerCase() ==
-                                            'komship' &&
-                                        e.isVerified == true) ??
-                                    false);
+                            final isKomship = profileState.isKomshipVerified;
 
-                            return BlocBuilder<BalanceSummaryBloc,
-                                BalanceSummaryState>(
-                              builder: (context, balanceState) {
+                            // BlocSelector: rebuild DsHomeHeader HANYA jika
+                            // string savings benar-benar berubah nilainya.
+                            return BlocSelector<BalanceSummaryBloc,
+                                BalanceSummaryState, String>(
+                              selector: (state) {
                                 String formatNominal(num value) {
                                   if (value == 0) return 'Rp 0';
                                   if (value % 1 == 0)
@@ -666,51 +606,28 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                       value, 2);
                                 }
 
-                                String savings = 'Rp 0';
-                                if (balanceState is BalanceSummaryLoaded) {
-                                  savings = formatNominal(
-                                      balanceState.data.totalEarnCashback ?? 0);
+                                if (state is BalanceSummaryLoaded) {
+                                  return formatNominal(
+                                      state.data.totalEarnCashback ?? 0);
+                                } else if (state is BalanceSummaryError) {
+                                  return '--';
                                 }
-
-                                return BlocBuilder<NotificationInfoBloc,
-                                    NotificationInfoState>(
-                                  builder: (context, notifState) {
-                                    int notifCount = 0;
-                                    if (notifState is NotificationInfoLoaded) {
-                                      notifCount = notifState.data.unreadCount;
-                                    }
-
-                                    return DsHomeHeader(
-                                      profileUrl: profileState.displayProfile
-                                              ?.photoProfileUrl ??
+                                return 'Rp 0';
+                              },
+                              builder: (context, savings) {
+                                return DsHomeHeader(
+                                  profileUrl: profileState
+                                          .displayProfile?.photoProfileUrl ??
+                                      '',
+                                  partnerName:
+                                      profileState.displayProfile?.fullName ??
                                           '',
-                                      partnerName: profileState
-                                              .displayProfile?.fullName ??
-                                          '',
-                                      notificationCount: notifCount,
-                                      type: isKomship
-                                          ? PartnerType.komship
-                                          : PartnerType.regular,
-                                      savingsAmount: savings,
-                                      onNotificationPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const NotificationPage(),
-                                          ),
-                                        ).then((_) {
-                                          if (context.mounted) {
-                                            context
-                                                .read<NotificationInfoBloc>()
-                                                .add(
-                                                  const FetchNotificationInfoEvent(),
-                                                );
-                                          }
-                                        });
-                                      },
-                                    );
-                                  },
+                                  type: isKomship
+                                      ? PartnerType.komship
+                                      : PartnerType.regular,
+                                  savingsAmount: isKomship ? savings : null,
+                                  notificationWidget:
+                                      const HomeNotificationBadge(),
                                 );
                               },
                             );
@@ -903,19 +820,12 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                   ),
                                 ],
                               ),
-                              BlocBuilder<SuperappProfileBloc,
-                                  SuperappProfileState>(
-                                builder: (context, profileState) {
-                                  final profile = profileState.displayProfile;
-                                  final isKomship = profile?.isKomship == 1 &&
-                                      (profile?.productMailVerifications.any(
-                                              (e) =>
-                                                  e.productName
-                                                          ?.toLowerCase() ==
-                                                      'komship' &&
-                                                  e.isVerified == true) ??
-                                          false);
-
+                              // BlocSelector: rebuild card HANYA jika
+                              // status isKomship benar-benar berubah (true↔false).
+                              BlocSelector<SuperappProfileBloc,
+                                  SuperappProfileState, bool>(
+                                selector: (state) => state.isKomshipVerified,
+                                builder: (context, isKomship) {
                                   if (!isKomship)
                                     return const SizedBox.shrink();
 
@@ -942,6 +852,79 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                             balanceState.data
                                                     .pendingBalanceOnProblem ??
                                                 0);
+                                      } else if (balanceState
+                                          is BalanceSummaryError) {
+                                        // Tampilkan error card + tombol retry
+                                        return Column(
+                                          children: [
+                                            const SizedBox(
+                                                height: AppSpacing.lg),
+                                            AppInfoCard(
+                                              backgroundColor:
+                                                  AppColors.bgLight,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      'Gagal memuat saldo pending',
+                                                      style: AppTypography
+                                                          .bodyMdRegular
+                                                          .copyWith(
+                                                        color:
+                                                            AppColors.textDark,
+                                                      ),
+                                                    ),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        final profile = context
+                                                            .read<
+                                                                SuperappProfileBloc>()
+                                                            .state
+                                                            .displayProfile;
+                                                        if (profile?.id !=
+                                                            null) {
+                                                          context
+                                                              .read<
+                                                                  BalanceSummaryBloc>()
+                                                              .add(
+                                                                FetchBalanceSummaryEvent(
+                                                                    profile!.id
+                                                                        .toString()),
+                                                              );
+                                                        }
+                                                      },
+                                                      child: Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .refresh_rounded,
+                                                            size: 16,
+                                                            color: AppColors
+                                                                .primaryBase,
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Text(
+                                                            'Coba lagi',
+                                                            style: AppTypography
+                                                                .bodySmSemiBold
+                                                                .copyWith(
+                                                              color: AppColors
+                                                                  .primaryBase,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        );
                                       }
 
                                       return Column(
@@ -1003,21 +986,19 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                               prev.displayProfile?.productMailVerifications !=
                                   curr.displayProfile?.productMailVerifications,
                           builder: (context, profileState) {
-                            final profile = profileState.displayProfile;
+                            // Gunakan getter dari state — tidak ada logic bisnis di UI
+                            final hasKomship = profileState.isKomshipVerified;
+                            final hasKomcards = profileState.isKomcardsVerified;
 
-                            // Cek apakah punya Komship dan terverifikasi
-                            final hasKomship = profile?.isKomship == 1 &&
-                                (profile?.productMailVerifications.any((e) =>
-                                        e.productName?.toLowerCase() ==
-                                            'komship' &&
-                                        e.isVerified == true) ??
-                                    false);
+                            // Skeleton menu saat pertama kali loading (belum ada cache)
+                            final isFirstLoad = profileState.status ==
+                                    SuperappProfileStatus.loading ||
+                                profileState.status ==
+                                    SuperappProfileStatus.initial;
 
-                            final hasKomcards = profile?.isKomcards == 1 &&
-                                (profile?.productMailVerifications.any((e) =>
-                                        (e.productName?.toLowerCase() == 'komcard' || e.productName?.toLowerCase() == 'komcards') &&
-                                        e.isVerified == true) ??
-                                    false);
+                            if (isFirstLoad) {
+                              return const HomeMenuSkeleton();
+                            }
 
                             List<Widget> menuItems = [
                               // Menu Team selalu tersedia
@@ -1057,10 +1038,12 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                             return Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
                                   child: GridView.count(
                                     shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     crossAxisCount: 4,
                                     crossAxisSpacing: 8,
                                     mainAxisSpacing: 8,
@@ -1087,19 +1070,25 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                   // SWIPE INDICATOR DOTS
                                   if (activeSwipePages.length > 1)
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: List.generate(activeSwipePages.length, (index) {
-                                        final isActive = _currentSwipePage == index;
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: List.generate(
+                                          activeSwipePages.length, (index) {
+                                        final isActive =
+                                            _currentSwipePage == index;
                                         return AnimatedContainer(
-                                          duration: const Duration(milliseconds: 300),
-                                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 4),
                                           height: 12,
                                           width: isActive ? 32 : 12,
                                           decoration: BoxDecoration(
                                             color: isActive
                                                 ? AppColors.primaryBase
                                                 : AppColors.grey350,
-                                            borderRadius: BorderRadius.circular(4),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                         );
                                       }),
@@ -1108,22 +1097,27 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                 if (hasKomcards) ...[
                                   const SizedBox(height: 16),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
                                     child: Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
                                         color: AppColors.alwaysWhite,
-                                        border: Border.all(color: const Color(0xFFE5E5E5)),
+                                        border: Border.all(
+                                            color: const Color(0xFFE5E5E5)),
                                         borderRadius: BorderRadius.circular(18),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.only(bottom: 16),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 16),
                                             child: Text(
                                               'Transaksi Terakhir Kartu',
-                                              style: AppTypography.headingSm.copyWith(
+                                              style: AppTypography.headingSm
+                                                  .copyWith(
                                                 color: AppColors.textDark,
                                                 fontWeight: FontWeight.w700,
                                               ),
@@ -1131,21 +1125,29 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                           ),
                                           Container(
                                             decoration: BoxDecoration(
-                                              border: Border.all(color: const Color(0xFFE5E5E5)),
-                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(
+                                                  color:
+                                                      const Color(0xFFE5E5E5)),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                             ),
                                             child: Column(
-                                              children: List.generate(transactions.length, (index) {
-                                                final item = transactions[index];
-                                                final isLast = index == transactions.length - 1;
+                                              children: List.generate(
+                                                  transactions.length, (index) {
+                                                final item =
+                                                    transactions[index];
+                                                final isLast = index ==
+                                                    transactions.length - 1;
                                                 return Column(
                                                   children: [
-                                                    DsTransactionTile(item: item),
+                                                    DsTransactionTile(
+                                                        item: item),
                                                     if (!isLast)
                                                       const Divider(
                                                         height: 1,
                                                         thickness: 1,
-                                                        color: Color(0xFFE5E5E5),
+                                                        color:
+                                                            Color(0xFFE5E5E5),
                                                       ),
                                                   ],
                                                 );
