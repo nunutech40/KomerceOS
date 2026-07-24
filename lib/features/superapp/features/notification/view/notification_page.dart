@@ -160,90 +160,142 @@ class _NotificationPageViewState extends State<NotificationPageView>
                   return const NotificationListShimmer();
                 } else if (state.status == RequestStatus.failure &&
                     state.data.isEmpty) {
-                  return Center(child: Text(state.message));
+                  return RefreshIndicator(
+                    color: AppColors.primaryBase,
+                    onRefresh: () async {
+                      context
+                          .read<NotificationV2Bloc>()
+                          .add(const FetchNotificationV2Event(isRefresh: true));
+                      await Future.delayed(const Duration(milliseconds: 500));
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        alignment: Alignment.center,
+                        child: Text(state.message),
+                      ),
+                    ),
+                  );
                 } else if (state.data.isEmpty) {
-                  return _buildEmptyState();
+                  return RefreshIndicator(
+                    color: AppColors.primaryBase,
+                    onRefresh: () async {
+                      context
+                          .read<NotificationV2Bloc>()
+                          .add(const FetchNotificationV2Event(isRefresh: true));
+                      await Future.delayed(const Duration(milliseconds: 500));
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        alignment: Alignment.center,
+                        child: _buildEmptyState(),
+                      ),
+                    ),
+                  );
                 }
 
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  itemCount: state.data.length + (state.hasReachedMax ? 0 : 1),
-                  itemBuilder: (context, gIdx) {
-                    if (gIdx >= state.data.length) {
-                      // Lazy load footer: shimmer 2 item menggantikan CircularProgressIndicator
-                      return const NotificationLoadMoreShimmer();
-                    }
+                return RefreshIndicator(
+                  color: AppColors.primaryBase,
+                  onRefresh: () async {
+                    context
+                        .read<NotificationV2Bloc>()
+                        .add(const FetchNotificationV2Event(isRefresh: true));
+                    await Future.delayed(const Duration(milliseconds: 500));
+                  },
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    itemCount:
+                        state.data.length + (state.hasReachedMax ? 0 : 1),
+                    itemBuilder: (context, gIdx) {
+                      if (gIdx >= state.data.length) {
+                        // Lazy load footer: shimmer 2 item menggantikan CircularProgressIndicator
+                        return const NotificationLoadMoreShimmer();
+                      }
 
-                    final group = state.data[gIdx];
-                    final items = group.data;
+                      final group = state.data[gIdx];
+                      final items = group.data;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 12),
-                          child: Text(
-                            group.dateGroup ?? '',
-                            style: AppTypography.bodyMdSemiBold.copyWith(
-                              color: AppColors.grey600,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, bottom: 12),
+                            child: Text(
+                              group.dateGroup ?? '',
+                              style: AppTypography.bodyMdSemiBold.copyWith(
+                                color: AppColors.grey600,
+                              ),
                             ),
                           ),
-                        ),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: items.length,
-                          itemBuilder: (context, itemIdx) {
-                            final item = items[itemIdx];
-                            
-                            String displayTitle = item.title ?? '';
-                            String? displayStatus;
-                            Color? displayStatusColor;
-                            
-                            if (displayTitle.toLowerCase().contains('- ditolak')) {
-                              displayStatus = 'Ditolak';
-                              displayStatusColor = const Color(0xFFE53935);
-                              displayTitle = displayTitle.replaceAll(RegExp(r'\s*-\s*ditolak', caseSensitive: false), '');
-                            } else if (displayTitle.toLowerCase().contains('- disetujui')) {
-                              displayStatus = 'Disetujui';
-                              displayStatusColor = const Color(0xFF34A853);
-                              displayTitle = displayTitle.replaceAll(RegExp(r'\s*-\s*disetujui', caseSensitive: false), '');
-                            }
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: items.length,
+                            itemBuilder: (context, itemIdx) {
+                              final item = items[itemIdx];
 
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: AppNotificationCard(
-                                leading: const NotificationIcon(
-                                  backgroundColor: Colors.white,
-                                  child: Icon(
-                                    Icons.notifications_none,
-                                    color: Color(0xFFF95E16),
-                                    size: 24,
+                              String displayTitle = item.title ?? '';
+                              String? displayStatus;
+                              Color? displayStatusColor;
+
+                              if (displayTitle
+                                  .toLowerCase()
+                                  .contains('- ditolak')) {
+                                displayStatus = 'Ditolak';
+                                displayStatusColor = const Color(0xFFE53935);
+                                displayTitle = displayTitle.replaceAll(
+                                    RegExp(r'\s*-\s*ditolak',
+                                        caseSensitive: false),
+                                    '');
+                              } else if (displayTitle
+                                  .toLowerCase()
+                                  .contains('- disetujui')) {
+                                displayStatus = 'Disetujui';
+                                displayStatusColor = const Color(0xFF34A853);
+                                displayTitle = displayTitle.replaceAll(
+                                    RegExp(r'\s*-\s*disetujui',
+                                        caseSensitive: false),
+                                    '');
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: AppNotificationCard(
+                                  leading: const NotificationIcon(
+                                    backgroundColor: Colors.white,
+                                    child: Icon(
+                                      Icons.notifications_none,
+                                      color: Color(0xFFF95E16),
+                                      size: 24,
+                                    ),
                                   ),
+                                  title: displayTitle,
+                                  status: displayStatus,
+                                  statusColor: displayStatusColor,
+                                  date: item.createdAt != null
+                                      ? dateConvertWithT(item.createdAt!)
+                                      : '',
+                                  time: item.createdAt != null
+                                      ? timeConvertWithT(item.createdAt!)
+                                      : '',
+                                  message: item.description ?? '',
+                                  isRead: item.isRead == 1,
+                                  onTap: () {
+                                    // TODO: Handle notification tap / mark as read
+                                  },
                                 ),
-                                title: displayTitle,
-                                status: displayStatus,
-                                statusColor: displayStatusColor,
-                                date: item.createdAt != null
-                                    ? dateConvertWithT(item.createdAt!)
-                                    : '',
-                                time: item.createdAt != null
-                                    ? timeConvertWithT(item.createdAt!)
-                                    : '',
-                                message: item.description ?? '',
-                                isRead: item.isRead == 1,
-                                onTap: () {
-                                  // TODO: Handle notification tap / mark as read
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  },
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 );
               },
             ),
@@ -254,31 +306,29 @@ class _NotificationPageViewState extends State<NotificationPageView>
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            'assets/images/superapp/auth/verify_code_email.svg',
-            height: 160,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SvgPicture.asset(
+          'assets/images/superapp/auth/verify_code_email.svg',
+          height: 160,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          'Tidak ada notifikasi',
+          style: AppTypography.bodyLgSemiBold.copyWith(
+            color: AppColors.black,
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Tidak ada notifikasi',
-            style: AppTypography.bodyLgSemiBold.copyWith(
-              color: AppColors.black,
-            ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Belum ada informasi apapun disini',
+          style: AppTypography.bodyMdRegular.copyWith(
+            color: AppColors.grey600,
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Belum ada informasi apapun disini',
-            style: AppTypography.bodyMdRegular.copyWith(
-              color: AppColors.grey600,
-            ),
-          ),
-          const SizedBox(height: 48),
-        ],
-      ),
+        ),
+        const SizedBox(height: 48),
+      ],
     );
   }
 }

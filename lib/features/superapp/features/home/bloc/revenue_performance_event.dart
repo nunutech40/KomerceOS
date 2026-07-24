@@ -8,13 +8,13 @@ abstract class RevenuePerformanceEvent extends Equatable {
 }
 
 class FetchRevenuePerformanceEvent extends RevenuePerformanceEvent {
-  final String startDate;
-  final String endDate;
+  final String? startDate;
+  final String? endDate;
   final String? paymentMethod;
 
   const FetchRevenuePerformanceEvent({
-    required this.startDate,
-    required this.endDate,
+    this.startDate,
+    this.endDate,
     this.paymentMethod,
   });
 

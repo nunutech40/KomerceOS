@@ -22,9 +22,20 @@ class RevenuePerformanceBloc
     Emitter<RevenuePerformanceState> emit,
   ) async {
     emit(RevenuePerformanceLoading());
+
+    // Generate default date (bulan ini) jika tidak disediakan UI
+    final now = DateTime.now();
+    final defaultStartDate = DateTime(now.year, now.month, 1);
+    final defaultEndDate = DateTime(now.year, now.month + 1, 0);
+    String format(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    final startDate = event.startDate ?? format(defaultStartDate);
+    final endDate = event.endDate ?? format(defaultEndDate);
+
     final result = await getRevenuePerformanceUseCase.call(
-      startDate: event.startDate,
-      endDate: event.endDate,
+      startDate: startDate,
+      endDate: endDate,
       paymentMethod: event.paymentMethod,
     );
 

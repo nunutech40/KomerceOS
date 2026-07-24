@@ -3,8 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 
 import '../../../../../common/global/design_system/app_typography.dart';
-// Asumsikan kamu mengimpor token Design System di sini
-// import '../design_system.dart'; 
+import 'home_skeleton.dart'; 
 
 /// 1. Enum State yang Saling Eksklusif [cite: 333]
 enum PartnerType {
@@ -31,10 +30,7 @@ class DsHomeHeader extends StatelessWidget {
     this.savingsAmount,
     this.profileUrl,
     required this.notificationWidget,
-  }) : assert(
-         type != PartnerType.komship || savingsAmount != null,
-         'savingsAmount wajib diisi jika PartnerType adalah komship',
-       );
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -135,10 +131,13 @@ class DsHomeHeader extends StatelessWidget {
                   'Hemat Ongkir ',
                   style: AppTypography.bodyMdRegular.copyWith(color: Colors.black),
                 ),
-                Text(
-                  savingsAmount ?? '',
-                  style: AppTypography.headingXxs,
-                ),
+                if (savingsAmount == null)
+                  const ShimmerBox(width: 80, height: 16)
+                else
+                  Text(
+                    savingsAmount!,
+                    style: AppTypography.headingXxs,
+                  ),
               ],
             ),
           ),

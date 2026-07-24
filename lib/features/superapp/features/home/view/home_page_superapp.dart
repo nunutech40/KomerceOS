@@ -280,18 +280,8 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                 if (index == 1) method = 'cod';
                                 if (index == 2) method = 'bank transfer';
 
-                                final now = DateTime.now();
-                                final startDate =
-                                    DateTime(now.year, now.month, 1);
-                                final endDate =
-                                    DateTime(now.year, now.month + 1, 0);
-                                String format(DateTime d) =>
-                                    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
                                 context.read<RevenuePerformanceBloc>().add(
                                       FetchRevenuePerformanceEvent(
-                                        startDate: format(startDate),
-                                        endDate: format(endDate),
                                         paymentMethod: method,
                                       ),
                                     );
@@ -303,7 +293,8 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            if (state is RevenuePerformanceLoading)
+                            if (state is RevenuePerformanceInitial ||
+                                state is RevenuePerformanceLoading)
                               const HomeChartSkeleton()
                             else if (state is RevenuePerformanceError)
                               SizedBox(
@@ -353,17 +344,12 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
       providers: [
         BlocProvider(
           create: (context) {
-            final now = DateTime.now();
-            final startDate = DateTime(now.year, now.month, 1);
-            final endDate = DateTime(now.year, now.month + 1, 0);
-            String format(DateTime d) =>
-                '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-            return locator<RevenuePerformanceBloc>()
-              ..add(FetchRevenuePerformanceEvent(
-                startDate: format(startDate),
-                endDate: format(endDate),
-              ));
+            final bloc = locator<RevenuePerformanceBloc>();
+            final profileState = context.read<SuperappProfileBloc>().state;
+            if (profileState.isKomshipVerified) {
+              bloc.add(const FetchRevenuePerformanceEvent());
+            }
+            return bloc;
           },
         ),
         BlocProvider(create: (context) => locator<CheckBillBloc>()),
@@ -534,14 +520,18 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                     context.read<SuperappProfileBloc>().add(
                           const FetchSuperappProfileEvent(),
                         );
-                    // Refresh balance jika komship & verified
+                    // Refresh balance dan grafik jika komship & verified
                     final profileState =
                         context.read<SuperappProfileBloc>().state;
-                    if (profileState.isKomshipVerified &&
-                        profileState.displayProfile?.id != null) {
-                      context.read<BalanceSummaryBloc>().add(
-                            FetchBalanceSummaryEvent(
-                                profileState.displayProfile!.id.toString()),
+                    if (profileState.isKomshipVerified) {
+                      if (profileState.displayProfile?.id != null) {
+                        context.read<BalanceSummaryBloc>().add(
+                              FetchBalanceSummaryEvent(
+                                  profileState.displayProfile!.id.toString()),
+                            );
+                      }
+                      context.read<RevenuePerformanceBloc>().add(
+                            const FetchRevenuePerformanceEvent(),
                           );
                     }
                     // Refresh notification count
@@ -558,8 +548,6 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                         // Header — nama & foto dari profile cache (muncul instan)
                         BlocConsumer<SuperappProfileBloc, SuperappProfileState>(
                           listener: (context, profileState) {
-                            final profile = profileState.displayProfile;
-
                             // Tampilkan BottomSheet Verifikasi Email
                             // unverifiedProducts sudah di-compute di State — UI tinggal consume
                             if (!_hasShownVerificationBottomSheet &&
@@ -571,15 +559,24 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                               });
                             }
 
-                            // Fetch balance summary jika komship verified
-                            if (profileState.isKomshipVerified &&
-                                profileState.displayProfile?.id != null) {
-                              context.read<BalanceSummaryBloc>().add(
-                                  FetchBalanceSummaryEvent(profileState
-                                      .displayProfile!.id
-                                      .toString()));
+                            // Fetch balance summary & revenue jika komship verified
+                            if (profileState.isKomshipVerified) {
+                              if (profileState.displayProfile?.id != null) {
+                                context.read<BalanceSummaryBloc>().add(
+                                    FetchBalanceSummaryEvent(profileState
+                                        .displayProfile!.id
+                                        .toString()));
+                              }
+                              context.read<RevenuePerformanceBloc>().add(
+                                    const FetchRevenuePerformanceEvent(),
+                                  );
                             }
                           },
+                          listenWhen: (prev, curr) =>
+                              prev.isKomshipVerified !=
+                                  curr.isKomshipVerified ||
+                              prev.unverifiedProducts.length !=
+                                  curr.unverifiedProducts.length,
                           buildWhen: (prev, curr) =>
                               prev.displayProfile?.photoProfileUrl !=
                                   curr.displayProfile?.photoProfileUrl ||
@@ -593,13 +590,14 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                             // BlocSelector: rebuild DsHomeHeader HANYA jika
                             // string savings benar-benar berubah nilainya.
                             return BlocSelector<BalanceSummaryBloc,
-                                BalanceSummaryState, String>(
+                                BalanceSummaryState, String?>(
                               selector: (state) {
                                 String formatNominal(num value) {
                                   if (value == 0) return 'Rp 0';
-                                  if (value % 1 == 0)
+                                  if (value % 1 == 0) {
                                     return CurrencyFormat.convertToIdrNum(
                                         value, 0);
+                                  }
                                   return CurrencyFormat.convertToIdrNum(
                                       value, 2);
                                 }
@@ -610,7 +608,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                 } else if (state is BalanceSummaryError) {
                                   return '--';
                                 }
-                                return 'Rp 0';
+                                return null;
                               },
                               builder: (context, savings) {
                                 return DsHomeHeader(
@@ -689,15 +687,10 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                                   height: AppSpacing.xxs),
                                               // Saldo: shimmer saat loading, error saat gagal, nilai saat berhasil
                                               if (profileState.isBalanceLoading)
-                                                Container(
+                                                const ShimmerBox(
                                                   width: 140,
                                                   height: 24,
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.grey200,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                  ),
+                                                  borderRadius: 6,
                                                 )
                                               else if (profileState
                                                   .isBalanceError)
@@ -923,6 +916,26 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                                             ),
                                           ],
                                         );
+                                      } else if (balanceState
+                                              is BalanceSummaryInitial ||
+                                          balanceState
+                                              is BalanceSummaryLoading) {
+                                        return const Column(
+                                          children: [
+                                            SizedBox(height: AppSpacing.lg),
+                                            AppInfoCard(
+                                              backgroundColor:
+                                                  AppColors.bgLight,
+                                              children: [
+                                                ShimmerBox(
+                                                    width: 180, height: 16),
+                                                SizedBox(height: AppSpacing.xs),
+                                                ShimmerBox(
+                                                    width: 220, height: 16),
+                                              ],
+                                            ),
+                                          ],
+                                        );
                                       }
 
                                       return Column(
@@ -982,20 +995,45 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
                               prev.displayProfile?.isKomcards !=
                                   curr.displayProfile?.isKomcards ||
                               prev.displayProfile?.productMailVerifications !=
-                                  curr.displayProfile?.productMailVerifications,
+                                  curr.displayProfile?.productMailVerifications ||
+                              prev.isBackgroundRefresh !=
+                                  curr.isBackgroundRefresh ||
+                              prev.status != curr.status,
                           builder: (context, profileState) {
                             // Gunakan getter dari state — tidak ada logic bisnis di UI
                             final hasKomship = profileState.isKomshipVerified;
                             final hasKomcards = profileState.isKomcardsVerified;
 
-                            // Skeleton menu saat pertama kali loading (belum ada cache)
-                            final isFirstLoad = profileState.status ==
+                            // Skeleton menu saat loading atau refresh
+                            final isLoading = profileState.status ==
                                     SuperappProfileStatus.loading ||
                                 profileState.status ==
-                                    SuperappProfileStatus.initial;
+                                    SuperappProfileStatus.loadingWithCache ||
+                                profileState.status ==
+                                    SuperappProfileStatus.initial ||
+                                profileState.isBackgroundRefresh;
 
-                            if (isFirstLoad) {
-                              return const HomeMenuSkeleton();
+                            if (isLoading) {
+                              return Column(
+                                children: [
+                                  const HomeMenuSkeleton(),
+                                  const SizedBox(height: AppSpacing.xl),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.alwaysWhite,
+                                        border: Border.all(
+                                            color: const Color(0xFFE5E5E5)),
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      child: const HomeChartSkeleton(),
+                                    ),
+                                  ),
+                                ],
+                              );
                             }
 
                             List<Widget> menuItems = [
