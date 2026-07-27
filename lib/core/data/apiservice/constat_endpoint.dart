@@ -120,7 +120,7 @@ class Endpoints {
   static String get superappNotificationInfo =>
       '$_BaseURLSuperApp/komship/api/v1/notifications/info';
   static String superappReadNotification(int id) =>
-      'https://dev.komship.komerce.my.id/api/v1/notifications/$id/read';
+      '$_BaseURLSuperApp/komship/api/v1/notifications/$id/read';
 
   //paymentKompay
   static String get paymentKompay =>

@@ -16,7 +16,8 @@ abstract class NotificationV2RemoteDataSource {
   Future<MetaResponse> readNotification(int id);
 }
 
-class NotificationV2RemoteDataSourceImpl implements NotificationV2RemoteDataSource {
+class NotificationV2RemoteDataSourceImpl
+    implements NotificationV2RemoteDataSource {
   final DioClient client;
   final DioResponseParser responseParser;
 
@@ -40,7 +41,7 @@ class NotificationV2RemoteDataSourceImpl implements NotificationV2RemoteDataSour
     if (status.isNotEmpty) {
       queryParams['status'] = status;
     }
-    
+
     // For service, we should only pass if it's not empty and not "semua"
     if (service.isNotEmpty && service.toLowerCase() != 'semua') {
       queryParams['service'] = service.toLowerCase();
