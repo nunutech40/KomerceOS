@@ -3,19 +3,24 @@ import 'package:equatable/equatable.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/core/domain/entities/notification_v2_model.dart';
 import 'package:komtim_partner/core/domain/usecases/get_notification_v2_list_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/read_notification_v2_use_case.dart';
 
 part 'notification_v2_event.dart';
 part 'notification_v2_state.dart';
 
 class NotificationV2Bloc extends Bloc<NotificationV2Event, NotificationV2State> {
   final GetNotificationV2ListUseCase getNotificationV2ListUseCase;
+  final ReadNotificationV2UseCase readNotificationV2UseCase;
   static const int _limit = 10;
 
-  NotificationV2Bloc({required this.getNotificationV2ListUseCase})
-      : super(const NotificationV2State()) {
+  NotificationV2Bloc({
+    required this.getNotificationV2ListUseCase,
+    required this.readNotificationV2UseCase,
+  }) : super(const NotificationV2State()) {
     on<FetchNotificationV2Event>(_onFetchNotifications);
     on<FilterStatusChangedEvent>(_onFilterStatusChanged);
     on<FilterServiceChangedEvent>(_onFilterServiceChanged);
+    on<ReadNotificationV2Event>(_onReadNotification);
   }
 
   Future<void> _onFetchNotifications(
@@ -108,5 +113,33 @@ class NotificationV2Bloc extends Bloc<NotificationV2Event, NotificationV2State> 
     if (state.filterService == event.service) return;
     emit(state.copyWith(filterService: event.service));
     add(const FetchNotificationV2Event(isRefresh: true));
+  }
+
+  Future<void> _onReadNotification(
+    ReadNotificationV2Event event,
+    Emitter<NotificationV2State> emit,
+  ) async {
+    final result = await readNotificationV2UseCase.call(event.id);
+
+    result.fold(
+      (failure) {
+        // Silently fail so UI remains stable
+      },
+      (success) {
+        if (success) {
+          final updatedData = state.data.map((group) {
+            final updatedItems = group.data.map((item) {
+              if (item.id == event.id) {
+                return item.copyWith(isRead: 1);
+              }
+              return item;
+            }).toList();
+            return group.copyWith(data: updatedItems);
+          }).toList();
+
+          emit(state.copyWith(data: updatedData));
+        }
+      },
+    );
   }
 }

@@ -192,6 +192,7 @@ import '../core/data/datasources/remote/revenue_performance_remote_datasource.da
 
 import '../features/superapp/features/notification/bloc/notification_v2_bloc.dart';
 import '../core/domain/usecases/get_notification_v2_list_use_case.dart';
+import '../core/domain/usecases/read_notification_v2_use_case.dart';
 import '../core/domain/usecases/get_notification_info_use_case.dart';
 import '../core/domain/repositories/notification_v2_repository.dart';
 import '../core/data/repositories/notification_v2_repository_impl.dart';
@@ -338,7 +339,10 @@ Future<void> initDependencies() async {
   locator.registerFactory(() => CreateInvoiceBloc(createInvoiceUseCase: locator()));
   locator.registerFactory(() => CreateQrcodeBloc(useCase: locator()));
   locator.registerFactory(() => CheckQrcodeBloc(useCase: locator()));
-  locator.registerFactory(() => NotificationV2Bloc(getNotificationV2ListUseCase: locator()));
+  locator.registerFactory(() => NotificationV2Bloc(
+        getNotificationV2ListUseCase: locator(),
+        readNotificationV2UseCase: locator(),
+      ));
   locator.registerFactory(() => NotificationInfoBloc(getNotificationInfoUseCase: locator()));
 
   // inject usecase
@@ -425,6 +429,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => GetRevenuePerformanceUseCase(locator()));
   locator.registerLazySingleton(() => GetNotificationV2ListUseCase(locator()));
   locator.registerLazySingleton(() => GetNotificationInfoUseCase(locator()));
+  locator.registerLazySingleton(() => ReadNotificationV2UseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<BalanceSummaryRepository>(

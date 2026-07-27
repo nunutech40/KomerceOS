@@ -1,3 +1,4 @@
+import 'package:komtim_partner/core/data/models/meta_response.dart';
 import 'package:komtim_partner/core/data/models/notification_info_response.dart';
 import 'package:komtim_partner/core/data/models/notification_v2_response.dart';
 import '../../apiservice/constat_endpoint.dart';
@@ -12,6 +13,7 @@ abstract class NotificationV2RemoteDataSource {
     String service,
   );
   Future<NotificationInfoResponse> getNotificationInfo();
+  Future<MetaResponse> readNotification(int id);
 }
 
 class NotificationV2RemoteDataSourceImpl implements NotificationV2RemoteDataSource {
@@ -64,6 +66,16 @@ class NotificationV2RemoteDataSourceImpl implements NotificationV2RemoteDataSour
     return responseParser.parseResponse<NotificationInfoResponse>(
       response,
       (json) => NotificationInfoResponse.fromJson(json),
+    );
+  }
+
+  @override
+  Future<MetaResponse> readNotification(int id) async {
+    final response = await client.patch(Endpoints.superappReadNotification(id));
+
+    return responseParser.parseResponse<MetaResponse>(
+      response,
+      (json) => MetaResponse.fromJson(json as Map<String, dynamic>),
     );
   }
 }

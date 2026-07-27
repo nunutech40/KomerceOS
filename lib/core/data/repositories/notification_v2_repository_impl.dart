@@ -31,4 +31,12 @@ class NotificationV2RepositoryImpl extends BaseRepository implements Notificatio
       return response.toEntity();
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> readNotification(int id) async {
+    return executeEither<bool>(() async {
+      final response = await remoteDataSource.readNotification(id);
+      return response.status?.toLowerCase() == 'success';
+    });
+  }
 }

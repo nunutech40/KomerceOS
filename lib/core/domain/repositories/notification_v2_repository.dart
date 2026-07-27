@@ -11,4 +11,5 @@ abstract class NotificationV2Repository {
     String service,
   );
   Future<Either<Failure, NotificationInfoModel>> getNotificationInfo();
+  Future<Either<Failure, bool>> readNotification(int id);
 }
