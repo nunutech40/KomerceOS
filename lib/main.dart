@@ -160,7 +160,7 @@ class MyApp extends StatelessWidget {
                       }
                     },
                     child: MaterialApp.router(
-                      title: 'Komtim Partner',
+                      title: 'Komerce OS',
                       debugShowCheckedModeBanner: false,
                       theme: ThemeData(
                         scaffoldBackgroundColor: Colors.white,
