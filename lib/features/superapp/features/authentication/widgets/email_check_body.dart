@@ -63,58 +63,60 @@ class EmailCheckBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Background SVG — lebar penuh, tinggi proporsional (414×248)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AspectRatio(
-              aspectRatio: 414 / 248,
-              child: SvgPicture.asset(
-                'assets/images/superapp/bg_auth.svg',
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.pageMarginLg,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height:
-                                (constraints.maxHeight * 0.20).clamp(80.0, 220.0),
-                          ),
-                          const AuthHeader(),
-                          const SizedBox(height: AppSpacing.xl),
-                          EmailCheckCard(
-                            emailController: emailController,
-                            status: _status,
-                            inlineError: inlineError,
-                            isButtonActive: _isButtonActive,
-                            isLoading: blocState is CheckEmailLoading,
-                            onSubmit: onSubmit,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                        ],
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+            return SingleChildScrollView(
+              child: Stack(
+                children: [
+                  // Background SVG — ikut scroll bersama konten
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: AspectRatio(
+                      aspectRatio: 414 / 248,
+                      child: SvgPicture.asset(
+                        'assets/images/superapp/bg_auth.svg',
+                        fit: BoxFit.fill,
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-        ],
+                  // Konten — non-positioned, menentukan tinggi Stack
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.pageMarginLg,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height:
+                              (constraints.maxHeight * 0.20).clamp(80.0, 220.0),
+                        ),
+                        const AuthHeader(),
+                        const SizedBox(height: AppSpacing.xl),
+                        EmailCheckCard(
+                          emailController: emailController,
+                          status: _status,
+                          inlineError: inlineError,
+                          isButtonActive: _isButtonActive,
+                          isLoading: blocState is CheckEmailLoading,
+                          onSubmit: onSubmit,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        // Padding keyboard — konten naik saat keyboard muncul
+                        SizedBox(height: keyboardHeight),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

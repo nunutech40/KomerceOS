@@ -347,202 +347,200 @@ class _LoginPageState extends State<LoginPage> {
 
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: Stack(
-            children: [
-              // Background SVG — lebar penuh, tinggi proporsional (414×248)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: AspectRatio(
-                  aspectRatio: 414 / 248,
-                  child: SvgPicture.asset(
-                    'assets/images/superapp/bg_auth.svg',
-                    fit: BoxFit.fill,
-                  ),
-                ),
-              ),
-              SafeArea(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(minHeight: constraints.maxHeight),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.pageMarginLg,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                height: (constraints.maxHeight * 0.20)
-                                    .clamp(80.0, 220.0),
-                              ),
-                              // --- Header ---
-                              const AuthHeader(
-                                title: 'Masuk ke Akun Kamu',
-                                subtitle:
-                                    'Pantau transaksi bisnis kamu kapan aja,\nlangsung dari aplikasi',
-                              ),
-                              const SizedBox(height: AppSpacing.xl),
-
-                              // --- Card Form ---
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadius.lg),
-                                  border: Border.all(color: AppColors.grey200),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    DsEmailInput(
-                                      label: 'Email',
-                                      controller: _emailController,
-                                      errorText: _inlineError,
-                                    ),
-                                    // Server-side status messages (with icons)
-                                    if (state.usernameErrorMessage.isNotEmpty &&
-                                        _inlineError == null) ...[
-                                      const SizedBox(height: AppSpacing.xs2),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            width: 16,
-                                            height: 16,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.bgLight,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                  color: AppColors.errorBase,
-                                                  width: 1.5),
-                                            ),
-                                            child: const Center(
-                                              child: Icon(
-                                                Icons.close_rounded,
-                                                size: 10,
-                                                color: AppColors.errorBase,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: AppSpacing.xs2),
-                                          Text(
-                                            state.usernameErrorMessage
-                                                    .toLowerCase()
-                                                    .contains(
-                                                        'user not registered')
-                                                ? 'Email belum terdaftar'
-                                                : state.usernameErrorMessage,
-                                            style: AppTypography.bodySmRegular
-                                                .copyWith(
-                                              color: AppColors.errorBase,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ] else if (_showSuccessAnim &&
-                                        _inlineError == null) ...[
-                                      const SizedBox(height: AppSpacing.xs),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.check_circle_rounded,
-                                            size: 16,
-                                            color: AppColors.successBase,
-                                          ),
-                                          const SizedBox(width: AppSpacing.xs),
-                                          Text(
-                                            'Email berhasil ditemukan',
-                                            style: AppTypography.bodySmRegular
-                                                .copyWith(
-                                              color: AppColors.successBase,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (state.isEmailChecked &&
-                                        !_showSuccessAnim) ...[
-                                      const SizedBox(height: AppSpacing.lg),
-                                      DsPasswordField(
-                                        label: 'Password',
-                                        controller: _passwordController,
-                                        errorText: (_passwordController
-                                                    .text.isNotEmpty &&
-                                                _passwordController
-                                                        .text.length <
-                                                    8)
-                                            ? 'Karakter harus minimal 8 karakter'
-                                            : null,
-                                        topTrailing: GestureDetector(
-                                          onTap: () {
-                                            context.pushNamed(
-                                              PAGES.forgotPasswrod.screenName,
-                                            );
-                                          },
-                                          child: Text(
-                                            'Lupa Password?',
-                                            style: AppTypography.labelMdSemiBold
-                                                .copyWith(
-                                              color: AppColors.primaryBase,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    const SizedBox(height: AppSpacing.xl),
-                                    if (!state.isEmailChecked ||
-                                        _showSuccessAnim)
-                                      DsButton(
-                                        text: 'Lanjut',
-                                        loadingText: _showSuccessAnim
-                                            ? 'Memuat halaman login...'
-                                            : 'Memverifikasi email...',
-                                        state: (isLoading || _showSuccessAnim)
-                                            ? DsButtonState.loading
-                                            : ((_isValidEmail(_emailController
-                                                        .text) ||
-                                                    _showSuccessAnim)
-                                                ? DsButtonState.enabled
-                                                : DsButtonState.disabled),
-                                        onPressed: () => _onCheckEmail(context),
-                                      )
-                                    else
-                                      DsButton(
-                                        text: 'Masuk',
-                                        loadingText: 'Memuat...',
-                                        state: isLoading
-                                            ? DsButtonState.loading
-                                            : ((_emailController
-                                                        .text.isNotEmpty &&
-                                                    _passwordController
-                                                            .text.length >=
-                                                        8)
-                                                ? DsButtonState.enabled
-                                                : DsButtonState.disabled),
-                                        onPressed: () =>
-                                            _onSubmitLogin(context),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                            ],
+          resizeToAvoidBottomInset: false,
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+                return SingleChildScrollView(
+                  child: Stack(
+                    children: [
+                      // Background SVG — ikut scroll bersama konten
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: AspectRatio(
+                          aspectRatio: 414 / 248,
+                          child: SvgPicture.asset(
+                            'assets/images/superapp/bg_auth.svg',
+                            fit: BoxFit.fill,
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
-              )
-            ],
+                      // Konten — non-positioned, menentukan tinggi Stack
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.pageMarginLg,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              height: (constraints.maxHeight * 0.20)
+                                  .clamp(80.0, 220.0),
+                            ),
+                            // --- Header ---
+                            const AuthHeader(
+                              title: 'Masuk ke Akun Kamu',
+                              subtitle:
+                                  'Pantau transaksi bisnis kamu kapan aja,\nlangsung dari aplikasi',
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+
+                            // --- Card Form ---
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(AppSpacing.lg),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.lg),
+                                border: Border.all(color: AppColors.grey200),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  DsEmailInput(
+                                    label: 'Email',
+                                    controller: _emailController,
+                                    errorText: _inlineError,
+                                  ),
+                                  // Server-side status messages (with icons)
+                                  if (state.usernameErrorMessage.isNotEmpty &&
+                                      _inlineError == null) ...[
+                                    const SizedBox(height: AppSpacing.xs2),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 16,
+                                          height: 16,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.bgLight,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color: AppColors.errorBase,
+                                                width: 1.5),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.close_rounded,
+                                              size: 10,
+                                              color: AppColors.errorBase,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppSpacing.xs2),
+                                        Text(
+                                          state.usernameErrorMessage
+                                                  .toLowerCase()
+                                                  .contains(
+                                                      'user not registered')
+                                              ? 'Email belum terdaftar'
+                                              : state.usernameErrorMessage,
+                                          style: AppTypography.bodySmRegular
+                                              .copyWith(
+                                            color: AppColors.errorBase,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ] else if (_showSuccessAnim &&
+                                      _inlineError == null) ...[
+                                    const SizedBox(height: AppSpacing.xs),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.check_circle_rounded,
+                                          size: 16,
+                                          color: AppColors.successBase,
+                                        ),
+                                        const SizedBox(width: AppSpacing.xs),
+                                        Text(
+                                          'Email berhasil ditemukan',
+                                          style: AppTypography.bodySmRegular
+                                              .copyWith(
+                                            color: AppColors.successBase,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  if (state.isEmailChecked &&
+                                      !_showSuccessAnim) ...[
+                                    const SizedBox(height: AppSpacing.lg),
+                                    DsPasswordField(
+                                      label: 'Password',
+                                      controller: _passwordController,
+                                      errorText: (_passwordController
+                                                  .text.isNotEmpty &&
+                                              _passwordController.text.length <
+                                                  8)
+                                          ? 'Karakter harus minimal 8 karakter'
+                                          : null,
+                                      topTrailing: GestureDetector(
+                                        onTap: () {
+                                          context.pushNamed(
+                                            PAGES.forgotPasswrod.screenName,
+                                          );
+                                        },
+                                        child: Text(
+                                          'Lupa Password?',
+                                          style: AppTypography.labelMdSemiBold
+                                              .copyWith(
+                                            color: AppColors.primaryBase,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: AppSpacing.xl),
+                                  if (!state.isEmailChecked || _showSuccessAnim)
+                                    DsButton(
+                                      text: 'Lanjut',
+                                      loadingText: _showSuccessAnim
+                                          ? 'Memuat halaman login...'
+                                          : 'Memverifikasi email...',
+                                      state: (isLoading || _showSuccessAnim)
+                                          ? DsButtonState.loading
+                                          : ((_isValidEmail(
+                                                      _emailController.text) ||
+                                                  _showSuccessAnim)
+                                              ? DsButtonState.enabled
+                                              : DsButtonState.disabled),
+                                      onPressed: () => _onCheckEmail(context),
+                                    )
+                                  else
+                                    DsButton(
+                                      text: 'Masuk',
+                                      loadingText: 'Memuat...',
+                                      state: isLoading
+                                          ? DsButtonState.loading
+                                          : ((_emailController
+                                                      .text.isNotEmpty &&
+                                                  _passwordController
+                                                          .text.length >=
+                                                      8)
+                                              ? DsButtonState.enabled
+                                              : DsButtonState.disabled),
+                                      onPressed: () => _onSubmitLogin(context),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            // Padding keyboard — bg naik saat keyboard muncul
+                            SizedBox(height: keyboardHeight),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
