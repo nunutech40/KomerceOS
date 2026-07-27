@@ -47,7 +47,7 @@ import 'package:komtim_partner/features/update/view/force_update_page.dart';
 import '../../../features/attendance/bloc/attendance_bloc.dart';
 import '../../../features/auth/bloc/change_password_bloc.dart';
 import '../../../features/superapp/features/authentication/bloc/login_bloc.dart';
-import '../../../features/auth/splash_screen.dart';
+import '../../../features/superapp/splash_screen_page.dart';
 import '../../../features/auth/view/change_password_page.dart';
 import '../../../features/superapp/features/home/view/main_page.dart';
 import '../../../features/pin/bloc/pin_bloc.dart';
@@ -131,7 +131,7 @@ class AppRouter {
         name: PAGES.splash.screenName,
         builder: (context, state) => BlocProvider(
           create: (context) => di.locator<HomePageBloc>(),
-          child: const SplashScreen(),
+          child: const SplashCreenPage(),
         ),
       ),
       GoRoute(
