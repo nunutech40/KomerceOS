@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import '../../apiservice/constat_endpoint.dart';
 import '../../apiservice/dio_client.dart';
 import '../../apiservice/dio_response_parser.dart';
@@ -32,7 +34,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       data: {
         'email': email,
         if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
-        'device': 'android'
+        'device': Platform.isAndroid ? 'android' : 'ios'
       },
     );
     return responseParser.parseResponse<CheckEmailResponse>(
@@ -55,7 +57,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       'username_email': username,
       'password': password,
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
-      'device': 'android',
+      'device': Platform.isAndroid ? 'android' : 'ios'
     };
 
     final response = await client.post(Endpoints.login, data: data);
@@ -70,6 +72,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final data = {
       'email': email,
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
+      // 'device': Platform.isAndroid ? 'android' : 'ios'
     };
 
     final response = await client.post(Endpoints.forgotPassword, data: data);
