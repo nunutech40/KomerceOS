@@ -235,108 +235,125 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
             return Scaffold(
               backgroundColor: AppColors.background,
-              body: SafeArea(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(minHeight: constraints.maxHeight),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.pageMarginLg,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                height: (constraints.maxHeight * 0.20)
-                                    .clamp(80.0, 220.0),
-                              ),
-
-                              // --- Header ---
-                              const AuthHeader(
-                                title: 'Lupa Password',
-                                subtitle:
-                                    'Tautan untuk mengatur ulang password akan dikirim\nmelalui email.',
-                              ),
-                              const SizedBox(height: AppSpacing.xl),
-
-                              // --- Card Form ---
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadius.lg),
-                                  border: Border.all(color: AppColors.grey200),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // --- Email Input ---
-                                    DsEmailInput(
-                                      label: 'Email',
-                                      controller: _emailController,
-                                      errorText: displayError,
-                                    ),
-
-                                    const SizedBox(height: AppSpacing.md),
-
-                                    // --- Kembali Masuk link ---
-                                    Center(
-                                      child: Text.rich(
-                                        TextSpan(
-                                          text: 'Ayo! Kembali ',
-                                          style: AppTypography.bodySmRegular
-                                              .copyWith(
-                                            color: AppColors.grey600,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: 'Masuk',
-                                              style: AppTypography
-                                                  .labelSmSemiBold
-                                                  .copyWith(
-                                                color: AppColors.primaryBase,
-                                              ),
-                                              recognizer: TapGestureRecognizer()
-                                                ..onTap = () {
-                                                  Navigator.pop(context);
-                                                },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(height: AppSpacing.xl),
-
-                                    // --- Tombol Kirim ---
-                                    DsButton(
-                                      text: isUnregistered
-                                          ? 'Lanjutkan'
-                                          : 'Kirim',
-                                      state: isLoading
-                                          ? DsButtonState.loading
-                                          : (isButtonActive
-                                              ? DsButtonState.enabled
-                                              : DsButtonState.disabled),
-                                      loadingText: 'Memverifikasi...',
-                                      onPressed: _onSubmit,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                            ],
-                          ),
-                        ),
+              body: Stack(
+                children: [
+                  // Background SVG — lebar penuh, tinggi proporsional (414×248)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: AspectRatio(
+                      aspectRatio: 414 / 248,
+                      child: SvgPicture.asset(
+                        'assets/images/superapp/bg_auth.svg',
+                        fit: BoxFit.fill,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                  SafeArea(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints:
+                                BoxConstraints(minHeight: constraints.maxHeight),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.pageMarginLg,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: (constraints.maxHeight * 0.20)
+                                        .clamp(80.0, 220.0),
+                                  ),
+
+                                  // --- Header ---
+                                  const AuthHeader(
+                                    title: 'Lupa Password',
+                                    subtitle:
+                                        'Tautan untuk mengatur ulang password akan dikirim\nmelalui email.',
+                                  ),
+                                  const SizedBox(height: AppSpacing.xl),
+
+                                  // --- Card Form ---
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(AppSpacing.lg),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius:
+                                          BorderRadius.circular(AppRadius.lg),
+                                      border: Border.all(color: AppColors.grey200),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // --- Email Input ---
+                                        DsEmailInput(
+                                          label: 'Email',
+                                          controller: _emailController,
+                                          errorText: displayError,
+                                        ),
+
+                                        const SizedBox(height: AppSpacing.md),
+
+                                        // --- Kembali Masuk link ---
+                                        Center(
+                                          child: Text.rich(
+                                            TextSpan(
+                                              text: 'Ayo! Kembali ',
+                                              style: AppTypography.bodySmRegular
+                                                  .copyWith(
+                                                color: AppColors.grey600,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: 'Masuk',
+                                                  style: AppTypography
+                                                      .labelSmSemiBold
+                                                      .copyWith(
+                                                    color: AppColors.primaryBase,
+                                                  ),
+                                                  recognizer: TapGestureRecognizer()
+                                                    ..onTap = () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: AppSpacing.xl),
+
+                                        // --- Tombol Kirim ---
+                                        DsButton(
+                                          text: isUnregistered
+                                              ? 'Lanjutkan'
+                                              : 'Kirim',
+                                          state: isLoading
+                                              ? DsButtonState.loading
+                                              : (isButtonActive
+                                                  ? DsButtonState.enabled
+                                                  : DsButtonState.disabled),
+                                          loadingText: 'Memverifikasi...',
+                                          onPressed: _onSubmit,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             );
           },

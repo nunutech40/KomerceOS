@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
@@ -132,105 +133,122 @@ class _NewForgotPasswordPageState extends State<NewForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.pageMarginLg,
-                  ),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height:
-                            (constraints.maxHeight * 0.15).clamp(40.0, 120.0),
-                      ),
-
-                      // --- Header ---
-                      const AuthHeader(
-                        title: 'Atur Password Baru',
-                        subtitle:
-                            'Buat password baru untuk akunmu. Pastikan password\nmudah diingat dan tidak digunakan di akun lain.',
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-
-                      // --- Card Form ---
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadius.xl),
-                          border: Border.all(color: AppColors.grey200),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Password Field
-                            DsPasswordField(
-                              label: 'Password',
-                              controller: _passController,
-                              onChanged: _validatePassword,
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-
-                            // Validation Rules
-                            if (_passController.text.isNotEmpty) ...[
-                              _buildValidationItem(
-                                text: 'Minimal 8 karakter',
-                                isValid: _hasMinLength,
-                              ),
-                              const SizedBox(height: 4),
-                              _buildValidationItem(
-                                text: 'Mengandung huruf dan angka',
-                                isValid: _hasLetterAndNumber,
-                              ),
-                              const SizedBox(height: 4),
-                              _buildValidationItem(
-                                text: 'Mengandung huruf besar dan kecil',
-                                isValid: _hasUpperAndLowerCase,
-                              ),
-                            ],
-                            const SizedBox(height: AppSpacing.lg),
-
-                            // Konfirmasi Password Field
-                            DsPasswordField(
-                              label: 'Konfirmasi Password Baru',
-                              hintText: 'Masukkan Ulang Password',
-                              controller: _confirmPassController,
-                              onChanged: (_) => setState(() {}),
-                              errorText: (!_isConfirmPasswordMatch &&
-                                      _confirmPassController.text.isNotEmpty)
-                                  ? 'Password tidak sama'
-                                  : null,
-                            ),
-
-                            const SizedBox(height: AppSpacing.xl),
-
-                            // Submit Button
-                            DsButton(
-                              text: 'Simpan',
-                              state: _isLoading
-                                  ? DsButtonState.loading
-                                  : (_isFormValid
-                                      ? DsButtonState.enabled
-                                      : DsButtonState.disabled),
-                              onPressed: _onSubmit,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                    ],
-                  ),
-                ),
+      body: Stack(
+        children: [
+          // Background SVG — lebar penuh, tinggi proporsional (414×248)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AspectRatio(
+              aspectRatio: 414 / 248,
+              child: SvgPicture.asset(
+                'assets/images/superapp/bg_auth.svg',
+                fit: BoxFit.fill,
               ),
-            );
-          },
-        ),
+            ),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.pageMarginLg,
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height:
+                                (constraints.maxHeight * 0.15).clamp(40.0, 120.0),
+                          ),
+
+                          // --- Header ---
+                          const AuthHeader(
+                            title: 'Atur Password Baru',
+                            subtitle:
+                                'Buat password baru untuk akunmu. Pastikan password\nmudah diingat dan tidak digunakan di akun lain.',
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+
+                          // --- Card Form ---
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(AppRadius.xl),
+                              border: Border.all(color: AppColors.grey200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Password Field
+                                DsPasswordField(
+                                  label: 'Password',
+                                  controller: _passController,
+                                  onChanged: _validatePassword,
+                                ),
+                                const SizedBox(height: AppSpacing.sm),
+
+                                // Validation Rules
+                                if (_passController.text.isNotEmpty) ...[
+                                  _buildValidationItem(
+                                    text: 'Minimal 8 karakter',
+                                    isValid: _hasMinLength,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  _buildValidationItem(
+                                    text: 'Mengandung huruf dan angka',
+                                    isValid: _hasLetterAndNumber,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  _buildValidationItem(
+                                    text: 'Mengandung huruf besar dan kecil',
+                                    isValid: _hasUpperAndLowerCase,
+                                  ),
+                                ],
+                                const SizedBox(height: AppSpacing.lg),
+
+                                // Konfirmasi Password Field
+                                DsPasswordField(
+                                  label: 'Konfirmasi Password Baru',
+                                  hintText: 'Masukkan Ulang Password',
+                                  controller: _confirmPassController,
+                                  onChanged: (_) => setState(() {}),
+                                  errorText: (!_isConfirmPasswordMatch &&
+                                          _confirmPassController.text.isNotEmpty)
+                                      ? 'Password tidak sama'
+                                      : null,
+                                ),
+
+                                const SizedBox(height: AppSpacing.xl),
+
+                                // Submit Button
+                                DsButton(
+                                  text: 'Simpan',
+                                  state: _isLoading
+                                      ? DsButtonState.loading
+                                      : (_isFormValid
+                                          ? DsButtonState.enabled
+                                          : DsButtonState.disabled),
+                                  onPressed: _onSubmit,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
