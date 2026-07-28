@@ -21,6 +21,26 @@ import 'common/global/router/app_router.dart';
 import 'common/global/router/router_utils.dart';
 import 'common/global/widgets/connectivity_wrapper.dart';
 import 'core/services/deep_link_service.dart';
+import 'features/attendance/bloc/attendance_bloc.dart';
+import 'features/feed/bloc/feed_bloc.dart';
+import 'features/invoice/bloc/invoice_list_bloc.dart';
+import 'features/invoice/bloc/invoice_report_summary_bloc.dart';
+import 'features/invoice/bloc/payment_method_bloc.dart';
+import 'features/performance/bloc/report_performance_bloc.dart';
+import 'features/pin/bloc/pin_bloc.dart';
+import 'features/profile/bloc/profile_bloc.dart';
+import 'features/ratetalent/bloc/rate_talent_bloc.dart';
+import 'features/shopping/bloc/shopping_bloc.dart';
+import 'features/superapp/features/authentication/bloc/check_email_bloc.dart';
+import 'features/superapp/features/authentication/bloc/forgot_password_bloc.dart';
+import 'features/superapp/features/authentication/bloc/login_bloc.dart';
+import 'features/superapp/features/home/bloc/balance_summary_bloc.dart';
+import 'features/superapp/features/home/bloc/revenue_performance_bloc.dart';
+import 'features/superapp/features/topup/bloc/check_bill_bloc.dart';
+import 'features/superapp/features/topup/bloc/expire_invoice_bloc.dart';
+import 'features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
+import 'features/unhire/bloc/talent_list_bloc.dart';
+import 'features/unhire/bloc/talent_list_selected_bloc.dart';
 
 bool _isServerErrorShowing = false;
 
@@ -113,11 +133,60 @@ class MyApp extends StatelessWidget {
           } else {
             return MultiBlocProvider(
               providers: [
+                // ── GLOBAL BLOCS ──────────────────────────────────────────
                 BlocProvider<AuthBloc>.value(value: di.locator<AuthBloc>()),
                 BlocProvider<GlobalAlertBloc>.value(
                     value: di.locator<GlobalAlertBloc>()),
                 BlocProvider<SuperappProfileBloc>.value(
                     value: di.locator<SuperappProfileBloc>()),
+                // ── AUTHENTICATION ────────────────────────────────────────
+                BlocProvider<CheckEmailBloc>(
+                    create: (_) => di.locator<CheckEmailBloc>()),
+                BlocProvider<LoginBloc>(create: (_) => di.locator<LoginBloc>()),
+                BlocProvider<ForgotPasswordBloc>(
+                    create: (_) => di.locator<ForgotPasswordBloc>()),
+                // ── HOME ──────────────────────────────────────────────────
+                BlocProvider<BalanceSummaryBloc>(
+                    create: (_) => di.locator<BalanceSummaryBloc>()),
+                BlocProvider<RevenuePerformanceBloc>(
+                    create: (_) => di.locator<RevenuePerformanceBloc>()),
+                BlocProvider<CheckBillBloc>(
+                    create: (_) => di.locator<CheckBillBloc>()),
+                // ── PROFILE ───────────────────────────────────────────────
+                BlocProvider<ProfileBloc>(
+                    create: (_) => di.locator<ProfileBloc>()),
+                // ── INVOICE ───────────────────────────────────────────────
+                BlocProvider<InvoiceListBloc>(
+                    create: (_) => di.locator<InvoiceListBloc>()),
+                BlocProvider<InvoiceDetailBloc>(
+                    create: (_) => di.locator<InvoiceDetailBloc>()),
+                BlocProvider<PaymentMethodBloc>(
+                    create: (_) => di.locator<PaymentMethodBloc>()),
+                // ── RATE TALENT ───────────────────────────────────────────
+                BlocProvider<RateTalentBloc>(
+                    create: (_) => di.locator<RateTalentBloc>()),
+                // ── KOMPAY / TOPUP ────────────────────────────────────────
+                BlocProvider<ExpireQrcodeBloc>(
+                    create: (_) => di.locator<ExpireQrcodeBloc>()),
+                BlocProvider<ExpireInvoiceBloc>(
+                    create: (_) => di.locator<ExpireInvoiceBloc>()),
+                // ── PIN ───────────────────────────────────────────────────
+                BlocProvider<PinBloc>(create: (_) => di.locator<PinBloc>()),
+                // ── UNHIRE ────────────────────────────────────────────────
+                BlocProvider<TalentListBloc>(
+                    create: (_) => di.locator<TalentListBloc>()),
+                BlocProvider<TalentListSelectedBloc>(
+                    create: (_) => di.locator<TalentListSelectedBloc>()),
+                // ── SHOPPING ──────────────────────────────────────────────
+                BlocProvider<ShoppingBloc>(
+                    create: (_) => di.locator<ShoppingBloc>()),
+                // ── ATTENDANCE & FEED ─────────────────────────────────────
+                BlocProvider<AttendanceBloc>(
+                    create: (_) => di.locator<AttendanceBloc>()),
+                BlocProvider<FeedBloc>(create: (_) => di.locator<FeedBloc>()),
+                // ── PERFORMANCE ───────────────────────────────────────────
+                BlocProvider<ReportPerformanceBloc>(
+                    create: (_) => di.locator<ReportPerformanceBloc>()),
               ],
               child: ConnectivityWrapper(
                 navigatorKey: AppRouter.navigatorKey,
