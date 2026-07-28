@@ -6,24 +6,42 @@ import 'package:komtim_partner/core/domain/entities/login_model.dart';
 import 'package:komtim_partner/core/domain/entities/profile_model.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
+
 import '../../../helpers/helpers.dart';
+
+class FakeAuthBloc extends AuthBloc {
+  bool loginEventAdded = false;
+  UserLoginModel? addedUser;
+
+  FakeAuthBloc({required super.sharedPref});
+
+  @override
+  void add(AuthEvent event) {
+    if (event is AuthLoginRequested) {
+      loginEventAdded = true;
+      addedUser = event.user;
+    }
+    super.add(event);
+  }
+}
 
 void main() {
   late DoLoginUseCase usecase;
   late MockAuthRepository mockAuthRepository;
-  late MockAuthenticationManager mockAuthManager;
+  late FakeAuthBloc fakeAuthBloc;
   late MockGetProfileUseCase mockGetProfileUseCase;
 
   setUp(() {
     mockAuthRepository = MockAuthRepository();
-    mockAuthManager = MockAuthenticationManager();
+    fakeAuthBloc = FakeAuthBloc(sharedPref: MockSharedPref());
     mockGetProfileUseCase = MockGetProfileUseCase();
     usecase = DoLoginUseCase(
       mockAuthRepository,
       mockGetProfileUseCase,
-      mockAuthManager,
+      fakeAuthBloc,
     );
-    when(mockAuthManager.login(any)).thenAnswer((_) async {});
   });
 
   const tUsername = 'john_doe';
@@ -60,7 +78,8 @@ void main() {
       
       // Contract Check ketat (1x masing2)
       verify(mockAuthRepository.doLogin(tUsername, tPassword)).called(1);
-      verify(mockAuthManager.login(tUserLoginModel)).called(1); // manager dieksekusi dengan model
+      expect(fakeAuthBloc.loginEventAdded, true); 
+      expect(fakeAuthBloc.addedUser, tUserLoginModel); 
       verify(mockGetProfileUseCase.execute()).called(1); // profile usecase ikut ditarik
       verifyNoMoreInteractions(mockAuthRepository);
     });
@@ -80,7 +99,7 @@ void main() {
       verify(mockAuthRepository.doLogin(tUsername, tPassword)).called(1);
 
       // EDGE: Pastikan Usecase tidak membocorkan credential manager!
-      verifyZeroInteractions(mockAuthManager);
+      expect(fakeAuthBloc.loginEventAdded, false);
       verifyZeroInteractions(mockGetProfileUseCase);
     });
 
@@ -102,7 +121,7 @@ void main() {
       verify(mockAuthRepository.doLogin(tUsername, tPassword)).called(1);
       
       // Data null -> authenticationManager login tidak boleh dieksekusi! (Menghindari TypeError)
-      verifyNever(mockAuthManager.login(any));
+      expect(fakeAuthBloc.loginEventAdded, false);
       
       // Namun Profile usecase tetap ditarik (sesuai implementation `if (r.data != null) ... await getProfileUseCase()`)
       verify(mockGetProfileUseCase.execute()).called(1);

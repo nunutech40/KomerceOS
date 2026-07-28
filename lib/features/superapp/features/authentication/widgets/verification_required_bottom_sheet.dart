@@ -1,8 +1,6 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
@@ -21,17 +19,20 @@ import 'package:komtim_partner/features/superapp/features/authentication/views/e
 class VerificationRequiredBottomSheet extends StatelessWidget {
   final String email;
   final List<PartnerProductModel> partnerProducts;
+  final String buttonLabel;
 
   const VerificationRequiredBottomSheet({
     super.key,
     required this.email,
     required this.partnerProducts,
+    this.buttonLabel = 'Masuk',
   });
 
   static Future<T?> show<T>({
     required BuildContext context,
     required String email,
     required List<PartnerProductModel> partnerProducts,
+    String buttonLabel = 'Masuk',
   }) {
     return showModalBottomSheet<T>(
       context: context,
@@ -51,6 +52,7 @@ class VerificationRequiredBottomSheet extends StatelessWidget {
         child: VerificationRequiredBottomSheet(
           email: email,
           partnerProducts: partnerProducts,
+          buttonLabel: buttonLabel,
         ),
       ),
     );
@@ -220,6 +222,7 @@ class VerificationRequiredBottomSheet extends StatelessWidget {
             child: EmailVerifSentPage(
               email: email,
               productName: productName,
+              buttonLabel: buttonLabel,
             ),
           ),
         ),
@@ -238,6 +241,7 @@ class VerificationRequiredBottomSheet extends StatelessWidget {
               email: email,
               productName: productName,
               initialCountDown: state.countDown,
+              buttonLabel: buttonLabel,
             ),
           ),
         ),
@@ -297,23 +301,19 @@ class _ProductRadioTile extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 child: product.urlLogo != null && product.urlLogo!.isNotEmpty
-                    ? (product.urlLogo!.toLowerCase().endsWith('.svg')
-                        ? SvgPicture.network(
-                            product.urlLogo!,
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.contain,
-                          )
-                        : CachedNetworkImage(
-                            imageUrl: product.urlLogo!,
-                            fit: BoxFit.contain,
-                            placeholder: (_, __) => const CircularProgressIndicator(strokeWidth: 2),
-                            errorWidget: (_, __, ___) => const Icon(
-                              Icons.store_outlined,
-                              size: 20,
-                              color: AppColors.grey400,
-                            ),
-                          ))
+                    ? DsAppImage(
+                        source: product.urlLogo!,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                        placeholder:
+                            const CircularProgressIndicator(strokeWidth: 2),
+                        errorWidget: const Icon(
+                          Icons.store_outlined,
+                          size: 20,
+                          color: AppColors.grey400,
+                        ),
+                      )
                     : const Icon(
                         Icons.store_outlined,
                         size: 20,

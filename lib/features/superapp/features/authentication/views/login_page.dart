@@ -30,12 +30,20 @@ class _LoginPageState extends State<LoginPage> {
   Timer? _debounce;
   bool _wasEmailChecked = false;
   bool _showSuccessAnim = false;
+  /// Guard: cegah listener trigger saat controller baru di-init dengan initial value.
+  /// Tanpa ini, addListener dipanggil saat text berubah dari '' → widget.email,
+  /// yang memicu debounce check email dan menghasilkan snackbar anomali.
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController(text: widget.email);
     _passwordController = TextEditingController();
+    // Set flag setelah init agar listener tidak trigger saat initial value di-set
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isInitialized = true;
+    });
     _emailController.addListener(_onFormChanged);
     _passwordController.addListener(_onFormChanged);
   }
@@ -54,6 +62,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onFormChanged() {
+    // Guard: abaikan panggilan pertama saat controller baru di-init
+    if (!_isInitialized) return;
+
     final blocState = context.read<LoginBloc>().state;
     final email = _emailController.text;
 
@@ -176,15 +187,16 @@ class _LoginPageState extends State<LoginPage> {
       // Error lain (user not registered, user is non partner) tetap tampilkan via bottom sheet.
       final isCheckEmailPhase =
           !state.isEmailChecked && state.passwordErrorMessage.isEmpty;
-      final isLoginOnlyError = lowerError.contains('login_attempt') ||
-          lowerError.contains('lock') ||
-          lowerError.contains('please wait 24 hour') ||
-          lowerError.contains('incorrect password') ||
-          lowerError.contains('wrong password');
 
-      if (isCheckEmailPhase && isLoginOnlyError) {
-        // Error login-specific muncul di fase check email → abaikan, sudah tampil inline
-        return;
+      // Saat fase check email, error ditampilkan INLINE di bawah TextField.
+      // Kecuali error khusus yang butuh Bottom Sheet (seperti user not registered), kita abaikan SnackBar.
+      if (isCheckEmailPhase) {
+        if (!lowerError.contains('user not registered') &&
+            !lowerError.contains('user is non partner')) {
+          // Reset status agar tidak terus-terusan trigger failure state, tapi biarkan usernameErrorMessage
+          context.read<LoginBloc>().add(LoginStatusResetEvent());
+          return;
+        }
       }
 
       if (lowerError.contains('login_attempt') ||
@@ -320,10 +332,8 @@ class _LoginPageState extends State<LoginPage> {
         context.read<LoginBloc>().add(LoginStatusResetEvent());
       }
     } else if (state.status == RequestStatus.success) {
-      // Navigasi ke halaman beranda
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Berhasil!')),
-      );
+      // Navigasi ke halaman beranda sudah di-handle oleh GoRouter via AuthBloc.
+      // Tidak perlu menampilkan SnackBar sukses.
     }
   }
 

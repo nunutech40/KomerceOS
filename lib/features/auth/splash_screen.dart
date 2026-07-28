@@ -13,9 +13,11 @@ import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/features/home/bloc/home_page_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../common/global/bloc/auth/auth_bloc.dart';
 import '../../common/global/router/app_router.dart';
 import '../../common/global/router/router_utils.dart';
 import '../../core/data/datasources/preferences/shared_pref.dart';
+import '../../core/domain/entities/auth_state.dart';
 import '../../firebase_options.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -95,6 +97,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void loadData() async {
+    // TEMPORARY: Di-comment sementara karena endpoint ini men-trigger 401
+    // yang menyebabkan user terlempar ke login saat Hot Restart.
+    /*
     // Invoke Bloc event after initial frame is rendered
     await _bloc.add(const HomePageDidload());
     await _bloc.add(
@@ -102,6 +107,7 @@ class _SplashScreenState extends State<SplashScreen> {
     //loadbloc withdarawal
     await _bloc.add(LoadDataCecktransactionTopUpEvent(
         typeCheckTrasaction: checktransaction));
+    */
   }
 
   void _initializeBloc() {
@@ -257,9 +263,22 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (isgreater == true && typeUpdate == 'major') {
       AppRouter.router.go(PAGES.forceUpdatePage.screenPath);
-    } else {
-      AppRouter.router.go(PAGES.main.screenPath);
+      return;
     }
+
+    // Tunggu AuthBloc selesai cek session sebelum navigasi
+    // agar router redirect yang berbasis AuthStatus tidak konflik
+    if (!mounted) return;
+    final authBloc = context.read<AuthBloc>();
+    if (authBloc.state.status == AuthStatus.initial ||
+        authBloc.state.status == AuthStatus.checking) {
+      await authBloc.stream.firstWhere(
+        (s) => s.status != AuthStatus.initial && s.status != AuthStatus.checking,
+      );
+    }
+
+    // Router sudah reaktif — cukup navigate ke main, redirect akan handle sisanya
+    AppRouter.router.go(PAGES.main.screenPath);
   }
 
   //Handle Check Account

@@ -115,7 +115,6 @@ import '../core/data/repositories/auth_repository_impl.dart';
 import '../core/data/repositories/profile_repository_impl.dart';
 import '../core/data/services/firebase_logout_cleanup_service.dart';
 import '../core/data/shared/payload.dart';
-import '../core/domain/managers/authentication_manager.dart';
 import '../core/domain/repositories/auth_repository.dart';
 import '../core/domain/repositories/profile_repository.dart';
 import '../core/domain/services/logout_cleanup_service.dart';
@@ -138,6 +137,67 @@ import '../features/profile/bloc/profile_bloc.dart';
 import '../features/ratetalent/bloc/rate_talent_bloc.dart';
 import '../features/superapp/features/authentication/bloc/check_email_bloc.dart';
 import '../features/superapp/features/authentication/bloc/verification_bloc.dart';
+import '../features/superapp/features/myapp/bloc/aplikasiku_bloc.dart';
+import '../features/superapp/features/myapp/domain/usecases/get_aplikasiku_list_usecase.dart';
+import '../features/superapp/features/myapp/domain/repositories/aplikasiku_repository.dart';
+import '../features/superapp/features/myapp/data/repositories/aplikasiku_repository_impl.dart';
+import '../features/superapp/features/myapp/data/datasource/aplikasiku_remote_datasource.dart';
+
+import '../features/superapp/features/topup/bloc/check_bill_bloc.dart';
+import '../core/domain/usecases/check_bill_use_case.dart';
+import '../core/domain/repositories/check_bill_repository.dart';
+import '../core/data/repositories/check_bill_repository_impl.dart';
+import '../core/data/datasources/remote/check_bill_remote_datasource.dart';
+
+import '../features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
+import '../core/domain/usecases/expire_qrcode_use_case.dart';
+import '../core/domain/repositories/expire_qrcode_repository.dart';
+import '../core/data/repositories/expire_qrcode_repository_impl.dart';
+import '../core/data/datasources/remote/expire_qrcode_remote_datasource.dart';
+import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_invoice_bloc.dart';
+import 'package:komtim_partner/core/domain/usecases/expire_invoice_use_case.dart';
+import 'package:komtim_partner/core/domain/repositories/expire_invoice_repository.dart';
+import 'package:komtim_partner/core/data/repositories/expire_invoice_repository_impl.dart';
+import 'package:komtim_partner/core/data/datasources/remote/expire_invoice_remote_datasource.dart';
+
+import '../features/superapp/features/topup/bloc/create_invoice_bloc.dart';
+import '../core/domain/usecases/create_invoice_use_case.dart';
+import '../core/data/repositories/create_invoice_repository.dart';
+import '../core/data/datasources/remote/create_invoice_remote_datasource.dart';
+import '../features/superapp/features/topup/bloc/create_qrcode_bloc.dart';
+import '../core/domain/usecases/create_qrcode_use_case.dart';
+import '../core/data/repositories/create_qrcode_repository.dart';
+import '../core/data/datasources/remote/create_qrcode_remote_datasource.dart';
+import '../features/superapp/features/topup/bloc/check_qrcode_bloc.dart';
+import '../core/domain/usecases/check_qrcode_use_case.dart';
+import '../core/data/repositories/check_qrcode_repository.dart';
+import '../core/data/datasources/remote/check_qrcode_remote_datasource.dart';
+import '../common/global/bloc/auth/auth_bloc.dart';
+import '../common/global/bloc/global_alert/global_alert_bloc.dart';
+import '../common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
+import '../core/data/datasources/remote/superapp_profile_remote_datasource.dart';
+import '../core/data/repositories/superapp_profile_repository_impl.dart';
+
+import '../features/superapp/features/home/bloc/balance_summary_bloc.dart';
+import '../core/domain/usecases/get_balance_summary_use_case.dart';
+import '../core/domain/repositories/balance_summary_repository.dart';
+import '../core/data/repositories/balance_summary_repository_impl.dart';
+import '../core/data/datasources/remote/balance_summary_remote_datasource.dart';
+
+import '../features/superapp/features/home/bloc/revenue_performance_bloc.dart';
+import '../core/domain/usecases/get_revenue_performance_use_case.dart';
+import '../core/domain/repositories/revenue_performance_repository.dart';
+import '../core/data/repositories/revenue_performance_repository_impl.dart';
+import '../core/data/datasources/remote/revenue_performance_remote_datasource.dart';
+
+import '../features/superapp/features/notification/bloc/notification_v2_bloc.dart';
+import '../core/domain/usecases/get_notification_v2_list_use_case.dart';
+import '../core/domain/usecases/read_notification_v2_use_case.dart';
+import '../core/domain/usecases/get_notification_info_use_case.dart';
+import '../core/domain/repositories/notification_v2_repository.dart';
+import '../core/data/repositories/notification_v2_repository_impl.dart';
+import '../core/data/datasources/remote/notification_v2_remote_datasource.dart';
+import '../features/superapp/features/notification/bloc/notification_info_bloc.dart';
 
 final locator = GetIt.instance;
 
@@ -177,6 +237,11 @@ Future<void> initDependencies() async {
         getNotifCountUseCase: locator(),
         getTalentRecommendationUseCase: locator(),
       ));
+
+  locator.registerFactory(
+      () => BalanceSummaryBloc(getBalanceSummaryUseCase: locator()));
+  locator.registerFactory(
+      () => RevenuePerformanceBloc(getRevenuePerformanceUseCase: locator()));
 
   locator.registerFactory(() => HistoryPageBloc(
         getTransactionHistoryUseCase: locator(),
@@ -262,6 +327,24 @@ Future<void> initDependencies() async {
         getReportPerformanceMonthlyUseCase: locator(),
       ));
 
+  locator.registerFactory(() => AplikasikuBloc(
+        getAplikasikuListUseCase: locator(),
+        resendVerificationUseCase: locator(),
+        getLocaleProfileUseCase: locator(),
+      ));
+
+  locator.registerFactory(() => CheckBillBloc(checkBillUseCase: locator()));
+  locator.registerFactory(() => ExpireQrcodeBloc(expireQrcodeUseCase: locator()));
+  locator.registerFactory(() => ExpireInvoiceBloc(expireInvoiceUseCase: locator()));
+  locator.registerFactory(() => CreateInvoiceBloc(createInvoiceUseCase: locator()));
+  locator.registerFactory(() => CreateQrcodeBloc(useCase: locator()));
+  locator.registerFactory(() => CheckQrcodeBloc(useCase: locator()));
+  locator.registerFactory(() => NotificationV2Bloc(
+        getNotificationV2ListUseCase: locator(),
+        readNotificationV2UseCase: locator(),
+      ));
+  locator.registerFactory(() => NotificationInfoBloc(getNotificationInfoUseCase: locator()));
+
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
   locator.registerLazySingleton(() => CheckEmailLoginUseCase(locator()));
@@ -334,8 +417,26 @@ Future<void> initDependencies() async {
       .registerLazySingleton(() => GetTalentRecommendationUseCase(locator()));
   locator.registerLazySingleton(() => GetIdealBalanceUseCase(locator()));
   locator.registerLazySingleton(() => GetTalentEvaluationsUseCase(locator()));
+  locator.registerLazySingleton(() => GetAplikasikuListUseCase(locator()));
+  locator.registerLazySingleton(() => CheckBillUseCase(locator()));
+  locator.registerLazySingleton(() => ExpireQrcodeUseCase(locator()));
+  locator.registerLazySingleton(() => ExpireInvoiceUseCase(repository: locator()));
+  locator.registerLazySingleton(() => CreateInvoiceUseCase(locator()));
+  locator.registerLazySingleton(() => CreateQrcodeUseCase(locator()));
+  locator.registerLazySingleton(() => CheckQrcodeUseCase(locator()));
+
+  locator.registerLazySingleton(() => GetBalanceSummaryUseCase(locator()));
+  locator.registerLazySingleton(() => GetRevenuePerformanceUseCase(locator()));
+  locator.registerLazySingleton(() => GetNotificationV2ListUseCase(locator()));
+  locator.registerLazySingleton(() => GetNotificationInfoUseCase(locator()));
+  locator.registerLazySingleton(() => ReadNotificationV2UseCase(locator()));
 
   // inject repository
+  locator.registerLazySingleton<BalanceSummaryRepository>(
+      () => BalanceSummaryRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<RevenuePerformanceRepository>(
+      () => RevenuePerformanceRepositoryImpl(remoteDataSource: locator()));
+
   locator.registerLazySingleton<AuthRepository>(() =>
       AuthRepositoryImpl(remoteDataSource: locator(), sharedPref: locator()));
   locator.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(
@@ -369,8 +470,41 @@ Future<void> initDependencies() async {
       () => TalentRecomendationRepositoryImpl(
             remoteDataSource: locator(),
           ));
+  locator.registerLazySingleton<AplikasikuRepository>(
+      () => AplikasikuRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CheckBillRepository>(
+      () => CheckBillRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<ExpireQrcodeRepository>(
+      () => ExpireQrcodeRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<ExpireInvoiceRepository>(
+      () => ExpireInvoiceRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CreateInvoiceRepository>(
+      () => CreateInvoiceRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CreateQrcodeRepository>(
+      () => CreateQrcodeRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<CheckQrcodeRepository>(
+      () => CheckQrcodeRepositoryImpl(
+            remoteDataSource: locator(),
+            superappProfileRepository: locator(),
+          ));
+
+  locator.registerLazySingleton<SuperappProfileRepositoryImpl>(
+      () => SuperappProfileRepositoryImpl(
+            remoteDataSource: locator(),
+            sharedPreferences: locator.getAsync<SharedPreferences>(),
+          ));
+          
+  locator.registerLazySingleton<NotificationV2Repository>(
+      () => NotificationV2RepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
+  locator.registerLazySingleton<BalanceSummaryRemoteDataSource>(() =>
+      BalanceSummaryRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<RevenuePerformanceRemoteDataSource>(() =>
+      RevenuePerformanceRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+
   locator.registerLazySingleton<AuthRemoteDataSource>(() =>
       AuthRemoteDataSourceImpl(client: locator(), responseParser: locator()));
   locator.registerLazySingleton<ProfileRemoteDataSource>(() =>
@@ -407,6 +541,34 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<TalentRecomendationRemoteDataSource>(() =>
       TalentRecomendationRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<AplikasikuRemoteDataSource>(() =>
+      AplikasikuRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CheckBillRemoteDataSource>(() =>
+      CheckBillRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<ExpireQrcodeRemoteDataSource>(() =>
+      ExpireQrcodeRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<ExpireInvoiceRemoteDataSource>(() =>
+      ExpireInvoiceRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CreateInvoiceRemoteDataSource>(() =>
+      CreateInvoiceRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CreateQrcodeRemoteDataSource>(() =>
+      CreateQrcodeRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<CheckQrcodeRemoteDataSource>(() =>
+      CheckQrcodeRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<SuperappProfileRemoteDataSource>(() =>
+      SuperappProfileRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+
+  locator.registerLazySingleton<NotificationV2RemoteDataSource>(() =>
+      NotificationV2RemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
 
   // Register SharedPreferences
   locator.registerSingletonAsync<SharedPreferences>(
@@ -428,7 +590,8 @@ Future<void> initDependencies() async {
   // Dio Service
   locator.registerLazySingleton(() => AuthInterceptor(
         tokenProvider: locator(),
-        authenticationManager: locator(),
+        authBloc: locator(),
+        globalAlertBloc: locator(),
       ));
   locator.registerLazySingleton(() => DioResponseParser());
   locator.registerLazySingleton(() => DioClient(
@@ -436,13 +599,27 @@ Future<void> initDependencies() async {
         authInterceptor: locator(),
       ));
 
+  // Global Blocs
+  locator.registerLazySingleton<AuthBloc>(
+      () => AuthBloc(sharedPref: locator()));
+  locator.registerLazySingleton<GlobalAlertBloc>(() => GlobalAlertBloc());
+  // SuperappProfileBloc: lazySingleton, di-init manual setelah allReady()
+  // agar AuthBloc & SuperappProfileRepositoryImpl sudah siap
+  locator.registerLazySingleton<SuperappProfileBloc>(
+      () => SuperappProfileBloc(
+            repository: locator(),
+            authBloc: locator(),
+          ));
+
   // Domain Managers
-  locator.registerLazySingleton<AuthenticationManager>(
-      () => AuthenticationManager(sharedPref: locator()));
   locator.registerLazySingleton<SharedDataService>(() => SharedDataService());
   locator.registerLazySingleton<LogoutCleanupService>(
       () => FirebaseLogoutCleanupService());
 
   // Ensure SharedPreferences is ready
   await locator.allReady();
+
+  // Force init SuperappProfileBloc agar tidak miss event dari AuthBloc
+  // (karena singleton lazy bisa miss event kalau baru di-init setelah authenticated di-emit)
+  locator<SuperappProfileBloc>();
 }

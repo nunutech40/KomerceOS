@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 class NoInternetErrorView extends StatelessWidget {

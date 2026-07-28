@@ -3,16 +3,9 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
-import 'dart:ui' as _i7;
+import 'dart:async' as _i3;
 
-import 'package:komtim_partner/core/data/apiservice/token_provider.dart' as _i8;
-import 'package:komtim_partner/core/data/datasources/preferences/shared_pref.dart'
-    as _i2;
-import 'package:komtim_partner/core/domain/entities/auth_state.dart' as _i3;
-import 'package:komtim_partner/core/domain/entities/login_model.dart' as _i6;
-import 'package:komtim_partner/core/domain/managers/authentication_manager.dart'
-    as _i4;
+import 'package:komtim_partner/core/data/apiservice/token_provider.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -30,169 +23,34 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 // ignore_for_file: invalid_use_of_internal_member
 
-class _FakeSharedPref_0 extends _i1.SmartFake implements _i2.SharedPref {
-  _FakeSharedPref_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeAuthState_1 extends _i1.SmartFake implements _i3.AuthState {
-  _FakeAuthState_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-/// A class which mocks [AuthenticationManager].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockAuthenticationManager extends _i1.Mock
-    implements _i4.AuthenticationManager {
-  MockAuthenticationManager() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i2.SharedPref get sharedPref => (super.noSuchMethod(
-        Invocation.getter(#sharedPref),
-        returnValue: _FakeSharedPref_0(
-          this,
-          Invocation.getter(#sharedPref),
-        ),
-      ) as _i2.SharedPref);
-
-  @override
-  _i3.AuthStatus get status => (super.noSuchMethod(
-        Invocation.getter(#status),
-        returnValue: _i3.AuthStatus.initial,
-      ) as _i3.AuthStatus);
-
-  @override
-  _i3.AuthState get value => (super.noSuchMethod(
-        Invocation.getter(#value),
-        returnValue: _FakeAuthState_1(
-          this,
-          Invocation.getter(#value),
-        ),
-      ) as _i3.AuthState);
-
-  @override
-  set value(_i3.AuthState? newValue) => super.noSuchMethod(
-        Invocation.setter(
-          #value,
-          newValue,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  bool get hasListeners => (super.noSuchMethod(
-        Invocation.getter(#hasListeners),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  _i5.Future<void> checkLoginStatus() => (super.noSuchMethod(
-        Invocation.method(
-          #checkLoginStatus,
-          [],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> login(_i6.UserLoginModel? newUser) => (super.noSuchMethod(
-        Invocation.method(
-          #login,
-          [newUser],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> logout() => (super.noSuchMethod(
-        Invocation.method(
-          #logout,
-          [],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-
-  @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
-        Invocation.method(
-          #addListener,
-          [listener],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
-        Invocation.method(
-          #removeListener,
-          [listener],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void dispose() => super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void notifyListeners() => super.noSuchMethod(
-        Invocation.method(
-          #notifyListeners,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-}
-
 /// A class which mocks [TokenProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTokenProvider extends _i1.Mock implements _i8.TokenProvider {
+class MockTokenProvider extends _i1.Mock implements _i2.TokenProvider {
   MockTokenProvider() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<String?> getAccessToken() => (super.noSuchMethod(
+  _i3.Future<String?> getAccessToken() => (super.noSuchMethod(
         Invocation.method(
           #getAccessToken,
           [],
         ),
-        returnValue: _i5.Future<String?>.value(),
-      ) as _i5.Future<String?>);
+        returnValue: _i3.Future<String?>.value(),
+      ) as _i3.Future<String?>);
 
   @override
-  _i5.Future<String?> getRefreshToken() => (super.noSuchMethod(
+  _i3.Future<String?> getRefreshToken() => (super.noSuchMethod(
         Invocation.method(
           #getRefreshToken,
           [],
         ),
-        returnValue: _i5.Future<String?>.value(),
-      ) as _i5.Future<String?>);
+        returnValue: _i3.Future<String?>.value(),
+      ) as _i3.Future<String?>);
 
   @override
-  _i5.Future<void> saveTokens({
+  _i3.Future<void> saveTokens({
     required String? accessToken,
     required String? refreshToken,
   }) =>
@@ -205,17 +63,17 @@ class MockTokenProvider extends _i1.Mock implements _i8.TokenProvider {
             #refreshToken: refreshToken,
           },
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i5.Future<void> clearTokens() => (super.noSuchMethod(
+  _i3.Future<void> clearTokens() => (super.noSuchMethod(
         Invocation.method(
           #clearTokens,
           [],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }

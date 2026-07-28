@@ -1,3 +1,4 @@
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,7 +34,11 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
     required this.checkEmailLoginUseCase,
     required this.recaptchaUseCase,
   }) : super(CheckEmailInitial()) {
-    on<CheckEmailSubmitted>(_onSubmitted);
+    // restartable(): jika CheckEmailSubmitted baru masuk saat request lama
+    // masih berjalan, request lama di-cancel sepenuhnya.
+    // Ini mencegah hasil request lama (CheckEmailFailure) mengotori state
+    // setelah user sudah ganti email.
+    on<CheckEmailSubmitted>(_onSubmitted, transformer: restartable());
     on<CheckEmailReset>(_onReset);
   }
 

@@ -14,7 +14,8 @@ import '../../../common/global/widgets/confirmation_dialog.dart';
 import '../../../common/global/widgets/confirmation_dialog_oke.dart';
 import '../../../common/global/widgets/custom_button.dart';
 import '../../../common/global/widgets/custom_password_field.dart';
-import '../../../core/domain/managers/authentication_manager.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
 import '../bloc/change_password_bloc.dart';
 
 class ChangePasswordPage extends StatefulWidget {
@@ -29,7 +30,7 @@ class ChangePasswordPage extends StatefulWidget {
       context,
       onYesPressed: () async {
         Navigator.of(context).pop();
-        await di.locator<AuthenticationManager>().logout();
+        di.locator<AuthBloc>().add(AuthLogoutRequested());
       },
     );
   }

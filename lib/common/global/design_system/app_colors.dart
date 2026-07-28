@@ -125,6 +125,8 @@ abstract final class AppColors {
   /// Page background / lightest grey
   static const Color grey50 = Color(0xFFF8F8F8);
 
+  static const Color textDark = Color(0xFF737373);
+
   // ---------------------------------------------------------------------------
   // ALWAYS — Absolute values independent of theme
   // ---------------------------------------------------------------------------

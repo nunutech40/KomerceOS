@@ -4,18 +4,34 @@ import 'package:komtim_partner/common/failure.dart';
 import 'package:komtim_partner/core/domain/usecases/do_logout_use_case.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
+
 import '../../../helpers/helpers.dart';
+
+class FakeAuthBloc extends AuthBloc {
+  bool logoutEventAdded = false;
+
+  FakeAuthBloc({required super.sharedPref});
+
+  @override
+  void add(AuthEvent event) {
+    if (event is AuthLogoutRequested) {
+      logoutEventAdded = true;
+    }
+    super.add(event);
+  }
+}
 
 void main() {
   late DoLogoutUseCase usecase;
   late MockAuthRepository mockAuthRepository;
-  late MockAuthenticationManager mockAuthManager;
+  late FakeAuthBloc fakeAuthBloc;
 
   setUp(() {
     mockAuthRepository = MockAuthRepository();
-    mockAuthManager = MockAuthenticationManager();
-    usecase = DoLogoutUseCase(mockAuthRepository, mockAuthManager);
-    when(mockAuthManager.logout()).thenAnswer((_) async {});
+    fakeAuthBloc = FakeAuthBloc(sharedPref: MockSharedPref());
+    usecase = DoLogoutUseCase(mockAuthRepository, fakeAuthBloc);
   });
 
   group('DoLogoutUseCase', () {
@@ -30,8 +46,8 @@ void main() {
       // Contract: Repo Dipanggil
       verify(mockAuthRepository.doLogout()).called(1);
       
-      // Contract: Auth Manager juga di update agar app state berubah out
-      verify(mockAuthManager.logout()).called(1);
+      // Contract: Auth Bloc juga di update agar app state berubah out
+      expect(fakeAuthBloc.logoutEventAdded, true);
     });
 
     // ----- EDGE PATH -----
@@ -46,7 +62,7 @@ void main() {
       verify(mockAuthRepository.doLogout()).called(1);
 
       // Harus Tereksekusi (Clean Up Safety side-effect)! 
-      verify(mockAuthManager.logout()).called(1);
+      expect(fakeAuthBloc.logoutEventAdded, true);
     });
   });
 }
