@@ -62,7 +62,10 @@ class DsHomeHeader extends StatelessWidget {
 /// Helper widget untuk mengatur logika rendering avatar sesuai kondisi urlprofile
   Widget _buildProfileAvatar() {
     // KONDISI A: Jika urlprofile ADA (tidak null) dan tidak kosong
-    if (profileUrl != null && profileUrl!.isNotEmpty) {
+    if (profileUrl != null &&
+        profileUrl!.trim().isNotEmpty &&
+        profileUrl != 'null' &&
+        profileUrl != '-') {
       return ClipRRect(
         borderRadius: BorderRadius.circular(20), // Radius 20 agar melingkar sempurna pada ukuran 40x40
         child: Container(
