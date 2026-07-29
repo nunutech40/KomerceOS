@@ -9,7 +9,7 @@ import 'package:komtim_partner/common/utils/loading/shimmer_placeholder_invoice_
 import 'package:komtim_partner/core/domain/entities/feed_model.dart';
 import 'package:komtim_partner/features/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/feed/widget/card_list_all_feed.dart';
-import 'package:komtim_partner/features/home/widget/card_feed_empty.dart';
+import 'package:komtim_partner/common/global/widgets/card_feed_empty.dart';
 
 class FeedPages extends StatefulWidget {
   const FeedPages({super.key});

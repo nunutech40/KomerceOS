@@ -21,3 +21,7 @@ export 'components/ds_button.dart';
 export 'components/ds_bottom_sheet.dart';
 export 'components/ds_email_field.dart';
 export 'components/ds_password_field.dart';
+export 'components/ds_app_tablayout.dart';
+export 'components/ds_chip_button.dart';
+export 'components/ds_radio_button.dart';
+export 'components/ds_app_image.dart';

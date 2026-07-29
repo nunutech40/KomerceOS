@@ -23,9 +23,13 @@ class Endpoints {
       '$_BaseURL/api/v1/auth/profile/change_password';
   static String get resetPassword =>
       '$_BaseURLSuperApp/auth/api/v1/auth/change-password';
+  static String get aplikasiku =>
+      '$_BaseURLSuperApp/auth/api/v1/user/aplikasiku';
 
   // Profile Endpoints
   static String get getProfile => '$_BaseURL/api/v1/auth/profile';
+  static String get superappGetProfile =>
+      '$_BaseURLSuperApp/auth/api/v1/user/partner/get-profile-mobile';
 
   // Talents Endpoint
   static String get talents => '$_BaseURL/api/v1/mobile/talents';
@@ -54,6 +58,18 @@ class Endpoints {
   static String get topupDetail => '$_BaseURL/api/v1/mobile/transaction';
   static String get topupCeckTransaction =>
       '$_BaseURL/api/v1/mobile/transaction/check';
+  static String get checkBill =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/bill/check-bill/komship';
+  static String get createInvoice =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/create-invoice/komship';
+  static String get createQrcode =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/create-qrcode/komship';
+  static String get checkQrcode =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/get-qrcode';
+  static String expireQrcode(String id) =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/expire-qrcode/$id';
+  static String expireInvoice(String id) =>
+      '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/expire-invoice/$id';
 
 // PIN
   static String get checkPinExisting => '$_BaseURL/api/v1/mobile/pin/check';
@@ -99,6 +115,12 @@ class Endpoints {
       '$_BaseURL/api/v1/mobile/notifications';
   static String get notificationsCount =>
       '$_BaseURL/api/v1/mobile/notifications/count';
+  static String get superappNotificationsList =>
+      '$_BaseURLSuperApp/komship/api/v1/notifications/v2/list';
+  static String get superappNotificationInfo =>
+      '$_BaseURLSuperApp/komship/api/v1/notifications/info';
+  static String superappReadNotification(int id) =>
+      '$_BaseURLSuperApp/komship/api/v1/notifications/$id/read';
 
   //paymentKompay
   static String get paymentKompay =>
@@ -118,4 +140,10 @@ class Endpoints {
       '$_BaseURL/api/v1/mobile/talent_performance/weekly';
   static String get monthlyReportPerformance =>
       '$_BaseURL/api/v1/mobile/talent_performance/monthly';
+
+  // Balance Summary
+  static String balanceSummary(String partnerId) =>
+      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/balanceSummary?partner_id=$partnerId';
+  static String get revenueOrderPerformance =>
+      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/revenueOrderPerformance';
 }

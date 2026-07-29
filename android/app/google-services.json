@@ -160,7 +160,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:750513473331:android:2bcded248773d42950a046",
         "android_client_info": {
-          "package_name": "id.android.kmpartner.production"
+          "package_name": "id.android.kmpartner"
         }
       },
       "oauth_client": [
@@ -168,7 +168,7 @@
           "client_id": "750513473331-c88cdelre2o4kmg40k638s5j7n507luk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "id.android.kmpartner.production",
+            "package_name": "id.android.kmpartner",
             "certificate_hash": "3d059039b52896867ad659a5eae2bd95866529ee"
           }
         },
@@ -261,6 +261,48 @@
         "mobilesdk_app_id": "1:750513473331:android:4a79273e76764c8650a046",
         "android_client_info": {
           "package_name": "id.android.kmpartner.staging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750513473331-gp4fk2q06ggu5srdi4dqoi45gebvns23.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhOgBAZx5MnMTLPJavU6ebE_anYaUkla8"
+        },
+        {
+          "current_key": "AIzaSyBbN2wpGBldwCuFjPFpYTG82Evdewqhb-g"
+        },
+        {
+          "current_key": "AIzaSyDVW0YNCQIok65KI_NicPmSweNThAEeicU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750513473331-gp4fk2q06ggu5srdi4dqoi45gebvns23.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "750513473331-3vq0ej8o3chqatajg89k5lr3fp4art4a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "id.ios.komerce"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750513473331:android:5cd0831421d1268550a046",
+        "android_client_info": {
+          "package_name": "id.komerce.mitrakomtim"
         }
       },
       "oauth_client": [

@@ -25,7 +25,7 @@ import 'package:komtim_partner/features/performance/widget/card_today.dart';
 import 'package:komtim_partner/features/performance/widget/card_week.dart';
 import 'package:komtim_partner/features/performance/widget/custom_showmodal_report_performance_today.dart';
 import 'package:komtim_partner/features/performance/widget/custom_showmodal_report_performance_week.dart';
-import 'package:komtim_partner/features/home/widget/card_feed_empty.dart';
+import 'package:komtim_partner/common/global/widgets/card_feed_empty.dart';
 
 class ReportPerformancePages extends StatefulWidget {
   const ReportPerformancePages({super.key});

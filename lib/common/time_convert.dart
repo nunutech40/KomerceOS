@@ -36,6 +36,17 @@ String dateConvertWithT(date) {
   }
 }
 
+String timeConvertWithT(date) {
+  try {
+    var inputDate = DateTime.parse(date.toString());
+    var outputFormat = DateFormat.Hm('id');
+    var outputDate = outputFormat.format(inputDate);
+    return outputDate;
+  } catch (e) {
+    return '';
+  }
+}
+
 String formatToIndonesianDateNextDay(String isoString) {
   try {
     // Parse ISO string ke DateTime
