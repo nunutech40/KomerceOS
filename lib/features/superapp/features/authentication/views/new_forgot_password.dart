@@ -140,112 +140,128 @@ class _NewForgotPasswordPageState extends State<NewForgotPasswordPage> {
           builder: (context, constraints) {
             final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
             return SingleChildScrollView(
-              child: Stack(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Background SVG — ikut scroll bersama konten
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: AspectRatio(
-                      aspectRatio: 414 / 248,
-                      child: SvgPicture.asset(
-                        'assets/images/superapp/bg_auth.svg',
-                        fit: BoxFit.fill,
+                  // --- BG + Logo ---
+                  Stack(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 414 / 248,
+                        child: SvgPicture.asset(
+                          'assets/images/superapp/auth/bg_auth.svg',
+                          fit: BoxFit.fill,
+                        ),
                       ),
-                    ),
-                  ),
-                  // Konten — non-positioned, menentukan tinggi Stack
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.pageMarginLg,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          height:
-                              (constraints.maxHeight * 0.15).clamp(40.0, 120.0),
-                        ),
-
-                        // --- Header ---
-                        const AuthHeader(
-                          title: 'Atur Password Baru',
-                          subtitle:
-                              'Buat password baru untuk akunmu. Pastikan password\nmudah diingat dan tidak digunakan di akun lain.',
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-
-                        // --- Card Form ---
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppRadius.xl),
-                            border: Border.all(color: AppColors.grey200),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Password Field
-                              DsPasswordField(
-                                label: 'Password',
-                                controller: _passController,
-                                onChanged: _validatePassword,
+                      Positioned.fill(
+                        child: Align(
+                          // rasionya setara menaikkan ~20px dari pusat terhadap tinggi BG
+                          alignment: const Alignment(0, -0.18),
+                          child: FractionallySizedBox(
+                            widthFactor: 0.4,
+                            child: AspectRatio(
+                              aspectRatio: 227 / 61,
+                              child: SvgPicture.asset(
+                                'assets/images/superapp/logo_splash_screen.svg',
+                                fit: BoxFit.contain,
                               ),
-                              const SizedBox(height: AppSpacing.sm),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                              // Validation Rules
-                              if (_passController.text.isNotEmpty) ...[
-                                _buildValidationItem(
-                                  text: 'Minimal 8 karakter',
-                                  isValid: _hasMinLength,
+                  // --- Konten di bawah BG ---
+                  Transform.translate(
+                    offset: Offset(0, -constraints.maxWidth * 0.10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.pageMarginLg,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // --- Header ---
+                          const AuthHeader(
+                            title: 'Atur Password Baru',
+                            subtitle:
+                                'Buat password baru untuk akunmu. Pastikan password\nmudah diingat dan tidak digunakan di akun lain.',
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+
+                          // --- Card Form ---
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(AppRadius.xl),
+                              border: Border.all(color: AppColors.grey200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Password Field
+                                DsPasswordField(
+                                  label: 'Password',
+                                  controller: _passController,
+                                  onChanged: _validatePassword,
                                 ),
-                                const SizedBox(height: 4),
-                                _buildValidationItem(
-                                  text: 'Mengandung huruf dan angka',
-                                  isValid: _hasLetterAndNumber,
+                                const SizedBox(height: AppSpacing.sm),
+
+                                // Validation Rules
+                                if (_passController.text.isNotEmpty) ...[
+                                  _buildValidationItem(
+                                    text: 'Minimal 8 karakter',
+                                    isValid: _hasMinLength,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  _buildValidationItem(
+                                    text: 'Mengandung huruf dan angka',
+                                    isValid: _hasLetterAndNumber,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  _buildValidationItem(
+                                    text: 'Mengandung huruf besar dan kecil',
+                                    isValid: _hasUpperAndLowerCase,
+                                  ),
+                                ],
+                                const SizedBox(height: AppSpacing.lg),
+
+                                // Konfirmasi Password Field
+                                DsPasswordField(
+                                  label: 'Konfirmasi Password Baru',
+                                  hintText: 'Masukkan Ulang Password',
+                                  controller: _confirmPassController,
+                                  onChanged: (_) => setState(() {}),
+                                  errorText: (!_isConfirmPasswordMatch &&
+                                          _confirmPassController
+                                              .text.isNotEmpty)
+                                      ? 'Password tidak sama'
+                                      : null,
                                 ),
-                                const SizedBox(height: 4),
-                                _buildValidationItem(
-                                  text: 'Mengandung huruf besar dan kecil',
-                                  isValid: _hasUpperAndLowerCase,
+
+                                const SizedBox(height: AppSpacing.xl),
+
+                                // Submit Button
+                                DsButton(
+                                  text: 'Simpan',
+                                  state: _isLoading
+                                      ? DsButtonState.loading
+                                      : (_isFormValid
+                                          ? DsButtonState.enabled
+                                          : DsButtonState.disabled),
+                                  onPressed: _onSubmit,
                                 ),
                               ],
-                              const SizedBox(height: AppSpacing.lg),
-
-                              // Konfirmasi Password Field
-                              DsPasswordField(
-                                label: 'Konfirmasi Password Baru',
-                                hintText: 'Masukkan Ulang Password',
-                                controller: _confirmPassController,
-                                onChanged: (_) => setState(() {}),
-                                errorText: (!_isConfirmPasswordMatch &&
-                                        _confirmPassController.text.isNotEmpty)
-                                    ? 'Password tidak sama'
-                                    : null,
-                              ),
-
-                              const SizedBox(height: AppSpacing.xl),
-
-                              // Submit Button
-                              DsButton(
-                                text: 'Simpan',
-                                state: _isLoading
-                                    ? DsButtonState.loading
-                                    : (_isFormValid
-                                        ? DsButtonState.enabled
-                                        : DsButtonState.disabled),
-                                onPressed: _onSubmit,
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        // Padding keyboard — bg naik saat keyboard muncul
-                        SizedBox(height: keyboardHeight),
-                      ],
+                          const SizedBox(height: AppSpacing.md),
+                          // Padding keyboard — bg naik saat keyboard muncul
+                          SizedBox(height: keyboardHeight),
+                        ],
+                      ),
                     ),
                   ),
                 ],
