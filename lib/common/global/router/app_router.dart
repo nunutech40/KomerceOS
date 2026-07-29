@@ -52,6 +52,7 @@ import '../../../features/superapp/features/authentication/views/new_forgot_pass
 import '../../../features/superapp/features/authentication/views/otp_page.dart';
 import '../../../features/superapp/features/authentication/views/success_new_password.dart';
 import '../../../features/superapp/features/home/view/main_page.dart';
+import '../../../features/superapp/splash_screen_page.dart';
 import '../../../features/unhire/view/dialog_unhire_finish.dart';
 import '../pages/not_found_page.dart';
 import 'router_utils.dart';
@@ -113,6 +114,12 @@ class AppRouter {
     },
     observers: [ChuckerFlutter.navigatorObserver],
     routes: [
+      // ✅ Splash — harus ada karena initialLocation = PAGES.splash.screenPath
+      GoRoute(
+        path: PAGES.splash.screenPath,
+        name: PAGES.splash.screenName,
+        builder: (context, state) => const SplashScreenPage(),
+      ),
       GoRoute(
         path: PAGES.main.screenPath,
         name: PAGES.main.screenName,
