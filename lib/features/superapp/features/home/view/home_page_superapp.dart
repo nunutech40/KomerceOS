@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gal/gal.dart';
-import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/features/superapp/features/home/bloc/balance_summary_bloc.dart';
@@ -118,9 +117,7 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
   // ===========================================================================
 
   Future<void> _onRefresh() async {
-    context
-        .read<SuperappProfileBloc>()
-        .add(const FetchSuperappProfileEvent());
+    context.read<SuperappProfileBloc>().add(const FetchSuperappProfileEvent());
 
     final profileState = context.read<SuperappProfileBloc>().state;
     if (profileState.isKomshipVerified) {
@@ -153,57 +150,57 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
       children: [
         // --- LAYOUT UTAMA ---
         Scaffold(
-            backgroundColor: AppColors.alwaysWhite,
-            body: SafeArea(
-              child: RefreshIndicator(
-                color: AppColors.primaryBase,
-                onRefresh: _onRefresh,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      // =========================================================
-                      // SECTION 1: Header (foto, nama, savings, notif badge)
-                      // =========================================================
-                      const HomeHeaderSection(),
+          backgroundColor: AppColors.alwaysWhite,
+          body: SafeArea(
+            child: RefreshIndicator(
+              color: AppColors.primaryBase,
+              onRefresh: _onRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    // =========================================================
+                    // SECTION 1: Header (foto, nama, savings, notif badge)
+                    // =========================================================
+                    const HomeHeaderSection(),
 
-                      const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.sm),
 
-                      // =========================================================
-                      // SECTION 2: Balance + Pending (Kompay, Kompoint, Topup/Penarikan)
-                      // =========================================================
-                      BalanceSection(
-                        onTopupTap: () {
-                          context
-                              .read<CheckBillBloc>()
-                              .add(FetchCheckBillEvent());
-                        },
-                      ),
+                    // =========================================================
+                    // SECTION 2: Balance + Pending (Kompay, Kompoint, Topup/Penarikan)
+                    // =========================================================
+                    BalanceSection(
+                      onTopupTap: () {
+                        context
+                            .read<CheckBillBloc>()
+                            .add(FetchCheckBillEvent());
+                      },
+                    ),
 
-                      const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.md),
 
-                      // =========================================================
-                      // SECTION 3: Menu + Chart PageView + Transaksi
-                      // =========================================================
-                      MenuContentSection(
-                        captureKey: _captureKey,
-                        isSavingChart: _isSavingChart,
-                        onSaveChart: _saveChartToGallery,
-                      ),
+                    // =========================================================
+                    // SECTION 3: Menu + Chart PageView + Transaksi
+                    // =========================================================
+                    MenuContentSection(
+                      captureKey: _captureKey,
+                      isSavingChart: _isSavingChart,
+                      onSaveChart: _saveChartToGallery,
+                    ),
 
-                      // Space buat floating navbar dari MainPageSuperApp
-                      const SizedBox(height: 120),
-                    ],
-                  ),
+                    // Space buat floating navbar dari MainPageSuperApp
+                    const SizedBox(height: 120),
+                  ],
                 ),
               ),
             ),
           ),
+        ),
 
-          // --- TOPUP FLOW MANAGER (invisible, cuma BlocListener) ---
-          // Ditaruh di Stack supaya gak mengganggu layout Column di atas.
-          const TopupFlowManager(),
-        ],
-      );
+        // --- TOPUP FLOW MANAGER (invisible, cuma BlocListener) ---
+        // Ditaruh di Stack supaya gak mengganggu layout Column di atas.
+        const TopupFlowManager(),
+      ],
+    );
   }
 }
