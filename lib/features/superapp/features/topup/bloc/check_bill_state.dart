@@ -21,10 +21,13 @@ class CheckBillLoaded extends CheckBillState {
 }
 
 class CheckBillError extends CheckBillState {
-  final String message;
+  final Failure failure;
 
-  const CheckBillError(this.message);
+  const CheckBillError(this.failure);
+
+  bool get isServerError => failure is ServerFailure;
+  String get message => failure.message;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failure];
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_app_result_page.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/features/superapp/features/topup/bloc/check_bill_bloc.dart';
@@ -45,16 +44,11 @@ class _TopupFlowManagerState extends State<TopupFlowManager> {
 
   void _hideLoading() {
     if (_loadingRoute != null) {
-      Navigator.of(context, rootNavigator: true).removeRoute(_loadingRoute!);
+      if (_loadingRoute!.isActive) {
+        Navigator.of(context, rootNavigator: true).removeRoute(_loadingRoute!);
+      }
       _loadingRoute = null;
     }
-  }
-
-  bool _isServerError(String message) {
-    final lower = message.toLowerCase();
-    return lower.contains('server') ||
-        lower.contains('sistem') ||
-        lower.contains('500');
   }
 
   @override
@@ -75,7 +69,7 @@ class _TopupFlowManagerState extends State<TopupFlowManager> {
           }
         } else if (state is CheckBillError) {
           _hideLoading();
-          if (!_isServerError(state.message)) {
+          if (!state.isServerError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -90,107 +84,111 @@ class _TopupFlowManagerState extends State<TopupFlowManager> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => locator<ExpireQrcodeBloc>()),
-            BlocProvider(create: (_) => locator<ExpireInvoiceBloc>()),
-          ],
-          child: MultiBlocListener(
-            listeners: [
-              BlocListener<ExpireQrcodeBloc, ExpireQrcodeState>(
-                listener: (context, expireState) {
-                  if (expireState is ExpireQrcodeLoading) {
-                    _showLoading();
-                  } else if (expireState is ExpireQrcodeSuccess) {
-                    _hideLoading();
-                    Navigator.pop(context);
-                  } else if (expireState is ExpireQrcodeError) {
-                    _hideLoading();
-                    if (!_isServerError(expireState.message)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(expireState.message)),
-                      );
-                    }
-                  }
-                },
-              ),
-              BlocListener<ExpireInvoiceBloc, ExpireInvoiceState>(
-                listener: (context, expireState) {
-                  if (expireState is ExpireInvoiceLoading) {
-                    _showLoading();
-                  } else if (expireState is ExpireInvoiceSuccess) {
-                    _hideLoading();
-                    Navigator.pop(context);
-                  } else if (expireState is ExpireInvoiceError) {
-                    _hideLoading();
-                    if (!_isServerError(expireState.message)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(expireState.message)),
-                      );
-                    }
-                  }
-                },
-              ),
-            ],
-            child: Builder(
-              builder: (innerContext) => DsAppResultPage(
-                illustration: SvgPicture.asset(
-                  'assets/images/superapp/topup/ilustration_confimation.svg',
-                ),
-                title: 'Selesaikan Pembayaran',
-                description:
-                    'Kamu masih memiliki pembayaran Top Up yang belum diselesaikan!',
-                action: TextButton(
-                  onPressed: () {
-                    final qrId = state.data.qrXenditId;
-                    final invoiceId = state.data.invoiceXenditId;
-                    if (invoiceId != null && invoiceId.isNotEmpty) {
-                      innerContext
-                          .read<ExpireInvoiceBloc>()
-                          .add(SubmitExpireInvoiceEvent(invoiceId));
-                    } else if (qrId != null && qrId.isNotEmpty) {
-                      innerContext
-                          .read<ExpireQrcodeBloc>()
-                          .add(FetchExpireQrcodeEvent(qrId));
-                    }
-                  },
-                  child: Text(
-                    'Batalkan Pembayaran',
-                    style: AppTypography.bodyMdSemiBold.copyWith(
-                      color: AppColors.primaryBase,
+        builder: (context) => MultiBlocListener(
+          listeners: [
+            BlocListener<ExpireQrcodeBloc, ExpireQrcodeState>(
+              listener: (context, expireState) {
+                if (expireState is ExpireQrcodeLoading) {
+                  _showLoading();
+                } else if (expireState is ExpireQrcodeSuccess) {
+                  _hideLoading();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TopupPage(),
                     ),
+                  );
+                } else if (expireState is ExpireQrcodeError) {
+                  _hideLoading();
+                  if (!expireState.isServerError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(expireState.message)),
+                    );
+                  }
+                }
+              },
+            ),
+            BlocListener<ExpireInvoiceBloc, ExpireInvoiceState>(
+              listener: (context, expireState) {
+                if (expireState is ExpireInvoiceLoading) {
+                  _showLoading();
+                } else if (expireState is ExpireInvoiceSuccess) {
+                  _hideLoading();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TopupPage(),
+                    ),
+                  );
+                } else if (expireState is ExpireInvoiceError) {
+                  _hideLoading();
+                  if (!expireState.isServerError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(expireState.message)),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+          child: Builder(
+            builder: (innerContext) => DsAppResultPage(
+              illustration: SvgPicture.asset(
+                'assets/images/superapp/topup/ilustration_confimation.svg',
+              ),
+              title: 'Selesaikan Pembayaran',
+              description:
+                  'Kamu masih memiliki pembayaran Top Up yang belum diselesaikan!',
+              action: TextButton(
+                onPressed: () {
+                  final qrId = state.data.qrXenditId;
+                  final invoiceId = state.data.invoiceXenditId;
+                  if (invoiceId != null && invoiceId.isNotEmpty) {
+                    innerContext
+                        .read<ExpireInvoiceBloc>()
+                        .add(SubmitExpireInvoiceEvent(invoiceId));
+                  } else if (qrId != null && qrId.isNotEmpty) {
+                    innerContext
+                        .read<ExpireQrcodeBloc>()
+                        .add(FetchExpireQrcodeEvent(qrId));
+                  }
+                },
+                child: Text(
+                  'Batalkan Pembayaran',
+                  style: AppTypography.bodyMdSemiBold.copyWith(
+                    color: AppColors.primaryBase,
                   ),
                 ),
-                secondaryAction: DsButton(
-                  text: 'Bayar Sekarang',
-                  onPressed: () {
-                    final invoiceUrl = state.data.invoiceXenditUrl;
-                    final qrString = state.data.qrXenditQrstring;
+              ),
+              secondaryAction: DsButton(
+                text: 'Bayar Sekarang',
+                onPressed: () {
+                  final invoiceUrl = state.data.invoiceXenditUrl;
+                  final qrString = state.data.qrXenditQrstring;
 
-                    if (invoiceUrl != null && invoiceUrl.isNotEmpty) {
-                      Navigator.pushReplacement(
-                        innerContext,
-                        MaterialPageRoute(
-                          builder: (_) => WebViewPage(url: invoiceUrl),
+                  if (invoiceUrl != null && invoiceUrl.isNotEmpty) {
+                    Navigator.pushReplacement(
+                      innerContext,
+                      MaterialPageRoute(
+                        builder: (_) => WebViewPage(url: invoiceUrl),
+                      ),
+                    );
+                  } else if (qrString != null && qrString.isNotEmpty) {
+                    Navigator.pushReplacement(
+                      innerContext,
+                      MaterialPageRoute(
+                        builder: (_) => BarcodeQrisPage(
+                          amount: state.data.qrAmount ?? 0,
+                          qrString: qrString,
+                          expiresAt: state.data.qrExpireDate ?? '',
+                          qrId: state.data.qrXenditId ?? '',
                         ),
-                      );
-                    } else if (qrString != null && qrString.isNotEmpty) {
-                      Navigator.pushReplacement(
-                        innerContext,
-                        MaterialPageRoute(
-                          builder: (_) => BarcodeQrisPage(
-                            amount: state.data.qrAmount ?? 0,
-                            qrString: qrString,
-                            expiresAt: state.data.qrExpireDate ?? '',
-                            qrId: state.data.qrXenditId ?? '',
-                          ),
-                        ),
-                      );
-                    } else {
-                      Navigator.pop(innerContext);
-                    }
-                  },
-                ),
+                      ),
+                    );
+                  } else {
+                    Navigator.pop(innerContext);
+                  }
+                },
               ),
             ),
           ),

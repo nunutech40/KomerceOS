@@ -21,10 +21,13 @@ class BalanceSummaryLoaded extends BalanceSummaryState {
 }
 
 class BalanceSummaryError extends BalanceSummaryState {
-  final String message;
+  final Failure failure;
 
-  const BalanceSummaryError(this.message);
+  const BalanceSummaryError(this.failure);
+
+  bool get isServerError => failure is ServerFailure;
+  String get message => failure.message;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failure];
 }

@@ -14,10 +14,13 @@ class ExpireQrcodeLoading extends ExpireQrcodeState {}
 class ExpireQrcodeSuccess extends ExpireQrcodeState {}
 
 class ExpireQrcodeError extends ExpireQrcodeState {
-  final String message;
+  final Failure failure;
 
-  const ExpireQrcodeError(this.message);
+  const ExpireQrcodeError(this.failure);
+
+  bool get isServerError => failure is ServerFailure;
+  String get message => failure.message;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failure];
 }

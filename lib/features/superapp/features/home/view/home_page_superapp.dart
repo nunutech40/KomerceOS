@@ -149,19 +149,10 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      // ✅ BLoC dibuat SEKALI, tanpa dispatch event di create.
-      // Event di-dispatch di initState via addPostFrameCallback.
-      providers: [
-        BlocProvider(create: (_) => locator<RevenuePerformanceBloc>()),
-        BlocProvider(create: (_) => locator<CheckBillBloc>()),
-        BlocProvider(create: (_) => locator<BalanceSummaryBloc>()),
-        BlocProvider(create: (_) => locator<NotificationInfoBloc>()),
-      ],
-      child: Stack(
-        children: [
-          // --- LAYOUT UTAMA ---
-          Scaffold(
+    return Stack(
+      children: [
+        // --- LAYOUT UTAMA ---
+        Scaffold(
             backgroundColor: AppColors.alwaysWhite,
             body: SafeArea(
               child: RefreshIndicator(
@@ -213,7 +204,6 @@ class _HomePageSuperappState extends State<HomePageSuperapp> {
           // Ditaruh di Stack supaya gak mengganggu layout Column di atas.
           const TopupFlowManager(),
         ],
-      ),
-    );
+      );
   }
 }

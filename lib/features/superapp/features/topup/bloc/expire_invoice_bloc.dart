@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:komtim_partner/common/failure.dart';
 import 'package:komtim_partner/core/domain/usecases/expire_invoice_use_case.dart';
 
 part 'expire_invoice_event.dart';
@@ -17,11 +18,11 @@ class ExpireInvoiceBloc extends Bloc<ExpireInvoiceEvent, ExpireInvoiceState> {
       emit(ExpireInvoiceLoading());
       final result = await expireInvoiceUseCase.call(event.id);
       result.fold(
-        (failure) => emit(ExpireInvoiceError(failure.message)),
+        (failure) => emit(ExpireInvoiceError(failure)),
         (data) => emit(ExpireInvoiceSuccess()),
       );
     } catch (e) {
-      emit(ExpireInvoiceError(e.toString()));
+      emit(ExpireInvoiceError(UnknownFailure(e.toString())));
     }
   }
 }

@@ -36,6 +36,7 @@ import 'features/superapp/features/authentication/bloc/forgot_password_bloc.dart
 import 'features/superapp/features/authentication/bloc/login_bloc.dart';
 import 'features/superapp/features/home/bloc/balance_summary_bloc.dart';
 import 'features/superapp/features/home/bloc/revenue_performance_bloc.dart';
+import 'features/superapp/features/notification/bloc/notification_info_bloc.dart';
 import 'features/superapp/features/topup/bloc/check_bill_bloc.dart';
 import 'features/superapp/features/topup/bloc/expire_invoice_bloc.dart';
 import 'features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
@@ -152,6 +153,8 @@ class MyApp extends StatelessWidget {
                     create: (_) => di.locator<RevenuePerformanceBloc>()),
                 BlocProvider<CheckBillBloc>(
                     create: (_) => di.locator<CheckBillBloc>()),
+                BlocProvider<NotificationInfoBloc>(
+                    create: (_) => di.locator<NotificationInfoBloc>()),
                 // ── PROFILE ───────────────────────────────────────────────
                 BlocProvider<ProfileBloc>(
                     create: (_) => di.locator<ProfileBloc>()),
