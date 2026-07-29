@@ -305,25 +305,17 @@ class _SplashCreenPageState extends State<SplashCreenPage> {
           return Container(
             color: Colors.white,
             child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    'assets/images/superapp/home/ic_komerce_os.svg',
-                    height: 60.0,
-                    width: 60.0,
+              // FractionallySizedBox → lebar 60% layar (responsive di semua device)
+              // AspectRatio → jaga proporsi asli logo 227:61 tanpa overflow
+              child: FractionallySizedBox(
+                widthFactor: 0.6,
+                child: AspectRatio(
+                  aspectRatio: 227 / 61,
+                  child: SvgPicture.asset(
+                    'assets/images/superapp/logo_splash_screen.svg',
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(width: 6.0),
-                  const Text(
-                    'Komerce OS',
-                    style: TextStyle(
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           );
