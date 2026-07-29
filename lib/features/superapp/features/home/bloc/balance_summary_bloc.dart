@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:komtim_partner/common/failure.dart';
 import '../../../../../core/domain/entities/balance_summary_model.dart';
 import '../../../../../core/domain/usecases/get_balance_summary_use_case.dart';
 
@@ -20,7 +21,7 @@ class BalanceSummaryBloc
     emit(BalanceSummaryLoading());
     final result = await getBalanceSummaryUseCase.call(event.partnerId);
     result.fold(
-      (failure) => emit(BalanceSummaryError(failure.message)),
+      (failure) => emit(BalanceSummaryError(failure)),
       (data) => emit(BalanceSummaryLoaded(data)),
     );
   }

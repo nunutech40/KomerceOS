@@ -9,8 +9,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/common/convert_string_to_map.dart';
-import 'package:komtim_partner/common/enum_status.dart';
-import 'package:komtim_partner/features/home/bloc/home_page_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../common/global/bloc/auth/auth_bloc.dart';
@@ -65,53 +63,29 @@ Future<void> _showNotificationFromBackgroundMessage(
   }
 }
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+class SplashScreenPage extends StatefulWidget {
+  const SplashScreenPage({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreenPage> createState() => _SplashScreenPageState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenPageState extends State<SplashScreenPage> {
   final pref = di.locator<SharedPref>();
   String versiLocal = '';
   String versionRemote = '';
   String versionRemoteIos = '';
   String typeUpdate = '';
-  bool initialized = false;
   bool isgreater = false;
-  var _bloc;
-  String? statusAccount = "";
-  int kmPoint = 0;
-  List<dynamic> listInvoices = [];
-  //Withdrawal
-  String checktransaction = "withdrawal";
-  String checkStatusWithdraw = "";
 
   @override
   void initState() {
     super.initState();
-    _initializeBloc();
-    loadData();
     startSplashScreen();
   }
 
-  void loadData() async {
-    // TEMPORARY: Di-comment sementara karena endpoint ini men-trigger 401
-    // yang menyebabkan user terlempar ke login saat Hot Restart.
-    /*
-    // Invoke Bloc event after initial frame is rendered
-    await _bloc.add(const HomePageDidload());
-    await _bloc.add(
-        const InvoviceListPageDidload(type: 'active', limit: 100, offset: 0));
-    //loadbloc withdarawal
-    await _bloc.add(LoadDataCecktransactionTopUpEvent(
-        typeCheckTrasaction: checktransaction));
-    */
-  }
-
-  void _initializeBloc() {
-    _bloc = context.read<HomePageBloc>();
+  void loadData() {
+    // Legacy — tidak aktif
   }
 
   void handleNotificationClick(NotificationResponse data) {
@@ -273,7 +247,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (authBloc.state.status == AuthStatus.initial ||
         authBloc.state.status == AuthStatus.checking) {
       await authBloc.stream.firstWhere(
-        (s) => s.status != AuthStatus.initial && s.status != AuthStatus.checking,
+        (s) =>
+            s.status != AuthStatus.initial && s.status != AuthStatus.checking,
       );
     }
 
@@ -281,49 +256,21 @@ class _SplashScreenState extends State<SplashScreen> {
     AppRouter.router.go(PAGES.main.screenPath);
   }
 
-  //Handle Check Account
-  checkAccountOff(BuildContext context, HomePageState state) {
-    //Handle when partner off dont have invoice and kmpoint 0
-    if (state.statusCheckTopup == RequestStatus.success &&
-        checktransaction == 'withdrawal') {
-      checkStatusWithdraw = "withdrawal proses";
-    } else if (state.statusCheckTopup == RequestStatus.empty &&
-        checktransaction == 'withdrawal') {
-      checkStatusWithdraw = "empty";
-    }
-    if (statusAccount == "off" &&
-        listInvoices.isEmpty &&
-        kmPoint < 1 &&
-        checkStatusWithdraw == "withdrawal proses") {
-      _bloc.add(const LogoutButtonPressedEvent());
-    }
+  //Handle Check Account — dipertahankan untuk kompatibilitas, tidak aktif dipanggil
+  checkAccountOff(BuildContext context, dynamic state) {
+    // Legacy code — tidak aktif. loadData() sudah di-comment out.
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<HomePageBloc, HomePageState>(
-        listener: (context, state) {
-          if (state.status == RequestStatus.success &&
-              state.operation == 'getProfile') {
-            //Handle Null Safety KMPOIN
-            kmPoint = state.profileData?.kmPoin ?? 0;
-            statusAccount = state.profileData?.accountStatus;
-          }
-          if (state.invoicesData.isNotEmpty && listInvoices.isEmpty) {
-            listInvoices.addAll(state.invoicesData);
-          }
-          checkAccountOff(context, state);
-        },
-        builder: (context, state) {
-          return Center(
-            child: SvgPicture.asset(
-              'assets/images/komtim.svg',
-              height: 61.0,
-              width: 227.0,
-            ),
-          );
-        },
+      backgroundColor: Colors.white,
+      body: Center(
+        child: SvgPicture.asset(
+          'assets/images/komtim.svg',
+          height: 61.0,
+          width: 227.0,
+        ),
       ),
     );
   }
