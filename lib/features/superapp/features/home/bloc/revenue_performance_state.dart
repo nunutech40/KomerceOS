@@ -61,10 +61,13 @@ class RevenuePerformanceLoaded extends RevenuePerformanceState {
 }
 
 class RevenuePerformanceError extends RevenuePerformanceState {
-  final String message;
+  final Failure failure;
 
-  const RevenuePerformanceError(this.message);
+  const RevenuePerformanceError(this.failure);
+
+  bool get isServerError => failure is ServerFailure;
+  String get message => failure.message;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failure];
 }

@@ -56,14 +56,21 @@ class SettingPage extends StatelessWidget {
                         Container(
                           width: 90,
                           height: 90,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Color(0xFFFFF0E6),
+                            color: (profile?.photoProfileUrl != null &&
+                                    profile!.photoProfileUrl!.trim().isNotEmpty &&
+                                    profile.photoProfileUrl != 'null' &&
+                                    profile.photoProfileUrl != '-')
+                                ? const Color(0xFFFFF0E6)
+                                : Colors.transparent,
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(45),
                             child: (profile?.photoProfileUrl != null &&
-                                    profile!.photoProfileUrl!.isNotEmpty)
+                                    profile!.photoProfileUrl!.trim().isNotEmpty &&
+                                    profile.photoProfileUrl != 'null' &&
+                                    profile.photoProfileUrl != '-')
                                 ? Image.network(
                                     profile.photoProfileUrl!,
                                     fit: BoxFit.cover,
@@ -84,17 +91,13 @@ class SettingPage extends StatelessWidget {
                                       );
                                     },
                                     errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
-                                        Icons.person_rounded,
-                                        size: 48,
-                                        color: AppColors.primaryBase,
+                                      return SvgPicture.asset(
+                                        'assets/images/superapp/home/ic_komerce_os.svg',
                                       );
                                     },
                                   )
-                                : const Icon(
-                                    Icons.person_rounded,
-                                    size: 48,
-                                    color: AppColors.primaryBase,
+                                : SvgPicture.asset(
+                                    'assets/images/superapp/home/ic_komerce_os.svg',
                                   ),
                           ),
                         ),

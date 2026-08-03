@@ -119,6 +119,8 @@ class Endpoints {
       '$_BaseURLSuperApp/komship/api/v1/notifications/v2/list';
   static String get superappNotificationInfo =>
       '$_BaseURLSuperApp/komship/api/v1/notifications/info';
+  static String superappReadNotification(int id) =>
+      '$_BaseURLSuperApp/komship/api/v1/notifications/$id/read';
 
   //paymentKompay
   static String get paymentKompay =>

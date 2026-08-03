@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:komtim_partner/common/failure.dart';
 import 'package:komtim_partner/core/domain/entities/check_bill_model.dart';
 import 'package:komtim_partner/core/domain/usecases/check_bill_use_case.dart';
 
@@ -18,11 +19,11 @@ class CheckBillBloc extends Bloc<CheckBillEvent, CheckBillState> {
       emit(CheckBillLoading());
       final result = await checkBillUseCase.call();
       result.fold(
-        (failure) => emit(CheckBillError(failure.message)),
+        (failure) => emit(CheckBillError(failure)),
         (data) => emit(CheckBillLoaded(data)),
       );
     } catch (e) {
-      emit(CheckBillError(e.toString()));
+      emit(CheckBillError(UnknownFailure(e.toString())));
     }
   }
 }

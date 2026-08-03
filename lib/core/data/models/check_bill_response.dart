@@ -28,19 +28,43 @@ class CheckBillResponse extends Equatable {
     this.adminFee,
   });
 
-  factory CheckBillResponse.fromJson(Map<String, dynamic> json) {
+  factory CheckBillResponse.fromJson(dynamic json) {
+    if (json == null || json is! Map) {
+      return const CheckBillResponse(haveActiveBill: false);
+    }
+    final map = json as Map<String, dynamic>;
+
+    bool? parseBool(dynamic val) {
+      if (val == null) return false;
+      if (val is bool) return val;
+      if (val is num) return val != 0;
+      if (val is String) {
+        final lower = val.toLowerCase();
+        return lower == 'true' || lower == '1' || lower == 'yes';
+      }
+      return false;
+    }
+
+    int? parseInt(dynamic val) {
+      if (val == null) return null;
+      if (val is int) return val;
+      if (val is num) return val.toInt();
+      if (val is String) return int.tryParse(val.split('.').first);
+      return null;
+    }
+
     return CheckBillResponse(
-      haveActiveBill: json['have_active_bill'],
-      invoiceExternalId: json['invoice_external_id'],
-      invoiceXenditId: json['invoice_xendit_id'],
-      invoiceXenditUrl: json['invoice_xendit_url'],
-      qrExternalId: json['qr_external_id'],
-      qrXenditId: json['qr_xendit_id'],
-      qrXenditQrstring: json['qr_xendit_qrstring'],
-      qrExpireDate: json['qr_expire_date'],
-      qrAmount: json['qr_amount'],
-      invoiceAmount: json['invoice_amount'],
-      adminFee: json['admin_fee'],
+      haveActiveBill: parseBool(map['have_active_bill']),
+      invoiceExternalId: map['invoice_external_id']?.toString(),
+      invoiceXenditId: map['invoice_xendit_id']?.toString(),
+      invoiceXenditUrl: map['invoice_xendit_url']?.toString(),
+      qrExternalId: map['qr_external_id']?.toString(),
+      qrXenditId: map['qr_xendit_id']?.toString(),
+      qrXenditQrstring: map['qr_xendit_qrstring']?.toString(),
+      qrExpireDate: map['qr_expire_date']?.toString(),
+      qrAmount: parseInt(map['qr_amount']),
+      invoiceAmount: parseInt(map['invoice_amount']),
+      adminFee: parseInt(map['admin_fee']),
     );
   }
 

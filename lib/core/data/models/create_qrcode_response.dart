@@ -20,11 +20,21 @@ class CreateQrcodeResponse {
       code: json['code'],
       message: json['message'],
       data: CreateQrcodeModel(
-        id: dataJson['id'],
-        channelCode: dataJson['channel_code'],
-        amount: dataJson['amount'],
-        expiresAt: dataJson['expires_at'],
-        qrString: dataJson['qr_string'],
+        id: (dataJson['id'] ??
+                dataJson['qr_xendit_id'] ??
+                dataJson['xendit_id'] ??
+                dataJson['external_id'] ??
+                dataJson['qr_id'] ??
+                dataJson['reference_id'] ??
+                json['id'] ??
+                json['qr_xendit_id'])
+            ?.toString(),
+        channelCode: dataJson['channel_code']?.toString(),
+        amount: dataJson['amount'] != null
+            ? int.tryParse(dataJson['amount'].toString())
+            : null,
+        expiresAt: dataJson['expires_at']?.toString(),
+        qrString: dataJson['qr_string']?.toString(),
       ),
     );
   }

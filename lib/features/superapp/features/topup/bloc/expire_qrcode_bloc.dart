@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:komtim_partner/common/failure.dart';
 import 'package:komtim_partner/core/domain/usecases/expire_qrcode_use_case.dart';
 
 part 'expire_qrcode_event.dart';
@@ -17,11 +18,11 @@ class ExpireQrcodeBloc extends Bloc<ExpireQrcodeEvent, ExpireQrcodeState> {
       emit(ExpireQrcodeLoading());
       final result = await expireQrcodeUseCase.call(event.qrId);
       result.fold(
-        (failure) => emit(ExpireQrcodeError(failure.message)),
+        (failure) => emit(ExpireQrcodeError(failure)),
         (_) => emit(ExpireQrcodeSuccess()),
       );
     } catch (e) {
-      emit(ExpireQrcodeError(e.toString()));
+      emit(ExpireQrcodeError(UnknownFailure(e.toString())));
     }
   }
 }

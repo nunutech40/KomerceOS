@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/features/home/view/main_page.dart';
+import 'package:komtim_partner/DI/injection.dart' as di;
+import 'package:komtim_partner/features/superapp/features/home/view/main_page.dart';
 
 import '../../../core/data/datasources/preferences/shared_pref.dart';
 import '../../../features/handlingerror/view/error_connection_page.dart';
-import 'package:komtim_partner/DI/injection.dart' as di;
 
 mixin ErrorHandlingMixin {
   final pref = di.locator<SharedPref>();
@@ -19,7 +19,7 @@ mixin ErrorHandlingMixin {
         onPressed: () {
           if (statusLogin == true) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const MainPage()),
+              MaterialPageRoute(builder: (context) => const MainPageSuperApp()),
             );
           } else {
             Navigator.pop(context);

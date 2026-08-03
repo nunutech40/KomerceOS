@@ -33,3 +33,12 @@ class FilterServiceChangedEvent extends NotificationV2Event {
   @override
   List<Object?> get props => [service];
 }
+
+class ReadNotificationV2Event extends NotificationV2Event {
+  final int id;
+  
+  const ReadNotificationV2Event(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}

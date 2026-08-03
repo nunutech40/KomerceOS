@@ -9,8 +9,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/common/convert_string_to_map.dart';
-import 'package:komtim_partner/common/enum_status.dart';
-import 'package:komtim_partner/features/home/bloc/home_page_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../common/global/bloc/auth/auth_bloc.dart';
@@ -80,7 +78,6 @@ class _SplashCreenPageState extends State<SplashCreenPage> {
   String typeUpdate = '';
   bool initialized = false;
   bool isgreater = false;
-  var _bloc;
   String? statusAccount = "";
   int kmPoint = 0;
   List<dynamic> listInvoices = [];
@@ -91,12 +88,7 @@ class _SplashCreenPageState extends State<SplashCreenPage> {
   @override
   void initState() {
     super.initState();
-    _initializeBloc();
     startSplashScreen();
-  }
-
-  void _initializeBloc() {
-    _bloc = context.read<HomePageBloc>();
   }
 
   void handleNotificationClick(NotificationResponse data) {
@@ -267,59 +259,25 @@ class _SplashCreenPageState extends State<SplashCreenPage> {
     AppRouter.router.go(PAGES.main.screenPath);
   }
 
-  //Handle Check Account
-  checkAccountOff(BuildContext context, HomePageState state) {
-    //Handle when partner off dont have invoice and kmpoint 0
-    if (state.statusCheckTopup == RequestStatus.success &&
-        checktransaction == 'withdrawal') {
-      checkStatusWithdraw = "withdrawal proses";
-    } else if (state.statusCheckTopup == RequestStatus.empty &&
-        checktransaction == 'withdrawal') {
-      checkStatusWithdraw = "empty";
-    }
-    if (statusAccount == "off" &&
-        listInvoices.isEmpty &&
-        kmPoint < 1 &&
-        checkStatusWithdraw == "withdrawal proses") {
-      _bloc.add(const LogoutButtonPressedEvent());
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<HomePageBloc, HomePageState>(
-        listener: (context, state) {
-          if (state.status == RequestStatus.success &&
-              state.operation == 'getProfile') {
-            //Handle Null Safety KMPOIN
-            kmPoint = state.profileData?.kmPoin ?? 0;
-            statusAccount = state.profileData?.accountStatus;
-          }
-          if (state.invoicesData.isNotEmpty && listInvoices.isEmpty) {
-            listInvoices.addAll(state.invoicesData);
-          }
-          checkAccountOff(context, state);
-        },
-        builder: (context, state) {
-          return Container(
-            color: Colors.white,
-            child: Center(
-              // FractionallySizedBox → lebar 60% layar (responsive di semua device)
-              // AspectRatio → jaga proporsi asli logo 227:61 tanpa overflow
-              child: FractionallySizedBox(
-                widthFactor: 0.6,
-                child: AspectRatio(
-                  aspectRatio: 227 / 61,
-                  child: SvgPicture.asset(
-                    'assets/images/superapp/logo_splash_screen.svg',
-                    fit: BoxFit.contain,
-                  ),
-                ),
+      body: Container(
+        color: Colors.white,
+        child: Center(
+          // FractionallySizedBox → lebar 60% layar (responsive di semua device)
+          // AspectRatio → jaga proporsi asli logo 227:61 tanpa overflow
+          child: FractionallySizedBox(
+            widthFactor: 0.6,
+            child: AspectRatio(
+              aspectRatio: 227 / 61,
+              child: SvgPicture.asset(
+                'assets/images/superapp/logo_splash_screen.svg',
+                fit: BoxFit.contain,
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

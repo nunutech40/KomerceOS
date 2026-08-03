@@ -286,7 +286,11 @@ class _NotificationPageViewState extends State<NotificationPageView>
                                   message: item.description ?? '',
                                   isRead: item.isRead == 1,
                                   onTap: () {
-                                    // TODO: Handle notification tap / mark as read
+                                    if (item.id != null && item.isRead != 1) {
+                                      context.read<NotificationV2Bloc>().add(
+                                            ReadNotificationV2Event(item.id!),
+                                          );
+                                    }
                                   },
                                 ),
                               );

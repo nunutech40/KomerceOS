@@ -88,17 +88,16 @@ class _TopupViewState extends State<TopupView> {
       }
     }
 
-    if (_selectedNominal != matchedNominal) {
-      setState(() {
-        _selectedNominal = matchedNominal;
-      });
-    }
+    // Always call setState so build() always recalculates isQrisDisabled
+    // and showValidationError reactively on every keystroke.
+    setState(() {
+      _selectedNominal = matchedNominal;
 
-    if (cleaned > 500000 && _selectedPaymentMethod == 'qris') {
-      setState(() {
+      // Auto-deselect QRIS when amount exceeds 500.000
+      if (cleaned > 500000 && _selectedPaymentMethod == 'qris') {
         _selectedPaymentMethod = null;
-      });
-    }
+      }
+    });
   }
 
   void _selectNominal(int nominal) {
