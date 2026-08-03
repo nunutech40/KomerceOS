@@ -193,7 +193,7 @@ class _OptionRequested extends State<OptionRequested> {
                 decoration: ShapeDecoration(
                   color: Colors.white,
                   shape: RoundedRectangleBorder(
-                    side: const BorderSide(width: 1, color: Color(0xFF34A853)),
+                    side: const BorderSide(width: 1, color: Color(0xFFF95E16)),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -217,7 +217,7 @@ class _OptionRequested extends State<OptionRequested> {
                       const Text(
                         'Top Up',
                         style: TextStyle(
-                          color: Color(0xFF34A853),
+                          color: Color(0xFFF95E16),
                           fontSize: 12,
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w600,
@@ -355,7 +355,7 @@ class _OptionRequested extends State<OptionRequested> {
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       color: _canPayColor()
-                          ? const Color(0xFF34A853)
+                          ? const Color(0xFFF95E16)
                           : const Color(0xFFE31A1A),
                       fontSize: 14,
                       fontFamily: 'Plus Jakarta Sans',

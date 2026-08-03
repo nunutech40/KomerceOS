@@ -21,12 +21,12 @@ class ButtonFilter extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: ShapeDecoration(
-          color: isActive ? const Color(0xFFD6EEDD) : const Color(0xFFFFFFFF),
+          color: isActive ? const Color(0xFFFFEBE1) : const Color(0xFFFFFFFF),
           shape: RoundedRectangleBorder(
             side: BorderSide(
                 width: 1,
                 color: isActive
-                    ? const Color(0xFF34A853)
+                    ? const Color(0xFFF95E16)
                     : const Color(0xFF818181)),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -38,7 +38,7 @@ class ButtonFilter extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isActive
-                    ? const Color(0xFF34A853)
+                    ? const Color(0xFFF95E16)
                     : const Color(0xFF818181),
                 fontSize: 14,
                 fontFamily: 'Plus Jakarta Sans',

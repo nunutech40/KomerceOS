@@ -217,7 +217,7 @@ class ItemShopping extends StatelessWidget {
                             CurrencyFormat.convertToIdr(shopping.total ?? 0, 0),
                             textAlign: TextAlign.right,
                             style: const TextStyle(
-                              color: Color(0xFF34A853),
+                              color: Color(0xFFF95E16),
                               fontSize: 16,
                               fontFamily: 'Plus Jakarta Sans',
                               fontWeight: FontWeight.w600,
