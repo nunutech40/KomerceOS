@@ -29,7 +29,7 @@ class TeamFeedSection extends StatelessWidget {
           feedContent = const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: CardFeedEmpty(
-              image: 'assets/images/img_list_empty.svg',
+              image: 'assets/images/team/empty_state_feed.svg',
               title: "Belum ada informasi terbaru",
               body:
                   "Pantau terus section ini untuk update terkini dari Komtim.",

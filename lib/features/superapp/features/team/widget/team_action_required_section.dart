@@ -17,6 +17,27 @@ class TeamActionRequiredSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool hasInvoice = invoiceCount > 0;
+    bool hasShopping = shoppingCount > 0;
+
+    String titleText = 'Perlu Tindakan';
+    String descText = '';
+    String iconPath = 'assets/images/team/ic_notification_alert.svg';
+
+    if (hasInvoice && hasShopping) {
+      descText =
+          'Terdapat tagihan dan pengajuan yang membutuhkan perhatian Anda';
+    } else if (hasInvoice && !hasShopping) {
+      descText = 'Terdapat tagihan yang membutuhkan perhatian Anda';
+    } else if (!hasInvoice && hasShopping) {
+      descText = 'Terdapat pengajuan yang membutuhkan perhatian Anda';
+    } else {
+      titleText = 'Tidak Ada Tindakan';
+      descText =
+          'Tidak ada invoice maupun pengajuan yang perlu ditindaklanjuti.';
+      iconPath = 'assets/images/team/ic_success_notification.png';
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -41,8 +62,8 @@ class TeamActionRequiredSection extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const DsAppImage(
-                source: 'assets/images/team/ic_notification_alert.svg',
+              DsAppImage(
+                source: iconPath,
                 width: 30,
                 height: 30,
                 fit: BoxFit.cover,
@@ -54,13 +75,13 @@ class TeamActionRequiredSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Perlu Tindakan',
+                      titleText,
                       style: AppTypography.bodyMdSemiBold.copyWith(
                         color: AppColors.primaryBase,
                       ),
                     ),
                     Text(
-                      'Terdapat tagihan dan pengajuan yang membutuhkan perhatian Anda',
+                      descText,
                       style: AppTypography.bodySmRegular.copyWith(
                         color: AppColors.grey700,
                       ),
