@@ -18,4 +18,7 @@ class StagingConfig implements Config {
 
   @override
   String get baseUrlSuperApp => 'https://api.internal.komerce.my.id/staging';
+
+  @override
+  String get baseUrlKomship => 'https://staging.komship.komerce.my.id';
 }

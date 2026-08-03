@@ -6,6 +6,7 @@ class Endpoints {
   static String get _BaseURL => Config.instance.baseUrl;
   static String get _BaseURLInternal => Config.instance.baseUrlInternal;
   static String get _BaseURLSuperApp => Config.instance.baseUrlSuperApp;
+  static String get _BaseURLKomship => Config.instance.baseUrlKomship;
 
   // These are the endpoints
 
@@ -143,7 +144,7 @@ class Endpoints {
 
   // Balance Summary
   static String balanceSummary(String partnerId) =>
-      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/balanceSummary?partner_id=$partnerId';
+      '$_BaseURLKomship/api/v1/dashboard/partner/balanceSummary?partner_id=$partnerId';
   static String get revenueOrderPerformance =>
-      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/revenueOrderPerformance';
+      '$_BaseURLKomship/api/v1/dashboard/partner/revenueOrderPerformance';
 }
