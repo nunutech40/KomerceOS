@@ -6,11 +6,14 @@ class CardFeedEmpty extends StatelessWidget {
   final String image;
   final String title;
   final String body;
-  const CardFeedEmpty(
-      {super.key,
-      required this.image,
-      required this.title,
-      required this.body});
+  final Color? colorImage;
+  const CardFeedEmpty({
+    super.key,
+    required this.image,
+    required this.title,
+    required this.body,
+    this.colorImage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,9 @@ class CardFeedEmpty extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SvgPicture.asset(image),
+          SvgPicture.asset(
+            image,
+          ),
           const SizedBox(
             height: 8,
           ),

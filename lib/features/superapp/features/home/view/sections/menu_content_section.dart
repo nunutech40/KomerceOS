@@ -9,6 +9,8 @@ import 'package:komtim_partner/common/global/design_system/components/ds_transac
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/features/superapp/features/home/bloc/revenue_performance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/home_skeleton.dart';
+import 'package:komtim_partner/common/global/router/app_router.dart';
+import 'package:komtim_partner/common/global/router/router_utils.dart';
 
 
 /// Section menu + chart PageView + Transaksi Kartu.
@@ -338,7 +340,9 @@ class _MenuContentSectionState extends State<MenuContentSection> {
           DsMenuIcon(
             icon: Image.asset('assets/images/superapp/home/ic_team.png'),
             title: 'Team',
-            onTap: () {},
+            onTap: () {
+              AppRouter.router.pushNamed(PAGES.team.screenName);
+            },
           ),
         ];
 

@@ -49,7 +49,7 @@ dependencies:
   fluttertoast: ^8.0.7
   device_info_plus: ^9.1.0
   dart_jsonwebtoken: ^2.2.0
-  flutter_svg: ^2.0.9
+  flutter_svg: ^2.3.0
   firebase_remote_config: ^4.3.14
   package_info_plus: ^4.2.0
   in_app_update: ^4.2.2
@@ -85,6 +85,7 @@ flutter:
     - assets/images/superapp/home/navbar/
     - assets/images/superapp/setting/
     - assets/images/superapp/topup/
+    - assets/images/team/
     - assets/json/
   fonts:
     - family: PlusJakartaSans

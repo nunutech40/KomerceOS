@@ -1,5 +1,6 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/features/superapp/features/team/view/home_page_team.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:komtim_partner/DI/injection.dart' as di;
@@ -125,6 +126,13 @@ class AppRouter {
         name: PAGES.main.screenName,
         builder: (context, state) {
           return const MainPageSuperApp();
+        },
+      ),
+      GoRoute(
+        path: PAGES.team.screenPath,
+        name: PAGES.team.screenName,
+        builder: (context, state) {
+          return const HomePageTeam();
         },
       ),
       GoRoute(

@@ -11,6 +11,7 @@ enum PAGES {
   // home
   main,
   notification,
+  team,
   // other
   error,
   // prifile
@@ -75,6 +76,8 @@ extension AppPageExtension on PAGES {
         return "/email_check";
       case PAGES.login:
         return "/login";
+      case PAGES.team:
+        return "/team";
       case PAGES.notification:
         return "/notifications";
       case PAGES.forgotPasswrod:
@@ -150,6 +153,8 @@ extension AppPageExtension on PAGES {
     switch (this) {
       case PAGES.main:
         return "HOME";
+      case PAGES.team:
+        return "TEAM";
       case PAGES.emailCheck:
         return "EMAIL CHECK";
       case PAGES.login:
@@ -229,6 +234,8 @@ extension AppPageExtension on PAGES {
     switch (this) {
       case PAGES.main:
         return "Home";
+      case PAGES.team:
+        return "Team";
       case PAGES.emailCheck:
         return "Email Check";
       case PAGES.login:
