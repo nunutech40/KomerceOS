@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
-import 'package:komtim_partner/common/global/router/app_router.dart';
-import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/global/widgets/card_feed_empty.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/widget/card_feed.dart';
 
 class TeamFeedSection extends StatelessWidget {
-  const TeamFeedSection({Key? key}) : super(key: key);
+  /// Callback dipanggil dengan feedId ketika card ditekan.
+  /// Navigasi ditangani oleh caller (HomeTeamCubit), bukan widget ini.
+  final void Function(String feedId)? onFeedTap;
+
+  const TeamFeedSection({Key? key, this.onFeedTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,45 +21,41 @@ class TeamFeedSection extends StatelessWidget {
           return const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Center(
-                child: CircularProgressIndicator(color: AppColors.primaryBase)),
+              child: CircularProgressIndicator(color: AppColors.primaryBase),
+            ),
           );
         }
 
-        Widget feedContent;
+        final Widget feedContent;
 
         if (state.feedList.isEmpty) {
           feedContent = const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: CardFeedEmpty(
               image: 'assets/images/team/empty_state_feed.svg',
-              title: "Belum ada informasi terbaru",
-              body:
-                  "Pantau terus section ini untuk update terkini dari Komtim.",
+              title: 'Belum ada informasi terbaru',
+              body: 'Pantau terus section ini untuk update terkini dari Komtim.',
             ),
           );
         } else {
+          final previewFeeds = state.feedList.take(3).toList();
           feedContent = SizedBox(
-            height: 250, // Approximate height for CardFeed
+            height: 250,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              itemCount:
-                  state.feedList.take(3).length, // Usually max 3 or so in home
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              itemCount: previewFeeds.length,
               itemBuilder: (context, index) {
-                final feed = state.feedList[index];
+                final feed = previewFeeds[index];
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.md),
                   child: CardFeed(
-                    ontap: () {
-                      AppRouter.router.push(
-                        PAGES.feeddetail.screenPath,
-                        extra: feed.id.toString(),
-                      );
-                    },
-                    images: feed.image ?? "",
-                    tagTalent: feed.visibility ?? "",
-                    title: feed.title ?? "",
-                    date: feed.publishedAt ?? "",
+                    ontap: () => onFeedTap?.call(feed.id.toString()),
+                    images: feed.image ?? '',
+                    tagTalent: feed.visibility ?? '',
+                    title: feed.title ?? '',
+                    date: feed.publishedAt ?? '',
                     nametalent: feed.participants,
                   ),
                 );
@@ -70,9 +68,10 @@ class TeamFeedSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
-                "Informasi Terkini",
+                'Informasi Terkini',
                 style: AppTypography.bodyLgSemiBold.copyWith(
                   color: AppColors.alwaysBlack,
                 ),

@@ -253,6 +253,7 @@ Future<void> initDependencies() async {
         getFeedUseCase: locator(),
         getFeedDetailUseCase: locator(),
       ));
+
   locator.registerFactory(() => PaymentMethodBloc(
         checkPinUseCase: locator(),
         getInvoiceDetailUseCase: locator(),
