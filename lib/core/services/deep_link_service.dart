@@ -54,17 +54,28 @@ class DeepLinkService {
   }
 
   /// Route URI masuk ke halaman yang sesuai.
+  ///
+  /// Format yang didukung:
+  ///   • komerce://reset-password?code=xxx  (custom scheme, cold start)
+  ///   • https://<domain>/reset-password?code=xxx  (HTTPS App Link dari Gmail)
   void _handleUri(Uri uri) {
-    // komerce://reset-password?code=xxx atau https://reset-password?code=xxx
-    if (uri.host == 'reset-password' || uri.path == '/reset-password') {
+    final isResetPassword =
+        // custom scheme: komerce://reset-password
+        (uri.scheme == 'komerce' && uri.host == 'reset-password') ||
+            // HTTPS host: https://reset-password?code=xxx
+            ((uri.scheme == 'https' || uri.scheme == 'http') &&
+                uri.host == 'reset-password') ||
+            // HTTPS path: https://domain.com/reset-password?code=xxx
+            ((uri.scheme == 'https' || uri.scheme == 'http') &&
+                uri.path == '/reset-password');
+
+    if (isResetPassword) {
       final code = uri.queryParameters['code'];
       debugPrint('DeepLink → navigasi ke NewForgotPassword, code=$code');
 
       // Tutup semua dialog/bottom sheet yang mungkin masih terbuka
-      // sebelum navigasi, agar tidak crash karena deactivated context.
       final navigatorState = AppRouter.navigatorKey.currentState;
       if (navigatorState != null) {
-        // Pop semua overlay (dialog, bottom sheet) sampai tidak ada lagi
         while (navigatorState.canPop()) {
           navigatorState.pop();
         }
@@ -75,7 +86,7 @@ class DeepLinkService {
         AppRouter.router.goNamed(
           PAGES.newForgotPassword.screenName,
           queryParameters: {
-            if (code != null) 'code': code,
+            if (code != null && code.isNotEmpty) 'code': code,
           },
         );
       });
