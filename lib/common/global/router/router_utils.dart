@@ -63,6 +63,9 @@ enum PAGES {
   reportperformance,
   reportdetailperformance,
 
+  //talent pool
+  talentPool,
+
 }
 
 extension AppPageExtension on PAGES {
@@ -146,6 +149,8 @@ extension AppPageExtension on PAGES {
         return "/report_performance";
       case PAGES.reportdetailperformance:
         return "/report_detail_performance";
+      case PAGES.talentPool:
+        return "/talent_pool";
     }
   }
 
@@ -227,6 +232,8 @@ extension AppPageExtension on PAGES {
         return "REPORT PERFORMANCE PAGE";
       case PAGES.reportdetailperformance:
         return "REPORT DETAIL PERFORMANCE PAGE";
+      case PAGES.talentPool:
+        return "TALENT POOL PAGE";
     }
   }
 
@@ -300,6 +307,8 @@ extension AppPageExtension on PAGES {
         return "Report Performancane Page";
       case PAGES.reportdetailperformance:
         return "Report Detail Performancane Page";
+      case PAGES.talentPool:
+        return "Talent Pool";
       default:
         return "Home";
     }

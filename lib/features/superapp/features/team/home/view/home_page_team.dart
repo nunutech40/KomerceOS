@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/features/superapp/features/team/home/bloc/home_team_cubit.dart';
-import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
-import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/home/widget/team_action_required_section.dart';
 import 'package:komtim_partner/features/superapp/features/team/home/widget/team_feed_section.dart';
 import 'package:komtim_partner/features/superapp/features/team/home/widget/team_menu_section.dart';
+import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 
 class HomePageTeam extends StatefulWidget {
   const HomePageTeam({Key? key}) : super(key: key);
@@ -21,7 +21,7 @@ class _HomePageTeamState extends State<HomePageTeam> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<HomeTeamCubit>().initialize();
+      // context.read<HomeTeamCubit>().initialize();
     });
   }
 
@@ -49,8 +49,7 @@ class _HomePageTeamState extends State<HomePageTeam> {
                     return BlocBuilder<ShoppingBloc, ShoppingState>(
                       builder: (context, shoppingState) {
                         return TeamActionRequiredSection(
-                          invoiceCount:
-                              invoiceState.invoicesData?.length ?? 0,
+                          invoiceCount: invoiceState.invoicesData?.length ?? 0,
                           shoppingCount: shoppingState.shoppingList.length,
                           onInvoiceTap: cubit.navigateToInvoice,
                           onShoppingTap: cubit.navigateToShopping,
@@ -70,8 +69,7 @@ class _HomePageTeamState extends State<HomePageTeam> {
                         return TeamMenuSection(
                           invoiceBadgeCount:
                               invoiceState.invoicesData?.length ?? 0,
-                          shoppingBadgeCount:
-                              shoppingState.shoppingList.length,
+                          shoppingBadgeCount: shoppingState.shoppingList.length,
                           onInvoiceTap: cubit.navigateToInvoice,
                           onShoppingTap: cubit.navigateToShopping,
                           onAttendanceTap: cubit.navigateToAttendance,

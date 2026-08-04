@@ -1,0 +1,68 @@
+import '../model/talent_model.dart';
+
+/// Dummy data sementara untuk menampilkan UI Talent Pool sebelum
+/// endpoint tersedia. Ganti dengan data dari bloc/repository saat integrasi.
+const List<TalentModel> kDummyTalents = [
+  TalentModel(
+    name: 'Lindsey Kilback',
+    role: 'Customer Service',
+    avatarUrl: 'https://i.pravatar.cc/150?img=47',
+    conversionRate: 80,
+    rating: 4.5,
+    experience: '3 Tahun 2 Bulan',
+    industries: ['Fashion', 'Kesehatan', 'Otomotif', 'Beauty'],
+    markedByPartner: 100,
+    isFavorite: true,
+  ),
+  TalentModel(
+    name: 'Hensuleng Rizki',
+    role: 'Customer Service',
+    avatarUrl: 'https://i.pravatar.cc/150?img=12',
+    conversionRate: 80,
+    rating: 4.5,
+    experience: '3 Tahun 2 Bulan',
+    industries: ['Fashion', 'Kesehatan', 'Otomotif', 'Beauty'],
+    markedByPartner: 100,
+  ),
+  TalentModel(
+    name: 'Marlene Bogan',
+    role: 'Admin Marketplace',
+    avatarUrl: 'https://i.pravatar.cc/150?img=32',
+    conversionRate: 76,
+    rating: 4.8,
+    experience: '2 Tahun 5 Bulan',
+    industries: ['FnB', 'Rumah Tangga'],
+    markedByPartner: 64,
+  ),
+  TalentModel(
+    name: 'Darrel Kuhic',
+    role: 'Live Streamer',
+    avatarUrl: 'https://i.pravatar.cc/150?img=15',
+    conversionRate: 91,
+    rating: 4.9,
+    experience: '4 Tahun 1 Bulan',
+    industries: ['Beauty', 'Fashion', 'Health'],
+    markedByPartner: 132,
+    isFavorite: true,
+  ),
+  TalentModel(
+    name: 'Cecil Zboncak',
+    role: 'Advertiser',
+    avatarUrl: 'https://i.pravatar.cc/150?img=52',
+    conversionRate: 68,
+    rating: 4.3,
+    experience: '1 Tahun 8 Bulan',
+    industries: ['Otomotif'],
+    markedByPartner: 41,
+  ),
+  TalentModel(
+    name: 'Gilberto Rau',
+    role: 'Customer Service',
+    avatarUrl: 'https://i.pravatar.cc/150?img=68',
+    conversionRate: 84,
+    rating: 4.6,
+    experience: '3 Tahun 9 Bulan',
+    industries: ['Health', 'FnB', 'Fashion'],
+    markedByPartner: 88,
+  ),
+];

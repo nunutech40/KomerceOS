@@ -66,7 +66,7 @@ class HomeTeamCubit extends Cubit<HomeTeamState> {
   }
 
   void navigateToTalentPool() {
-    // Placeholder — tambahkan URL launcher jika diperlukan
+    AppRouter.router.push(PAGES.talentPool.screenPath);
   }
 
   void navigateToFeedDetail(String feedId) {

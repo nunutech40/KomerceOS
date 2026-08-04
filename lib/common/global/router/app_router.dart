@@ -37,6 +37,7 @@ import 'package:komtim_partner/features/superapp/features/team/performance/view/
 import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/detail_shopping_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/shopping_list_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/talentpool/view/talent_pool_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/splash_screen_page.dart';
 import 'package:komtim_partner/features/unhire/view/dialog_unhire_finish.dart';
@@ -449,6 +450,13 @@ class AppRouter {
             productName: extra?['productName'] ?? ' - ',
           );
         },
+      ),
+
+      // ── Talent Pool ──────────────────────────────────────────────────────────
+      GoRoute(
+        path: PAGES.talentPool.screenPath,
+        name: PAGES.talentPool.screenName,
+        builder: (context, state) => const TalentPoolPage(),
       ),
 
       // ── Force Update ─────────────────────────────────────────────────────────

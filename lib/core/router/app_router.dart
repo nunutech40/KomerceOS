@@ -21,6 +21,7 @@ import 'package:komtim_partner/features/pin/view/verification_email_page.dart';
 import 'package:komtim_partner/features/ratetalent/view/evaluation_kompoint_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/detail_shopping_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/shopping_list_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/talentpool/view/talent_pool_page.dart';
 import 'package:komtim_partner/features/unhire/view/reason_unhire_page.dart';
 import 'package:komtim_partner/features/unhire/view/unhire_page.dart';
 import 'package:komtim_partner/features/update/view/force_update_page.dart';
@@ -469,6 +470,14 @@ class AppRouter {
             productName: extra?['productName'] ?? ' - ',
           );
         },
+      ),
+      // -----------------------------------------------------------------------
+      // TALENT POOL
+      // -----------------------------------------------------------------------
+      GoRoute(
+        path: PAGES.talentPool.screenPath,
+        name: PAGES.talentPool.screenName,
+        builder: (context, state) => const TalentPoolPage(),
       ),
       // -----------------------------------------------------------------------
       // MISC
