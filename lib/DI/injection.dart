@@ -8,6 +8,8 @@ import 'package:komtim_partner/core/data/datasources/remote/kompoin_remote_datas
 import 'package:komtim_partner/core/data/datasources/remote/pin_remote_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/report_performance_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/shopping_remote_datasource.dart';
+import 'package:komtim_partner/core/data/datasources/remote/business_sector_datasource.dart';
+import 'package:komtim_partner/core/data/datasources/remote/resource_talent_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/talent_recomendation_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/talent_remote_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/topup_remote_datasource.dart';
@@ -20,6 +22,8 @@ import 'package:komtim_partner/core/data/repositories/kompoin_repository_impl.da
 import 'package:komtim_partner/core/data/repositories/pin_repository_impl.dart';
 import 'package:komtim_partner/core/data/repositories/report_performance_impl.dart';
 import 'package:komtim_partner/core/data/repositories/shopping_repository_impl.dart';
+import 'package:komtim_partner/core/data/repositories/business_sector_repository_impl.dart';
+import 'package:komtim_partner/core/data/repositories/resource_talent_repository_impl.dart';
 import 'package:komtim_partner/core/data/repositories/talent_recomendation_repository_impl.dart';
 import 'package:komtim_partner/core/data/repositories/talent_repository_impl.dart';
 import 'package:komtim_partner/core/data/repositories/topup_repository_impl.dart';
@@ -32,6 +36,8 @@ import 'package:komtim_partner/core/domain/repositories/kompoin_repository.dart'
 import 'package:komtim_partner/core/domain/repositories/pin_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/report_performance_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/shopping_repository.dart';
+import 'package:komtim_partner/core/domain/repositories/business_sector_repository.dart';
+import 'package:komtim_partner/core/domain/repositories/resource_talent_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/talent_recomendation.dart';
 import 'package:komtim_partner/core/domain/repositories/talent_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/top_up_repository.dart';
@@ -68,6 +74,8 @@ import 'package:komtim_partner/core/domain/usecases/get_shopping_list_use_case.d
 import 'package:komtim_partner/core/domain/usecases/get_talent_evaluation_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_talent_selected_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_talent_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/get_business_sector_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/get_resource_talent_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_telant_recomendation_usec_ase.dart';
 import 'package:komtim_partner/core/domain/usecases/get_time_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_transaction_history_need_process_use_case.dart';
@@ -88,6 +96,8 @@ import 'package:komtim_partner/core/domain/usecases/topup_usecase.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_otp_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
+import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/business_sector_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/talent_pool_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/bloc/attendance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
@@ -290,6 +300,12 @@ Future<void> initDependencies() async {
       ));
   locator.registerFactory(
       () => NotificationInfoBloc(getNotificationInfoUseCase: locator()));
+  locator.registerFactory(() => BusinessSectorBloc(
+        getBusinessSectorUseCase: locator(),
+      ));
+  locator.registerFactory(() => TalentPoolBloc(
+        getResourceTalentUseCase: locator(),
+      ));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -361,6 +377,8 @@ Future<void> initDependencies() async {
       () => GetReportPerformanceMonthlyUseCase(locator()));
   locator
       .registerLazySingleton(() => GetTalentRecommendationUseCase(locator()));
+  locator.registerLazySingleton(() => GetBusinessSectorUseCase(locator()));
+  locator.registerLazySingleton(() => GetResourceTalentUseCase(locator()));
   locator.registerLazySingleton(() => GetIdealBalanceUseCase(locator()));
   locator.registerLazySingleton(() => GetTalentEvaluationsUseCase(locator()));
   locator.registerLazySingleton(() => GetAplikasikuListUseCase(locator()));
@@ -417,6 +435,10 @@ Future<void> initDependencies() async {
       () => TalentRecomendationRepositoryImpl(
             remoteDataSource: locator(),
           ));
+  locator.registerLazySingleton<BusinessSectorRepository>(
+      () => BusinessSectorRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<ResourceTalentRepository>(
+      () => ResourceTalentRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<AplikasikuRepository>(
       () => AplikasikuRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<CheckBillRepository>(
@@ -487,6 +509,12 @@ Future<void> initDependencies() async {
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<TalentRecomendationRemoteDataSource>(() =>
       TalentRecomendationRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<BusinessSectorRemoteDataSource>(() =>
+      BusinessSectorRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<ResourceTalentRemoteDataSource>(() =>
+      ResourceTalentRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<AplikasikuRemoteDataSource>(() =>
       AplikasikuRemoteDataSourceImpl(

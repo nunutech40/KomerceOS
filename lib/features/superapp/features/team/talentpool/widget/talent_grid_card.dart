@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import '../model/talent_model.dart';
+import '../talent_assets.dart';
 import 'industry_tag.dart';
 import 'talent_stat_badge.dart';
 
@@ -58,9 +59,15 @@ class TalentGridCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.sm),
                   Row(
                     children: [
-                      TalentStatBadge.conversionRate(talent.conversionRate),
+                      Flexible(
+                        child: TalentStatBadge.conversionRate(
+                          talent.conversionRate,
+                        ),
+                      ),
                       const SizedBox(width: AppSpacing.xs),
-                      TalentStatBadge.rating(talent.rating),
+                      Flexible(
+                        child: TalentStatBadge.rating(talent.rating),
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xs2),
@@ -144,11 +151,17 @@ class _FavoriteButton extends StatelessWidget {
           color: AppColors.alwaysWhite,
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          size: AppSpacing.iconSm,
-          color: isFavorite ? AppColors.errorBase : AppColors.grey400,
-        ),
+        child: isFavorite
+            ? const DsAppImage(
+                source: TalentAssets.icHeart,
+                width: AppSpacing.iconSm,
+                height: AppSpacing.iconSm,
+              )
+            : const Icon(
+                Icons.favorite_border_rounded,
+                size: AppSpacing.iconSm,
+                color: AppColors.grey400,
+              ),
       ),
     );
   }
@@ -164,10 +177,10 @@ class _MarkedByPartner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(
-          Icons.favorite_rounded,
-          size: AppSpacing.iconXs,
-          color: AppColors.errorBase,
+        const DsAppImage(
+          source: TalentAssets.icHeart,
+          width: AppSpacing.iconXs,
+          height: AppSpacing.iconXs,
         ),
         const SizedBox(width: AppSpacing.xs),
         Flexible(

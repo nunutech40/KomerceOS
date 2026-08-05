@@ -7,6 +7,7 @@ class Endpoints {
   static String get _BaseURLInternal => Config.instance.baseUrlInternal;
   static String get _BaseURLSuperApp => Config.instance.baseUrlSuperApp;
   static String get _BaseURLKomship => Config.instance.baseUrlKomship;
+  static String get _BaseURLTalentPool => Config.instance.baseUrlTalentPool;
 
   // These are the endpoints
 
@@ -132,6 +133,14 @@ class Endpoints {
   // Talents Recomendation Endpoint
   static String get talentRecomendation =>
       '$_BaseURL/api/v1/mobile/talent_pool/talents';
+
+  // Business Sector (Resource) Endpoint
+  static String get businessSector =>
+      '$_BaseURLTalentPool/api/v1/resource/business_sector';
+
+  // Resource Talents (Talent Pool listing with filter)
+  static String get resourceTalents =>
+      '$_BaseURLTalentPool/api/v1/resource/talents';
   // Report Performance
   static String get reportPerformance =>
       '$_BaseURL/api/v1/mobile/talent_performance/list';

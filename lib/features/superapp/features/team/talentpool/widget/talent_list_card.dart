@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import '../model/talent_model.dart';
+import '../talent_assets.dart';
 import 'industry_tag.dart';
 import 'talent_stat_badge.dart';
 
@@ -94,10 +95,10 @@ class TalentListCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
-                const Icon(
-                  Icons.favorite_rounded,
-                  size: AppSpacing.iconSm,
-                  color: AppColors.errorBase,
+                const DsAppImage(
+                  source: TalentAssets.icHeart,
+                  width: AppSpacing.iconSm,
+                  height: AppSpacing.iconSm,
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
@@ -113,14 +114,17 @@ class TalentListCard extends StatelessWidget {
                 InkWell(
                   borderRadius: BorderRadius.circular(AppRadius.circular),
                   onTap: onFavoriteTap,
-                  child: Icon(
-                    talent.isFavorite
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    size: AppSpacing.iconMd,
-                    color:
-                        talent.isFavorite ? AppColors.errorBase : AppColors.grey400,
-                  ),
+                  child: talent.isFavorite
+                      ? const DsAppImage(
+                          source: TalentAssets.icHeart,
+                          width: AppSpacing.iconMd,
+                          height: AppSpacing.iconMd,
+                        )
+                      : const Icon(
+                          Icons.favorite_border_rounded,
+                          size: AppSpacing.iconMd,
+                          color: AppColors.grey400,
+                        ),
                 ),
               ],
             ),

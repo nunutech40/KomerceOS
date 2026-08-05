@@ -1,73 +1,67 @@
-/// Opsi filter untuk halaman Talent Pool (Role, Industri, Urutkan).
+/// Opsi filter untuk halaman Talent Pool.
 ///
-/// Digunakan oleh [TalentFilterSheet] dan halaman utama untuk menyimpan
-/// pilihan filter yang sedang aktif.
+/// Semua filter bersifat **multi-select**:
+/// - [selectedRatings] → daftar bintang yang dipilih (1-5)
+/// - [selectedExperiences] → daftar range pengalaman (mis. ["0-6", "7-12"])
+/// - [selectedBusinessSectorIds] → daftar ID sektor bisnis dari API
+/// - [skillName] → kata kunci role/skill (string pencarian)
 class TalentFilter {
-  final String role;
-  final String industry;
-  final String sort;
+  final Set<int> selectedRatings;
+  final Set<String> selectedExperiences;
+  final Set<int> selectedBusinessSectorIds;
+  final String skillName;
 
   const TalentFilter({
-    this.role = TalentFilterOptions.defaultRole,
-    this.industry = TalentFilterOptions.defaultIndustry,
-    this.sort = TalentFilterOptions.defaultSort,
+    this.selectedRatings = const {},
+    this.selectedExperiences = const {},
+    this.selectedBusinessSectorIds = const {},
+    this.skillName = '',
   });
 
+  /// Filter kosong → tidak ada filter aktif.
+  bool get isEmpty =>
+      selectedRatings.isEmpty &&
+      selectedExperiences.isEmpty &&
+      selectedBusinessSectorIds.isEmpty &&
+      skillName.isEmpty;
+
   TalentFilter copyWith({
-    String? role,
-    String? industry,
-    String? sort,
+    Set<int>? selectedRatings,
+    Set<String>? selectedExperiences,
+    Set<int>? selectedBusinessSectorIds,
+    String? skillName,
   }) {
     return TalentFilter(
-      role: role ?? this.role,
-      industry: industry ?? this.industry,
-      sort: sort ?? this.sort,
+      selectedRatings: selectedRatings ?? this.selectedRatings,
+      selectedExperiences: selectedExperiences ?? this.selectedExperiences,
+      selectedBusinessSectorIds:
+          selectedBusinessSectorIds ?? this.selectedBusinessSectorIds,
+      skillName: skillName ?? this.skillName,
     );
   }
 
-  /// True jika role membatasi hasil (bukan "Semua").
-  bool get hasRole => role != TalentFilterOptions.defaultRole;
-
-  /// True jika industri membatasi hasil (bukan "Semua").
-  bool get hasIndustry => industry != TalentFilterOptions.defaultIndustry;
-
-  /// True jika sebuah metode pengurutan sudah dipilih.
-  bool get hasSort => TalentFilterOptions.sorts.contains(sort);
+  /// Reset semua filter ke keadaan kosong.
+  static const TalentFilter empty = TalentFilter();
 }
 
-/// Kumpulan pilihan statis untuk dropdown filter.
+/// Konstanta pilihan filter yang tersedia.
 abstract final class TalentFilterOptions {
-  static const String defaultRole = 'Semua';
-  static const String defaultIndustry = 'Semua';
-  static const String defaultSort = 'Pilih filter sort';
+  /// Rating bintang yang tersedia.
+  static const List<int> ratings = [5, 4, 3, 2, 1];
 
-  static const List<String> roles = [
-    'Semua',
-    'Customer Service',
-    'Admin Marketplace',
-    'Live Streamer',
-    'Advertiser',
+  /// Range pengalaman (value dikirim ke API, label tampil ke user).
+  static const List<TalentExperienceOption> experiences = [
+    TalentExperienceOption(value: '0-6', label: '0-6 Bulan'),
+    TalentExperienceOption(value: '7-12', label: '7-12 Bulan'),
+    TalentExperienceOption(value: '12-24', label: '1-2 Tahun'),
+    TalentExperienceOption(value: '24+', label: '> 2 Tahun'),
   ];
+}
 
-  static const List<String> industries = [
-    'Semua',
-    'Fashion',
-    'FnB',
-    'Otomotif',
-    'Rumah Tangga',
-    'Beauty',
-    'Health',
-  ];
+/// Pasangan value–label untuk filter pengalaman.
+class TalentExperienceOption {
+  final String value;
+  final String label;
 
-  static const List<String> sorts = [
-    sortTopRated,
-    sortMostMarked,
-    sortLongestExperience,
-    sortTopConversion,
-  ];
-
-  static const String sortTopRated = 'Rate Tertinggi';
-  static const String sortMostMarked = 'Paling Banyak Ditandai';
-  static const String sortLongestExperience = 'Pengalaman Terlama';
-  static const String sortTopConversion = 'CR Tertinggi';
+  const TalentExperienceOption({required this.value, required this.label});
 }

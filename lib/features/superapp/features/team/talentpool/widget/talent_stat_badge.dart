@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import '../talent_assets.dart';
 
 /// Badge kecil dengan ikon + teks untuk statistik talent
 /// (mis. "CR 80%" dan "Rate 4.5").
 ///
 /// Dipakai baik di kartu grid maupun list.
 class TalentStatBadge extends StatelessWidget {
-  final IconData icon;
+  final String iconAsset;
   final String label;
   final Color color;
   final Color background;
 
   const TalentStatBadge({
     super.key,
-    required this.icon,
+    required this.iconAsset,
     required this.label,
     required this.color,
     required this.background,
@@ -22,7 +23,7 @@ class TalentStatBadge extends StatelessWidget {
   /// Badge conversion rate (hijau).
   factory TalentStatBadge.conversionRate(int value) {
     return TalentStatBadge(
-      icon: Icons.autorenew_rounded,
+      iconAsset: TalentAssets.icTarget,
       label: 'CR $value%',
       color: AppColors.successBase,
       background: AppColors.successLight,
@@ -32,7 +33,7 @@ class TalentStatBadge extends StatelessWidget {
   /// Badge rating (oranye).
   factory TalentStatBadge.rating(double value) {
     return TalentStatBadge(
-      icon: Icons.star_rounded,
+      iconAsset: TalentAssets.icStar,
       label: 'Rate $value',
       color: AppColors.warningBase,
       background: AppColors.warningLight,
@@ -53,11 +54,19 @@ class TalentStatBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: AppSpacing.iconXs, color: color),
+          DsAppImage(
+            source: iconAsset,
+            width: AppSpacing.iconXs,
+            height: AppSpacing.iconXs,
+          ),
           const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: AppTypography.labelXsMedium.copyWith(color: color),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.labelXsMedium.copyWith(color: color),
+            ),
           ),
         ],
       ),
