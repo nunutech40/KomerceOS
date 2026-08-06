@@ -13,7 +13,7 @@ import '../../common/global/router/router_utils.dart';
 // yang sesuai via GoRouter.
 //
 // Saat ini hanya menangani:
-//   komerce://reset-password?code=xxx → NewForgotPasswordPage
+//   komerce://reset-password?code=xxx atau https://reset-password?code=xxx → NewForgotPasswordPage
 //
 // Cara pakai: panggil DeepLinkService.instance.init() di main.dart
 // setelah DI dan router sudah siap.
@@ -55,7 +55,7 @@ class DeepLinkService {
 
   /// Route URI masuk ke halaman yang sesuai.
   void _handleUri(Uri uri) {
-    // komerce://reset-password?code=xxx
+    // komerce://reset-password?code=xxx atau https://reset-password?code=xxx
     if (uri.host == 'reset-password' || uri.path == '/reset-password') {
       final code = uri.queryParameters['code'];
       debugPrint('DeepLink → navigasi ke NewForgotPassword, code=$code');

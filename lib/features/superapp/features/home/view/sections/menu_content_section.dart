@@ -2,16 +2,15 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
-import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_chart.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_menu_icon.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_transaction_tile.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:komtim_partner/common/global/router/app_router.dart';
+import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/features/superapp/features/home/bloc/revenue_performance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/home_skeleton.dart';
-import 'package:komtim_partner/common/global/router/app_router.dart';
-import 'package:komtim_partner/common/global/router/router_utils.dart';
-
 
 /// Section menu + chart PageView + Transaksi Kartu.
 ///
@@ -37,6 +36,68 @@ class _MenuContentSectionState extends State<MenuContentSection> {
   final PageController _pageController = PageController();
   int _currentSwipePage = 0;
   final GlobalKey<DsChartState> _dsChartKey = GlobalKey<DsChartState>();
+
+  // ---------------------------------------------------------------------------
+  // State filter grafik komship: bulan/tahun terpilih + metode pembayaran.
+  // Default = bulan & tahun sekarang (tanggal hari ini).
+  // ---------------------------------------------------------------------------
+  DateTime _selectedMonth = DateTime.now();
+  String? _selectedPaymentMethod;
+
+  /// Format tanggal ke `yyyy-MM-dd` untuk API.
+  String _fmt(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// Awal bulan terpilih.
+  String get _startDate =>
+      _fmt(DateTime(_selectedMonth.year, _selectedMonth.month, 1));
+
+  /// Akhir rentang: hari ini bila bulan terpilih = bulan berjalan,
+  /// selain itu akhir bulan terpilih.
+  String get _endDate {
+    final now = DateTime.now();
+    final isCurrentMonth =
+        _selectedMonth.year == now.year && _selectedMonth.month == now.month;
+    final end = isCurrentMonth
+        ? DateTime(now.year, now.month, now.day)
+        : DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+    return _fmt(end);
+  }
+
+  /// Label tombol filter, mis. "Mar 2023" (nama bulan disingkat 3 huruf).
+  String get _monthYearLabel {
+    final month = DsDateFilterSheet.defaultMonthNames[_selectedMonth.month - 1];
+    final shortMonth = month.substring(0, 3);
+    return '$shortMonth ${_selectedMonth.year}';
+  }
+
+  void _fetchRevenue() {
+    context.read<RevenuePerformanceBloc>().add(
+          FetchRevenuePerformanceEvent(
+            startDate: _startDate,
+            endDate: _endDate,
+            paymentMethod: _selectedPaymentMethod,
+          ),
+        );
+  }
+
+  Future<void> _openDateFilter() async {
+    final now = DateTime.now();
+    final result = await DsDateFilterSheet.show(
+      context,
+      initial: DsMonthYear(
+        month: _selectedMonth.month,
+        year: _selectedMonth.year,
+      ),
+      minYear: now.year - 5,
+      maxYear: now.year,
+    );
+
+    if (result != null && mounted) {
+      setState(() => _selectedMonth = DateTime(result.year, result.month));
+      _fetchRevenue();
+    }
+  }
 
   // Definisi data transaksi terakhir (placeholder)
   static const List<DsTransactionItem> _transactions = [
@@ -92,8 +153,7 @@ class _MenuContentSectionState extends State<MenuContentSection> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const DsAppImage(
-                    source:
-                        'assets/images/superapp/home/ic_logo_komship.svg',
+                    source: 'assets/images/superapp/home/ic_logo_komship.svg',
                     height: 24,
                     width: 112,
                   ),
@@ -105,8 +165,7 @@ class _MenuContentSectionState extends State<MenuContentSection> {
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: AppColors.alwaysWhite,
-                          border:
-                              Border.all(color: const Color(0xFFE5E5E5)),
+                          border: Border.all(color: const Color(0xFFE5E5E5)),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
@@ -151,11 +210,14 @@ class _MenuContentSectionState extends State<MenuContentSection> {
                 ),
                 child: DefaultTabController(
                   length: 3,
-                  child:
-                      BlocBuilder<RevenuePerformanceBloc, RevenuePerformanceState>(
+                  child: BlocBuilder<RevenuePerformanceBloc,
+                      RevenuePerformanceState>(
                     builder: (context, state) {
                       final totalOmset = state is RevenuePerformanceLoaded
                           ? state.totalOmset
+                          : 0;
+                      final totalOrder = state is RevenuePerformanceLoaded
+                          ? state.totalOrder
                           : 0;
                       final omzetSpots = state is RevenuePerformanceLoaded
                           ? state.omzetSpots
@@ -167,11 +229,76 @@ class _MenuContentSectionState extends State<MenuContentSection> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Total Omset'),
-                          Text(
-                            CurrencyFormat.convertToIdrNum(totalOmset, 0),
-                            style: AppTypography.headingMd
-                                .copyWith(color: AppColors.textDark),
+                          // Baris label + tombol filter tanggal
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  'Total Omset',
+                                  style: AppTypography.bodyMdRegular.copyWith(
+                                    color: AppColors.textDark,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  'Total Orderan',
+                                  style: AppTypography.bodyMdRegular.copyWith(
+                                    color: AppColors.textDark,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              _DateFilterButton(
+                                label: _monthYearLabel,
+                                onTap: _openDateFilter,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // Baris nilai (sejajar tepat di bawah label di atasnya)
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  CurrencyFormat.convertToIdrNum(totalOmset, 0),
+                                  style: AppTypography.bodyLgMedium.copyWith(
+                                    color: AppColors.black1A1A,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  '$totalOrder',
+                                  style: AppTypography.bodyLgMedium.copyWith(
+                                    color: AppColors.black1A1A,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Placeholder selebar tombol filter agar kolom nilai
+                              // tetap sejajar dengan kolom label di baris atas.
+                              Visibility(
+                                visible: false,
+                                maintainSize: true,
+                                maintainAnimation: true,
+                                maintainState: true,
+                                child: _DateFilterButton(
+                                  label: _monthYearLabel,
+                                  onTap: _openDateFilter,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                           AppTabLayout(
@@ -179,10 +306,8 @@ class _MenuContentSectionState extends State<MenuContentSection> {
                               String? method;
                               if (index == 1) method = 'cod';
                               if (index == 2) method = 'bank transfer';
-                              context.read<RevenuePerformanceBloc>().add(
-                                    FetchRevenuePerformanceEvent(
-                                        paymentMethod: method),
-                                  );
+                              _selectedPaymentMethod = method;
+                              _fetchRevenue();
                             },
                             tabs: const [
                               Tab(text: 'Semua'),
@@ -297,8 +422,7 @@ class _MenuContentSectionState extends State<MenuContentSection> {
     return BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
       buildWhen: (prev, curr) =>
           prev.displayProfile?.isKomship != curr.displayProfile?.isKomship ||
-          prev.displayProfile?.isKomcards !=
-              curr.displayProfile?.isKomcards ||
+          prev.displayProfile?.isKomcards != curr.displayProfile?.isKomcards ||
           prev.displayProfile?.productMailVerifications !=
               curr.displayProfile?.productMailVerifications ||
           prev.isBackgroundRefresh != curr.isBackgroundRefresh ||
@@ -308,11 +432,11 @@ class _MenuContentSectionState extends State<MenuContentSection> {
         final hasKomcards = profileState.isKomcardsVerified;
 
         // Skeleton saat loading / background refresh
-        final isLoading = profileState.status ==
-                SuperappProfileStatus.loading ||
-            profileState.status == SuperappProfileStatus.loadingWithCache ||
-            profileState.status == SuperappProfileStatus.initial ||
-            profileState.isBackgroundRefresh;
+        final isLoading =
+            profileState.status == SuperappProfileStatus.loading ||
+                profileState.status == SuperappProfileStatus.loadingWithCache ||
+                profileState.status == SuperappProfileStatus.initial ||
+                profileState.isBackgroundRefresh;
 
         if (isLoading) {
           return Column(
@@ -354,8 +478,7 @@ class _MenuContentSectionState extends State<MenuContentSection> {
               onTap: () {},
             ),
             DsMenuIcon(
-              icon: Image.asset(
-                  'assets/images/superapp/home/ic_problem.png'),
+              icon: Image.asset('assets/images/superapp/home/ic_problem.png'),
               title: 'Kendala',
               onTap: () {},
             ),
@@ -363,7 +486,10 @@ class _MenuContentSectionState extends State<MenuContentSection> {
         }
 
         // Swipe pages
-        final allSwipePages = [_buildKomshipChartPage(), _buildSwipe2Placeholder()];
+        final allSwipePages = [
+          _buildKomshipChartPage(),
+          _buildSwipe2Placeholder()
+        ];
         final activeSwipePages = <Widget>[];
         if (hasKomship) activeSwipePages.add(allSwipePages[0]);
         if (hasKomcards) activeSwipePages.add(allSwipePages[1]);
@@ -427,6 +553,34 @@ class _MenuContentSectionState extends State<MenuContentSection> {
           ],
         );
       },
+    );
+  }
+}
+
+/// Tombol pemicu filter tanggal (bulan/tahun) di samping card Total Omset.
+class _DateFilterButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _DateFilterButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.alwaysWhite,
+          border: Border.all(color: const Color(0xFFE5E5E5)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.bodySmMedium
+              .copyWith(color: AppColors.textDark, fontWeight: FontWeight.w700),
+        ),
+      ),
     );
   }
 }
