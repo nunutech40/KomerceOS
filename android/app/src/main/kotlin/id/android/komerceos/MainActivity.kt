@@ -1,4 +1,4 @@
-package id.android.kmpartner.dev
+package id.android.komerceos
 
 import io.flutter.embedding.android.FlutterActivity
 

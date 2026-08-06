@@ -13,8 +13,7 @@ class Endpoints {
 
   // Auth Endpoints
   static String get login => '$_BaseURLSuperApp/auth/api/v1/komship/login';
-  static String get checkEmail =>
-      '$_BaseURLSuperApp/auth/api/v1/auth/check-login';
+  static String get checkEmail => '$_BaseURLSuperApp/api/v1/auth/check-login';
   static String get resendVerification =>
       '$_BaseURLSuperApp/auth/api/v1/auth/resend-verification';
   static String get refreshToken => '$_BaseURL/api/v1/auth/refresh_token';
