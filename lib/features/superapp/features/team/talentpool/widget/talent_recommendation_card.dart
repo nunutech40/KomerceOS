@@ -9,11 +9,13 @@ import 'industry_tag.dart';
 class TalentRecommendationGridCard extends StatelessWidget {
   final TalentRecommendationModel talent;
   final VoidCallback? onTap;
+  final VoidCallback? onWishlistTap;
 
   const TalentRecommendationGridCard({
     super.key,
     required this.talent,
     this.onTap,
+    this.onWishlistTap,
   });
 
   @override
@@ -47,20 +49,23 @@ class TalentRecommendationGridCard extends StatelessWidget {
                   Positioned(
                     top: AppSpacing.sm,
                     right: AppSpacing.sm,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppSpacing.xs),
-                      decoration: const BoxDecoration(
-                        color: AppColors.alwaysWhite,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        talent.isWishlist
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        size: AppSpacing.iconSm,
-                        color: talent.isWishlist
-                            ? AppColors.errorBase
-                            : AppColors.grey300,
+                    child: GestureDetector(
+                      onTap: onWishlistTap,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.xs),
+                        decoration: const BoxDecoration(
+                          color: AppColors.alwaysWhite,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          talent.isWishlist
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          size: AppSpacing.iconSm,
+                          color: talent.isWishlist
+                              ? AppColors.errorBase
+                              : AppColors.grey300,
+                        ),
                       ),
                     ),
                   ),
@@ -171,11 +176,13 @@ class TalentRecommendationGridCard extends StatelessWidget {
 class TalentRecommendationListCard extends StatelessWidget {
   final TalentRecommendationModel talent;
   final VoidCallback? onTap;
+  final VoidCallback? onWishlistTap;
 
   const TalentRecommendationListCard({
     super.key,
     required this.talent,
     this.onTap,
+    this.onWishlistTap,
   });
 
   @override
@@ -286,10 +293,17 @@ class TalentRecommendationListCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
-                const Icon(
-                  Icons.favorite_rounded,
-                  size: AppSpacing.iconSm,
-                  color: AppColors.errorBase,
+                GestureDetector(
+                  onTap: onWishlistTap,
+                  child: Icon(
+                    talent.isWishlist
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    size: AppSpacing.iconSm,
+                    color: talent.isWishlist
+                        ? AppColors.errorBase
+                        : AppColors.grey300,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(

@@ -98,6 +98,7 @@ import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/business_sector_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/talent_pool_bloc.dart';
+import 'package:komtim_partner/core/domain/usecases/put_wishlist_talent_use_case.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/bloc/attendance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
@@ -305,6 +306,7 @@ Future<void> initDependencies() async {
       ));
   locator.registerFactory(() => TalentPoolBloc(
         getResourceTalentUseCase: locator(),
+        putWishlistTalentUseCase: locator(),
       ));
 
   // inject usecase
@@ -379,6 +381,7 @@ Future<void> initDependencies() async {
       .registerLazySingleton(() => GetTalentRecommendationUseCase(locator()));
   locator.registerLazySingleton(() => GetBusinessSectorUseCase(locator()));
   locator.registerLazySingleton(() => GetResourceTalentUseCase(locator()));
+  locator.registerLazySingleton(() => PutWishlistTalentUseCase(repository: locator()));
   locator.registerLazySingleton(() => GetIdealBalanceUseCase(locator()));
   locator.registerLazySingleton(() => GetTalentEvaluationsUseCase(locator()));
   locator.registerLazySingleton(() => GetAplikasikuListUseCase(locator()));

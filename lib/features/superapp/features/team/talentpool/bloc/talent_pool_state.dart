@@ -47,3 +47,25 @@ class TalentPoolError extends TalentPoolState {
 }
 
 class TalentPoolEmpty extends TalentPoolState {}
+
+class TalentPoolWishlistSuccess extends TalentPoolLoaded {
+  const TalentPoolWishlistSuccess({
+    required super.talents,
+    required super.hasMore,
+    required super.currentOffset,
+  });
+}
+
+class TalentPoolWishlistFailed extends TalentPoolLoaded {
+  final String message;
+
+  const TalentPoolWishlistFailed({
+    required this.message,
+    required super.talents,
+    required super.hasMore,
+    required super.currentOffset,
+  });
+
+  @override
+  List<Object?> get props => [message, talents, hasMore, currentOffset];
+}

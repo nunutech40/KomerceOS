@@ -31,3 +31,13 @@ class FetchTalentPoolEvent extends TalentPoolEvent {
 class LoadMoreTalentPoolEvent extends TalentPoolEvent {
   const LoadMoreTalentPoolEvent();
 }
+
+/// Toggle wishlist status on a talent
+class ToggleWishlistTalentPoolEvent extends TalentPoolEvent {
+  final int talentId;
+
+  const ToggleWishlistTalentPoolEvent(this.talentId);
+
+  @override
+  List<Object?> get props => [talentId];
+}

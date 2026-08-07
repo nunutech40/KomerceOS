@@ -13,7 +13,8 @@ class Endpoints {
 
   // Auth Endpoints
   static String get login => '$_BaseURLSuperApp/auth/api/v1/komship/login';
-  static String get checkEmail => '$_BaseURLSuperApp/api/v1/auth/check-login';
+  static String get checkEmail =>
+      '$_BaseURLSuperApp/auth/api/v1/auth/check-login';
   static String get resendVerification =>
       '$_BaseURLSuperApp/auth/api/v1/auth/resend-verification';
   static String get refreshToken => '$_BaseURL/api/v1/auth/refresh_token';
@@ -140,6 +141,10 @@ class Endpoints {
   // Resource Talents (Talent Pool listing with filter)
   static String get resourceTalents =>
       '$_BaseURLTalentPool/api/v1/resource/talents';
+
+  // Wishlist Talent
+  static String putWishlist(int talentId) =>
+      '$_BaseURLTalentPool/api/v1/auth/wishlist/$talentId';
   // Report Performance
   static String get reportPerformance =>
       '$_BaseURL/api/v1/mobile/talent_performance/list';

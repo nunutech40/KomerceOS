@@ -11,4 +11,6 @@ abstract class ResourceTalentRepository {
     required int offset,
     required int limit,
   });
+
+  Future<Either<Failure, bool>> putWishlist(int talentId);
 }

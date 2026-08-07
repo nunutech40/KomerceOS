@@ -14,6 +14,8 @@ abstract class ResourceTalentRemoteDataSource {
     required int offset,
     required int limit,
   });
+
+  Future<bool> putWishlist(int talentId);
 }
 
 class ResourceTalentRemoteDataSourceImpl
@@ -55,6 +57,18 @@ class ResourceTalentRemoteDataSourceImpl
       (json) => ((json as List?) ?? [])
           .map((item) => TalentRecommendationResponse.fromJson(item))
           .toList(),
+    );
+  }
+
+  @override
+  Future<bool> putWishlist(int talentId) async {
+    final response = await client.put(Endpoints.putWishlist(talentId));
+    
+    // Response format:
+    // "data": { "status": true }
+    return responseParser.parseResponse<bool>(
+      response,
+      (json) => (json as Map<String, dynamic>)['status'] as bool,
     );
   }
 }

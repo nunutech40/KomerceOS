@@ -32,4 +32,9 @@ class ResourceTalentRepositoryImpl extends BaseRepository
       return result.map((item) => item.toEntity()).toList();
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> putWishlist(int talentId) {
+    return executeEither(() => remoteDataSource.putWishlist(talentId));
+  }
 }

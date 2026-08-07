@@ -185,7 +185,26 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   }
 
   Widget _buildContent() {
-    return BlocBuilder<TalentPoolBloc, TalentPoolState>(
+    return BlocConsumer<TalentPoolBloc, TalentPoolState>(
+      listenWhen: (previous, current) => 
+          current is TalentPoolWishlistSuccess || current is TalentPoolWishlistFailed,
+      listener: (context, state) {
+        if (state is TalentPoolWishlistSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Berhasil ditambahkan ke Kandidat Saya'),
+              backgroundColor: AppColors.successBase,
+            ),
+          );
+        } else if (state is TalentPoolWishlistFailed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.errorBase,
+            ),
+          );
+        }
+      },
       builder: (context, state) {
         if (state is TalentPoolLoading) {
           return const _LoadingShimmer();
@@ -215,6 +234,11 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
             isLoadingMore: isLoadingMore,
             scrollController: _scrollController,
             onTap: _openTalentDetail,
+            onWishlistTap: (talent) {
+              context.read<TalentPoolBloc>().add(
+                ToggleWishlistTalentPoolEvent(talent.id),
+              );
+            },
           );
         } else {
           return _TalentList(
@@ -222,6 +246,11 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
             isLoadingMore: isLoadingMore,
             scrollController: _scrollController,
             onTap: _openTalentDetail,
+            onWishlistTap: (talent) {
+              context.read<TalentPoolBloc>().add(
+                ToggleWishlistTalentPoolEvent(talent.id),
+              );
+            },
           );
         }
       },
@@ -278,12 +307,14 @@ class _TalentGrid extends StatelessWidget {
   final bool isLoadingMore;
   final ScrollController scrollController;
   final void Function(TalentRecommendationModel) onTap;
+  final void Function(TalentRecommendationModel) onWishlistTap;
 
   const _TalentGrid({
     required this.talents,
     required this.isLoadingMore,
     required this.scrollController,
     required this.onTap,
+    required this.onWishlistTap,
   });
 
   @override
@@ -312,6 +343,7 @@ class _TalentGrid extends StatelessWidget {
         return TalentRecommendationGridCard(
           talent: talent,
           onTap: () => onTap(talent),
+          onWishlistTap: () => onWishlistTap(talent),
         );
       },
     );
@@ -327,12 +359,14 @@ class _TalentList extends StatelessWidget {
   final bool isLoadingMore;
   final ScrollController scrollController;
   final void Function(TalentRecommendationModel) onTap;
+  final void Function(TalentRecommendationModel) onWishlistTap;
 
   const _TalentList({
     required this.talents,
     required this.isLoadingMore,
     required this.scrollController,
     required this.onTap,
+    required this.onWishlistTap,
   });
 
   @override
@@ -356,6 +390,7 @@ class _TalentList extends StatelessWidget {
         return TalentRecommendationListCard(
           talent: talent,
           onTap: () => onTap(talent),
+          onWishlistTap: () => onWishlistTap(talent),
         );
       },
     );
