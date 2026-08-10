@@ -75,6 +75,7 @@ class _HomePageTeamState extends State<HomePageTeam> {
                           onAttendanceTap: cubit.navigateToAttendance,
                           onPerformanceTap: cubit.navigateToPerformance,
                           onTalentPoolTap: cubit.navigateToTalentPool,
+                          onListOfTeamTap: cubit.navigateToListOfTeam,
                         );
                       },
                     );

@@ -66,6 +66,9 @@ enum PAGES {
   //talent pool
   talentPool,
 
+  //list of team
+  listOfTeam,
+
 }
 
 extension AppPageExtension on PAGES {
@@ -151,6 +154,8 @@ extension AppPageExtension on PAGES {
         return "/report_detail_performance";
       case PAGES.talentPool:
         return "/talent_pool";
+      case PAGES.listOfTeam:
+        return "/list_of_team";
     }
   }
 
@@ -234,6 +239,8 @@ extension AppPageExtension on PAGES {
         return "REPORT DETAIL PERFORMANCE PAGE";
       case PAGES.talentPool:
         return "TALENT POOL PAGE";
+      case PAGES.listOfTeam:
+        return "LIST OF TEAM PAGE";
     }
   }
 
@@ -309,6 +316,8 @@ extension AppPageExtension on PAGES {
         return "Report Detail Performancane Page";
       case PAGES.talentPool:
         return "Talent Pool";
+      case PAGES.listOfTeam:
+        return "Daftar Tim";
       default:
         return "Home";
     }

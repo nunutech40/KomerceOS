@@ -485,6 +485,21 @@ class _MenuContentSectionState extends State<MenuContentSection> {
           ]);
         }
 
+        // "Daftar Tim" selalu tampil paling akhir di list
+        menuItems.add(
+          DsMenuIcon(
+            icon: const DsAppImage(
+              source: 'assets/images/superapp/home/ic_list_team.png',
+              width: 48,
+              height: 48,
+            ),
+            title: 'Daftar Tim',
+            onTap: () {
+              AppRouter.router.pushNamed(PAGES.listOfTeam.screenName);
+            },
+          ),
+        );
+
         // Swipe pages
         final allSwipePages = [
           _buildKomshipChartPage(),

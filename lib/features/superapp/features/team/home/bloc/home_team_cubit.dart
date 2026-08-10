@@ -69,6 +69,10 @@ class HomeTeamCubit extends Cubit<HomeTeamState> {
     AppRouter.router.push(PAGES.talentPool.screenPath);
   }
 
+  void navigateToListOfTeam() {
+    AppRouter.router.push(PAGES.listOfTeam.screenPath);
+  }
+
   void navigateToFeedDetail(String feedId) {
     AppRouter.router.push(
       PAGES.feeddetail.screenPath,

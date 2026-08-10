@@ -38,6 +38,7 @@ import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/sho
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/detail_shopping_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/shopping_list_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/view/talent_pool_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/listteam/view/list_of_team_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/splash_screen_page.dart';
 import 'package:komtim_partner/features/unhire/view/dialog_unhire_finish.dart';
@@ -457,6 +458,13 @@ class AppRouter {
         path: PAGES.talentPool.screenPath,
         name: PAGES.talentPool.screenName,
         builder: (context, state) => const TalentPoolPage(),
+      ),
+
+      // ── List of Team (Daftar Tim) ────────────────────────────────────────────
+      GoRoute(
+        path: PAGES.listOfTeam.screenPath,
+        name: PAGES.listOfTeam.screenName,
+        builder: (context, state) => const ListOfTeamPage(),
       ),
 
       // ── Force Update ─────────────────────────────────────────────────────────
