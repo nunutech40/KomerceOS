@@ -196,6 +196,12 @@ import '../features/superapp/features/topup/bloc/check_qrcode_bloc.dart';
 import '../features/superapp/features/topup/bloc/create_invoice_bloc.dart';
 import '../features/superapp/features/topup/bloc/create_qrcode_bloc.dart';
 import '../features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
+import '../core/data/datasources/remote/team_remote_datasource.dart';
+import '../core/data/repositories/team_repository_impl.dart';
+import '../core/domain/repositories/team_repository.dart';
+import '../core/domain/usecases/get_internal_teams_use_case.dart';
+import '../core/domain/usecases/get_komtim_teams_use_case.dart';
+import '../features/superapp/features/team/listteam/bloc/list_of_team_bloc.dart';
 
 final locator = GetIt.instance;
 
@@ -308,6 +314,10 @@ Future<void> initDependencies() async {
         getResourceTalentUseCase: locator(),
         putWishlistTalentUseCase: locator(),
       ));
+  locator.registerFactory(() => ListOfTeamBloc(
+        getInternalTeamsUseCase: locator(),
+        getKomtimTeamsUseCase: locator(),
+      ));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -398,6 +408,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => GetNotificationV2ListUseCase(locator()));
   locator.registerLazySingleton(() => GetNotificationInfoUseCase(locator()));
   locator.registerLazySingleton(() => ReadNotificationV2UseCase(locator()));
+  locator.registerLazySingleton(() => GetInternalTeamsUseCase(locator()));
+  locator.registerLazySingleton(() => GetKomtimTeamsUseCase(locator()));
 
   // inject repository
   locator.registerLazySingleton<BalanceSummaryRepository>(
@@ -468,6 +480,8 @@ Future<void> initDependencies() async {
 
   locator.registerLazySingleton<NotificationV2Repository>(
       () => NotificationV2RepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<TeamRepository>(
+      () => TeamRepositoryImpl(remoteDataSource: locator()));
 
   // inject datasource
   locator.registerLazySingleton<BalanceSummaryRemoteDataSource>(() =>
@@ -547,6 +561,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<NotificationV2RemoteDataSource>(() =>
       NotificationV2RemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<TeamRemoteDataSource>(() =>
+      TeamRemoteDataSourceImpl(client: locator(), responseParser: locator()));
 
   // Register SharedPreferences
   locator.registerSingletonAsync<SharedPreferences>(

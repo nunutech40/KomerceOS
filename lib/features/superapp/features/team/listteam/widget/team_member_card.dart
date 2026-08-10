@@ -3,7 +3,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/features/superapp/features/team/listteam/widget/dash_line_team.dart';
 import 'package:komtim_partner/features/superapp/features/team/listteam/widget/team_access_row.dart';
 
-import '../model/team_member_model.dart';
+import '../../../../../../core/domain/entities/team_member_model.dart';
 import 'team_role_tag.dart';
 
 /// Kartu satu anggota tim pada halaman Daftar Tim.

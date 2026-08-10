@@ -138,6 +138,10 @@ class Endpoints {
   static String get businessSector =>
       '$_BaseURLTalentPool/api/v1/resource/business_sector';
 
+  // Team Endpoints
+  static String get internalTeams => '$_BaseURLSuperApp/auth/api/v1/teams';
+  static String get komtimTeams => '$_BaseURLSuperApp/auth/api/v1/komtim/teams';
+
   // Resource Talents (Talent Pool listing with filter)
   static String get resourceTalents =>
       '$_BaseURLTalentPool/api/v1/resource/talents';
