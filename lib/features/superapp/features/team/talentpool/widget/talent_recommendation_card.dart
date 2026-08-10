@@ -46,7 +46,8 @@ class TalentRecommendationGridCard extends StatelessWidget {
                     height: double.infinity,
                   ),
                   // Badge wishlist
-                  Positioned(
+                  // TODO: Enable wishlist badge when ready
+                  /* Positioned(
                     top: AppSpacing.sm,
                     right: AppSpacing.sm,
                     child: GestureDetector(
@@ -68,7 +69,7 @@ class TalentRecommendationGridCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
+                  ), */
                 ],
               ),
             ),
@@ -143,7 +144,8 @@ class TalentRecommendationGridCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs2),
                   // Wishlist count
-                  Row(
+                  // TODO: Enable wishlist count when ready
+                  /* Row(
                     children: [
                       const Icon(
                         Icons.favorite_rounded,
@@ -161,7 +163,7 @@ class TalentRecommendationGridCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
+                  ), */
                 ],
               ),
             ),
@@ -288,7 +290,8 @@ class TalentRecommendationListCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: AppSpacing.md3),
+            // TODO: Enable wishlist section when ready
+            /* const SizedBox(height: AppSpacing.md3),
             const Divider(height: 1, color: AppColors.grey200),
             const SizedBox(height: AppSpacing.sm),
             Row(
@@ -316,7 +319,7 @@ class TalentRecommendationListCard extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
+            ), */
           ],
         ),
       ),
