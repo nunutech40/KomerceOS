@@ -79,6 +79,7 @@ class SuperappProfileResponse extends Equatable {
   final int? isAffiliate;
   final int? isKomcards;
   final int? isKomchat;
+  final String? accountStatus;
   final List<ProductMailVerificationResponse> productMailVerifications;
   final List<UserLevelResponse> userLevels;
 
@@ -103,6 +104,7 @@ class SuperappProfileResponse extends Equatable {
     this.isAffiliate,
     this.isKomcards,
     this.isKomchat,
+    this.accountStatus,
     this.productMailVerifications = const [],
     this.userLevels = const [],
   });
@@ -129,6 +131,7 @@ class SuperappProfileResponse extends Equatable {
       isAffiliate: json['is_affiliate'],
       isKomcards: json['is_komcards'],
       isKomchat: json['is_komchat'],
+      accountStatus: json['account_status'],
       productMailVerifications: (json['product_mail_verifications'] as List?)
               ?.map((e) =>
                   ProductMailVerificationResponse.fromJson(e as Map<String, dynamic>))
@@ -162,6 +165,7 @@ class SuperappProfileResponse extends Equatable {
         'is_affiliate': isAffiliate,
         'is_komcards': isKomcards,
         'is_komchat': isKomchat,
+        'account_status': accountStatus,
         'product_mail_verifications':
             productMailVerifications.map((e) => e.toJson()).toList(),
         'user_levels': userLevels.map((e) => e.toJson()).toList(),
@@ -190,6 +194,7 @@ class SuperappProfileResponse extends Equatable {
       isAffiliate: json['is_affiliate'],
       isKomcards: json['is_komcards'],
       isKomchat: json['is_komchat'],
+      accountStatus: json['account_status'],
       productMailVerifications: (json['product_mail_verifications'] as List?)
               ?.map((e) =>
                   ProductMailVerificationResponse.fromJson(e as Map<String, dynamic>))
@@ -224,6 +229,7 @@ class SuperappProfileResponse extends Equatable {
       isAffiliate: isAffiliate,
       isKomcards: isKomcards,
       isKomchat: isKomchat,
+      accountStatus: accountStatus,
       productMailVerifications:
           productMailVerifications.map((e) => e.toEntity()).toList(),
       userLevels: userLevels.map((e) => e.toEntity()).toList(),
@@ -252,6 +258,7 @@ class SuperappProfileResponse extends Equatable {
         isAffiliate,
         isKomcards,
         isKomchat,
+        accountStatus,
         productMailVerifications,
         userLevels,
       ];

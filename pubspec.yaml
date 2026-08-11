@@ -58,7 +58,7 @@ dependencies:
   chucker_flutter: ^1.9.1
   widgetbook_annotation: ^3.11.0
   widgetbook: ^3.22.0
-  recaptcha_enterprise_flutter: 18.8.1
+  recaptcha_enterprise_flutter: ^18.8.1
   fl_chart: ^1.2.0
   gal: ^2.3.0
   flutter_html: ^3.0.0

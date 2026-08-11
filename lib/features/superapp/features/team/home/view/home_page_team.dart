@@ -7,6 +7,7 @@ import 'package:komtim_partner/features/superapp/features/team/home/widget/team_
 import 'package:komtim_partner/features/superapp/features/team/home/widget/team_menu_section.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 
 class HomePageTeam extends StatefulWidget {
   const HomePageTeam({Key? key}) : super(key: key);
@@ -62,20 +63,26 @@ class _HomePageTeamState extends State<HomePageTeam> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // --- SECTION 2: Menu Grid ---
-                BlocBuilder<InvoiceListBloc, InvoiceListState>(
-                  builder: (context, invoiceState) {
-                    return BlocBuilder<ShoppingBloc, ShoppingState>(
-                      builder: (context, shoppingState) {
-                        return TeamMenuSection(
-                          invoiceBadgeCount:
-                              invoiceState.invoicesData?.length ?? 0,
-                          shoppingBadgeCount: shoppingState.shoppingList.length,
-                          onInvoiceTap: cubit.navigateToInvoice,
-                          onShoppingTap: cubit.navigateToShopping,
-                          onAttendanceTap: cubit.navigateToAttendance,
-                          onPerformanceTap: cubit.navigateToPerformance,
-                          onTalentPoolTap: cubit.navigateToTalentPool,
-                          onListOfTeamTap: cubit.navigateToListOfTeam,
+                BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
+                  builder: (context, profileState) {
+                    final accountStatus = profileState.displayProfile?.accountStatus;
+                    return BlocBuilder<InvoiceListBloc, InvoiceListState>(
+                      builder: (context, invoiceState) {
+                        return BlocBuilder<ShoppingBloc, ShoppingState>(
+                          builder: (context, shoppingState) {
+                            return TeamMenuSection(
+                              invoiceBadgeCount:
+                                  invoiceState.invoicesData?.length ?? 0,
+                              shoppingBadgeCount: shoppingState.shoppingList.length,
+                              accountStatus: accountStatus,
+                              onInvoiceTap: cubit.navigateToInvoice,
+                              onShoppingTap: cubit.navigateToShopping,
+                              onAttendanceTap: cubit.navigateToAttendance,
+                              onPerformanceTap: cubit.navigateToPerformance,
+                              onTalentPoolTap: cubit.navigateToTalentPool,
+                              onListOfTeamTap: cubit.navigateToListOfTeam,
+                            );
+                          },
                         );
                       },
                     );

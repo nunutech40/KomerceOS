@@ -11,6 +11,7 @@ class TeamMenuSection extends StatelessWidget {
   final VoidCallback? onPerformanceTap;
   final VoidCallback? onTalentPoolTap;
   final VoidCallback? onListOfTeamTap;
+  final String? accountStatus;
 
   const TeamMenuSection({
     Key? key,
@@ -22,6 +23,7 @@ class TeamMenuSection extends StatelessWidget {
     this.onPerformanceTap,
     this.onTalentPoolTap,
     this.onListOfTeamTap,
+    this.accountStatus,
   }) : super(key: key);
 
   Widget _buildBadgedMenuIcon({
@@ -29,6 +31,7 @@ class TeamMenuSection extends StatelessWidget {
     required String iconAsset,
     required int badgeCount,
     VoidCallback? onTap,
+    bool isDisabled = false,
   }) {
     return Stack(
       clipBehavior: Clip.none,
@@ -37,7 +40,8 @@ class TeamMenuSection extends StatelessWidget {
         DsMenuIcon(
           title: title,
           icon: Image.asset(iconAsset, width: 48, height: 48),
-          onTap: onTap,
+          onTap: isDisabled ? null : onTap,
+          textColor: isDisabled ? AppColors.grey600 : null,
         ),
         if (badgeCount > 0)
           Positioned(
@@ -71,6 +75,8 @@ class TeamMenuSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAccountOff = accountStatus == 'off';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: GridView.count(
@@ -89,27 +95,39 @@ class TeamMenuSection extends StatelessWidget {
           ),
           _buildBadgedMenuIcon(
             title: 'Belanja',
-            iconAsset: 'assets/images/team/ic_shopping.png',
+            iconAsset: isAccountOff 
+                ? 'assets/images/team/ic_shopping_disable.png' 
+                : 'assets/images/team/ic_shopping.png',
             badgeCount: shoppingBadgeCount,
             onTap: onShoppingTap,
+            isDisabled: isAccountOff,
           ),
           _buildBadgedMenuIcon(
             title: 'Presensi',
-            iconAsset: 'assets/images/team/ic_presence.png',
+            iconAsset: isAccountOff 
+                ? 'assets/images/team/ic_presence_disable.png' 
+                : 'assets/images/team/ic_presence.png',
             badgeCount: 0,
             onTap: onAttendanceTap,
+            isDisabled: isAccountOff,
           ),
           _buildBadgedMenuIcon(
             title: 'Report\nPerforma', // Two lines based on slicing width
-            iconAsset: 'assets/images/team/ic_report.png',
+            iconAsset: isAccountOff 
+                ? 'assets/images/team/ic_report_disable.png' 
+                : 'assets/images/team/ic_report.png',
             badgeCount: 0,
             onTap: onPerformanceTap,
+            isDisabled: isAccountOff,
           ),
           _buildBadgedMenuIcon(
             title: 'Talent Pool',
-            iconAsset: 'assets/images/team/ic_talent_pool.png',
+            iconAsset: isAccountOff 
+                ? 'assets/images/team/ic_talent_pool_disable.png' 
+                : 'assets/images/team/ic_talent_pool.png',
             badgeCount: 0,
             onTap: onTalentPoolTap,
+            isDisabled: isAccountOff,
           ),
           DsMenuIcon(
             title: 'Daftar Tim',
@@ -118,7 +136,8 @@ class TeamMenuSection extends StatelessWidget {
               width: 48,
               height: 48,
             ),
-            onTap: onListOfTeamTap,
+            onTap: isAccountOff ? null : onListOfTeamTap,
+            textColor: isAccountOff ? AppColors.grey600 : null,
           ),
         ],
       ),
