@@ -8,7 +8,7 @@ class AppRecaptchaConfig {
 
     if (flavor == 'production') {
       return AppRecaptchaConfig(
-        "6LeeUF0tAAAAADppmnSvTmftip_Lpv6s0Tzx7lZ_",
+        "6Lfzp4EtAAAAAKS40nm6gh3_irkwGpBXAFlHt5Z3",
         "YOUR_IOS_SITE_KEY",
       );
     } else if (flavor == 'staging') {
