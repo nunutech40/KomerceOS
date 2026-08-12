@@ -21,16 +21,16 @@ import 'common/global/router/app_router.dart';
 import 'common/global/router/router_utils.dart';
 import 'common/global/widgets/connectivity_wrapper.dart';
 import 'core/services/deep_link_service.dart';
-import 'features/attendance/bloc/attendance_bloc.dart';
-import 'features/feed/bloc/feed_bloc.dart';
-import 'features/invoice/bloc/invoice_list_bloc.dart';
-import 'features/invoice/bloc/invoice_report_summary_bloc.dart';
-import 'features/invoice/bloc/payment_method_bloc.dart';
-import 'features/performance/bloc/report_performance_bloc.dart';
+import 'features/superapp/features/team/attendance/bloc/attendance_bloc.dart';
+import 'features/superapp/features/team/feed/bloc/feed_bloc.dart';
+import 'features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
+import 'features/superapp/features/team/invoice/bloc/invoice_report_summary_bloc.dart';
+import 'features/superapp/features/team/invoice/bloc/payment_method_bloc.dart';
+import 'features/superapp/features/team/performance/bloc/report_performance_bloc.dart';
 import 'features/pin/bloc/pin_bloc.dart';
 import 'features/profile/bloc/profile_bloc.dart';
 import 'features/ratetalent/bloc/rate_talent_bloc.dart';
-import 'features/shopping/bloc/shopping_bloc.dart';
+import 'features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 import 'features/superapp/features/authentication/bloc/check_email_bloc.dart';
 import 'features/superapp/features/authentication/bloc/forgot_password_bloc.dart';
 import 'features/superapp/features/authentication/bloc/login_bloc.dart';
@@ -232,7 +232,7 @@ class MyApp extends StatelessWidget {
                       }
                     },
                     child: MaterialApp.router(
-                      title: 'Komtim Partner',
+                      title: 'Komerce OS',
                       debugShowCheckedModeBanner: false,
                       theme: ThemeData(
                         scaffoldBackgroundColor: Colors.white,

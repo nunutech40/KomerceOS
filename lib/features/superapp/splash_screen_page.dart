@@ -63,29 +63,32 @@ Future<void> _showNotificationFromBackgroundMessage(
   }
 }
 
-class SplashScreenPage extends StatefulWidget {
-  const SplashScreenPage({super.key});
+class SplashCreenPage extends StatefulWidget {
+  const SplashCreenPage({super.key});
 
   @override
-  State<SplashScreenPage> createState() => _SplashScreenPageState();
+  State<SplashCreenPage> createState() => _SplashCreenPageState();
 }
 
-class _SplashScreenPageState extends State<SplashScreenPage> {
+class _SplashCreenPageState extends State<SplashCreenPage> {
   final pref = di.locator<SharedPref>();
   String versiLocal = '';
   String versionRemote = '';
   String versionRemoteIos = '';
   String typeUpdate = '';
+  bool initialized = false;
   bool isgreater = false;
+  String? statusAccount = "";
+  int kmPoint = 0;
+  List<dynamic> listInvoices = [];
+  //Withdrawal
+  String checktransaction = "withdrawal";
+  String checkStatusWithdraw = "";
 
   @override
   void initState() {
     super.initState();
     startSplashScreen();
-  }
-
-  void loadData() {
-    // Legacy — tidak aktif
   }
 
   void handleNotificationClick(NotificationResponse data) {
@@ -256,20 +259,24 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
     AppRouter.router.go(PAGES.main.screenPath);
   }
 
-  //Handle Check Account — dipertahankan untuk kompatibilitas, tidak aktif dipanggil
-  checkAccountOff(BuildContext context, dynamic state) {
-    // Legacy code — tidak aktif. loadData() sudah di-comment out.
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SvgPicture.asset(
-          'assets/images/komtim.svg',
-          height: 61.0,
-          width: 227.0,
+      body: Container(
+        color: Colors.white,
+        child: Center(
+          // FractionallySizedBox → lebar 60% layar (responsive di semua device)
+          // AspectRatio → jaga proporsi asli logo 227:61 tanpa overflow
+          child: FractionallySizedBox(
+            widthFactor: 0.6,
+            child: AspectRatio(
+              aspectRatio: 227 / 61,
+              child: SvgPicture.asset(
+                'assets/images/superapp/logo_splash_screen.svg',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ),
       ),
     );

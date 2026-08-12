@@ -6,6 +6,8 @@ class Endpoints {
   static String get _BaseURL => Config.instance.baseUrl;
   static String get _BaseURLInternal => Config.instance.baseUrlInternal;
   static String get _BaseURLSuperApp => Config.instance.baseUrlSuperApp;
+  static String get _BaseURLKomship => Config.instance.baseUrlKomship;
+  static String get _BaseURLTalentPool => Config.instance.baseUrlTalentPool;
 
   // These are the endpoints
 
@@ -131,6 +133,22 @@ class Endpoints {
   // Talents Recomendation Endpoint
   static String get talentRecomendation =>
       '$_BaseURL/api/v1/mobile/talent_pool/talents';
+
+  // Business Sector (Resource) Endpoint
+  static String get businessSector =>
+      '$_BaseURLTalentPool/api/v1/resource/business_sector';
+
+  // Team Endpoints
+  static String get internalTeams => '$_BaseURLSuperApp/auth/api/v1/teams';
+  static String get komtimTeams => '$_BaseURLSuperApp/auth/api/v1/komtim/teams';
+
+  // Resource Talents (Talent Pool listing with filter)
+  static String get resourceTalents =>
+      '$_BaseURLTalentPool/api/v1/resource/talents';
+
+  // Wishlist Talent
+  static String putWishlist(int talentId) =>
+      '$_BaseURLTalentPool/api/v1/auth/wishlist/$talentId';
   // Report Performance
   static String get reportPerformance =>
       '$_BaseURL/api/v1/mobile/talent_performance/list';
@@ -143,7 +161,7 @@ class Endpoints {
 
   // Balance Summary
   static String balanceSummary(String partnerId) =>
-      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/balanceSummary?partner_id=$partnerId';
+      '$_BaseURLKomship/api/v1/dashboard/partner/balanceSummary?partner_id=$partnerId';
   static String get revenueOrderPerformance =>
-      'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/revenueOrderPerformance';
+      '$_BaseURLKomship/api/v1/dashboard/partner/revenueOrderPerformance';
 }

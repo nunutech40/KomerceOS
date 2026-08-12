@@ -248,6 +248,83 @@ flutter build appbundle --flavor production --dart-define=FLAVOR=production
 
 ---
 
+## 🖼️ Mengganti App Icon
+
+App icon dikelola menggunakan package [`flutter_launcher_icons`](https://pub.dev/packages/flutter_launcher_icons) yang secara otomatis men-generate semua ukuran icon untuk **Android** dan **iOS** dari satu file sumber.
+
+### File Sumber Icon
+
+| File | Keterangan |
+|------|------------|
+| `assets/images/superapp/home/ic_komerce_os.svg` | File SVG original logo |
+| `assets/images/superapp/home/ic_komerce_os_1024.png` | File PNG 1024×1024 (sumber untuk generator) |
+
+### Konfigurasi (`pubspec.yaml`)
+
+```yaml
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/superapp/home/ic_komerce_os_1024.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/superapp/home/ic_komerce_os_1024.png"
+```
+
+### Langkah-Langkah Mengganti Icon
+
+**1. Siapkan file PNG baru (1024×1024 px)**
+
+Jika icon bersumber dari SVG, convert dulu ke PNG menggunakan Node.js:
+```bash
+# Install sharp (hanya perlu sekali)
+npm install --save-dev sharp
+
+# Jalankan script convert (file: convert_icon.mjs)
+node convert_icon.mjs
+```
+
+> Atau bisa langsung menyediakan PNG 1024×1024 dari Figma/desainer dan simpan di path yang sama.
+
+**2. Update `image_path` di `pubspec.yaml`** (jika nama file berubah)
+
+```yaml
+flutter_launcher_icons:
+  image_path: "assets/images/superapp/home/NAMA_FILE_BARU.png"
+  adaptive_icon_foreground: "assets/images/superapp/home/NAMA_FILE_BARU.png"
+```
+
+**3. Jalankan generator**
+
+```bash
+dart run flutter_launcher_icons
+```
+
+Output sukses:
+```
+✓ Successfully generated launcher icons
+```
+
+**4. Rebuild aplikasi**
+
+```bash
+# Development
+flutter run --flavor dev --dart-define=FLAVOR=dev
+```
+
+### Catatan Penting
+
+| | Keterangan |
+|---|---|
+| `min_sdk_android: 21` | Sesuai `minSdkVersion` project (Android 5.0+). Device API 21–25 pakai PNG biasa, API 26+ pakai Adaptive Icon |
+| `remove_alpha_ios: true` | Wajib agar icon tidak ditolak saat submit ke App Store |
+| `adaptive_icon_background` | Warna background adaptive icon Android (hex color) |
+| Icon iOS | Otomatis di-generate ke `ios/Runner/Assets.xcassets/AppIcon.appiconset/` (16 ukuran) |
+| Icon Android | Otomatis di-generate ke `android/app/src/main/res/mipmap-*/` |
+
+---
+
 ## 🧪 Testing (Unit Test)
 
 Project ini memiliki arsitektur 3-layer. Terdapat skenario unit/widget testing untuk meng-cover logika API, lokal / preferensi, hingga ke BLoC (State Management).

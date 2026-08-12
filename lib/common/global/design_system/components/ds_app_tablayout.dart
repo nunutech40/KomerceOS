@@ -3,7 +3,7 @@ import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/global/design_system/app_typography.dart';
 
 class AppTabLayout extends StatelessWidget {
-  final List<Widget> tabs; 
+  final List<Widget> tabs;
   final TabController? controller;
   final ValueChanged<int>? onTap;
 
@@ -20,8 +20,10 @@ class AppTabLayout extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.all(6), // TODO: Ganti ke AppSpacing.xs jika ada
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2), // TODO: Sesuai aturan, ganti ke AppColors.grey100 atau sejenisnya
-        borderRadius: BorderRadius.circular(16), // TODO: Ganti ke AppRadius.md jika ada
+        color: const Color(
+            0xFFF2F2F2), // TODO: Sesuai aturan, ganti ke AppColors.grey100 atau sejenisnya
+        borderRadius:
+            BorderRadius.circular(16), // TODO: Ganti ke AppRadius.md jika ada
       ),
       child: TabBar(
         controller: controller,
@@ -29,13 +31,15 @@ class AppTabLayout extends StatelessWidget {
         dividerColor: Colors.transparent,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: BoxDecoration(
-          color: AppColors.primaryBase, // Menggunakan token warna utama proyek Anda
-          borderRadius: BorderRadius.circular(12), // TODO: Ganti ke AppRadius.sm jika ada
+          color: AppColors
+              .alwaysWhite, // Menggunakan token warna utama proyek Anda
+          borderRadius:
+              BorderRadius.circular(12), // TODO: Ganti ke AppRadius.sm jika ada
         ),
-        labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF6E6E6E), // TODO: Ganti ke AppColors.textSecondary jika ada
+        labelColor: AppColors.black0A0A,
+        unselectedLabelColor: AppColors.black0A0A,
         labelStyle: AppTypography.bodyMdSemiBold,
-        unselectedLabelStyle: AppTypography.bodyMdMedium,
+        unselectedLabelStyle: AppTypography.bodyMdSemiBold,
         tabs: tabs,
       ),
     );

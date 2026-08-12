@@ -38,6 +38,44 @@ class TalentRecommendationModel extends Equatable {
     required this.isUnavailable,
   });
 
+  TalentRecommendationModel copyWith({
+    int? id,
+    String? fullName,
+    String? nickName,
+    int? skillId,
+    String? skillName,
+    String? experience,
+    String? industryName,
+    int? closingRate,
+    String? platformName,
+    num? rate,
+    int? rateCount,
+    String? photoUrl,
+    bool? isWishlist,
+    String? status,
+    int? wishlistCount,
+    bool? isUnavailable,
+  }) {
+    return TalentRecommendationModel(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      nickName: nickName ?? this.nickName,
+      skillId: skillId ?? this.skillId,
+      skillName: skillName ?? this.skillName,
+      experience: experience ?? this.experience,
+      industryName: industryName ?? this.industryName,
+      closingRate: closingRate ?? this.closingRate,
+      platformName: platformName ?? this.platformName,
+      rate: rate ?? this.rate,
+      rateCount: rateCount ?? this.rateCount,
+      photoUrl: photoUrl ?? this.photoUrl,
+      isWishlist: isWishlist ?? this.isWishlist,
+      status: status ?? this.status,
+      wishlistCount: wishlistCount ?? this.wishlistCount,
+      isUnavailable: isUnavailable ?? this.isUnavailable,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

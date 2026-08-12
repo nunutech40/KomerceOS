@@ -28,6 +28,9 @@ abstract final class AppColors {
   /// Tag background
   static const Color primaryTag = Color(0xFFFFD5C4);
 
+  /// Badge background
+  static const Color primaryBadgeBg = Color(0xFFFFF8EE);
+
   // ---------------------------------------------------------------------------
   // SECONDARY — Blue accent
   // ---------------------------------------------------------------------------
@@ -134,4 +137,6 @@ abstract final class AppColors {
   static const Color alwaysWhite = Color(0xFFFFFFFF);
   static const Color alwaysBlack = Color(0xFF000000);
   static const Color transparent = Color(0x00000000);
+  static const Color black1A1A = Color(0xFF1A1A1A);
+  static const Color black0A0A = Color(0xFF0A0A0A);
 }

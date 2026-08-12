@@ -17,4 +17,7 @@ class DevConfig implements Config {
 
   @override
   String get baseUrlSuperApp => 'https://api.internal.komerce.my.id/dev';
+
+  @override
+  String get baseUrlKomship => 'https://dev.komship.komerce.my.id';
 }

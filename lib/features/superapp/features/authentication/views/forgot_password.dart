@@ -235,104 +235,144 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
             return Scaffold(
               backgroundColor: AppColors.background,
+              resizeToAvoidBottomInset: false,
               body: SafeArea(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
+                    final keyboardHeight =
+                        MediaQuery.viewInsetsOf(context).bottom;
                     return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(minHeight: constraints.maxHeight),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.pageMarginLg,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // --- BG + Logo ---
+                          Stack(
                             children: [
-                              SizedBox(
-                                height: (constraints.maxHeight * 0.20)
-                                    .clamp(80.0, 220.0),
-                              ),
-
-                              // --- Header ---
-                              const AuthHeader(
-                                title: 'Lupa Password',
-                                subtitle:
-                                    'Tautan untuk mengatur ulang password akan dikirim\nmelalui email.',
-                              ),
-                              const SizedBox(height: AppSpacing.xl),
-
-                              // --- Card Form ---
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadius.lg),
-                                  border: Border.all(color: AppColors.grey200),
+                              AspectRatio(
+                                aspectRatio: 414 / 248,
+                                child: SvgPicture.asset(
+                                  'assets/images/superapp/auth/bg_auth.svg',
+                                  fit: BoxFit.fill,
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // --- Email Input ---
-                                    DsEmailInput(
-                                      label: 'Email',
-                                      controller: _emailController,
-                                      errorText: displayError,
-                                    ),
-
-                                    const SizedBox(height: AppSpacing.md),
-
-                                    // --- Kembali Masuk link ---
-                                    Center(
-                                      child: Text.rich(
-                                        TextSpan(
-                                          text: 'Ayo! Kembali ',
-                                          style: AppTypography.bodySmRegular
-                                              .copyWith(
-                                            color: AppColors.grey600,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: 'Masuk',
-                                              style: AppTypography
-                                                  .labelSmSemiBold
-                                                  .copyWith(
-                                                color: AppColors.primaryBase,
-                                              ),
-                                              recognizer: TapGestureRecognizer()
-                                                ..onTap = () {
-                                                  Navigator.pop(context);
-                                                },
-                                            ),
-                                          ],
-                                        ),
+                              ),
+                              Positioned.fill(
+                                child: Align(
+                                  // rasionya setara menaikkan ~20px dari pusat terhadap tinggi BG
+                                  alignment: const Alignment(0, -0.18),
+                                  child: FractionallySizedBox(
+                                    widthFactor: 0.4,
+                                    child: AspectRatio(
+                                      aspectRatio: 227 / 61,
+                                      child: SvgPicture.asset(
+                                        'assets/images/superapp/logo_splash_screen.svg',
+                                        fit: BoxFit.contain,
                                       ),
                                     ),
-
-                                    const SizedBox(height: AppSpacing.xl),
-
-                                    // --- Tombol Kirim ---
-                                    DsButton(
-                                      text: isUnregistered
-                                          ? 'Lanjutkan'
-                                          : 'Kirim',
-                                      state: isLoading
-                                          ? DsButtonState.loading
-                                          : (isButtonActive
-                                              ? DsButtonState.enabled
-                                              : DsButtonState.disabled),
-                                      loadingText: 'Memverifikasi...',
-                                      onPressed: _onSubmit,
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: AppSpacing.md),
                             ],
                           ),
-                        ),
+
+                          // --- Konten di bawah BG ---
+                          Transform.translate(
+                            offset: Offset(0, -constraints.maxWidth * 0.10),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.pageMarginLg,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // --- Header ---
+                                  const AuthHeader(
+                                    title: 'Lupa Password',
+                                    subtitle:
+                                        'Tautan untuk mengatur ulang password akan dikirim\nmelalui email.',
+                                  ),
+                                  const SizedBox(height: AppSpacing.xl),
+
+                                  // --- Card Form ---
+                                  Container(
+                                    width: double.infinity,
+                                    padding:
+                                        const EdgeInsets.all(AppSpacing.lg),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius:
+                                          BorderRadius.circular(AppRadius.lg),
+                                      border:
+                                          Border.all(color: AppColors.grey200),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // --- Email Input ---
+                                        DsEmailInput(
+                                          label: 'Email',
+                                          controller: _emailController,
+                                          errorText: displayError,
+                                        ),
+
+                                        const SizedBox(height: AppSpacing.md),
+
+                                        // --- Kembali Masuk link ---
+                                        Center(
+                                          child: Text.rich(
+                                            TextSpan(
+                                              text: 'Ayo! Kembali ',
+                                              style: AppTypography.bodySmRegular
+                                                  .copyWith(
+                                                color: AppColors.grey600,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: 'Masuk',
+                                                  style: AppTypography
+                                                      .labelSmSemiBold
+                                                      .copyWith(
+                                                    color:
+                                                        AppColors.primaryBase,
+                                                  ),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: AppSpacing.xl),
+
+                                        // --- Tombol Kirim ---
+                                        DsButton(
+                                          text: isUnregistered
+                                              ? 'Lanjutkan'
+                                              : 'Kirim',
+                                          state: isLoading
+                                              ? DsButtonState.loading
+                                              : (isButtonActive
+                                                  ? DsButtonState.enabled
+                                                  : DsButtonState.disabled),
+                                          loadingText: 'Memverifikasi...',
+                                          onPressed: _onSubmit,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  // Padding keyboard — bg naik saat keyboard muncul
+                                  SizedBox(height: keyboardHeight),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },

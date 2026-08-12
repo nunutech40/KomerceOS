@@ -6,12 +6,14 @@ class DsMenuIcon extends StatelessWidget {
   final Widget icon;
   final String title;
   final VoidCallback? onTap;
+  final Color? textColor;
 
   const DsMenuIcon({
     super.key,
     required this.icon,
     required this.title,
     this.onTap,
+    this.textColor,
   });
 
   @override
@@ -42,7 +44,7 @@ class DsMenuIcon extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.bodyMdMedium.copyWith(
-                  color: AppColors.black,
+                  color: textColor ?? AppColors.black,
                 ),
               ),
             ],

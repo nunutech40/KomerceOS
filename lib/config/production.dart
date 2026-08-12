@@ -9,11 +9,14 @@ class ProductionConfig implements Config {
   String get baseUrlInternal => 'https://api.partner.komerce.id/auth';
 
   @override
-  String get baseUrlTalentPool => 'https://api.partner.komerce.id/talent-pool ';
+  String get baseUrlTalentPool => 'https://api.partner.komerce.id/talent-pool';
 
   @override
   String get baseUrlWebUrlTalentPool => 'https://komtim.id/talent-pool';
 
   @override
   String get baseUrlSuperApp => 'https://api.partner.komerce.id';
+
+  @override
+  String get baseUrlKomship => 'https://api-komship.komerce.id';
 }
