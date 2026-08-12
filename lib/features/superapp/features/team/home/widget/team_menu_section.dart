@@ -10,7 +10,6 @@ class TeamMenuSection extends StatelessWidget {
   final VoidCallback? onAttendanceTap;
   final VoidCallback? onPerformanceTap;
   final VoidCallback? onTalentPoolTap;
-  final VoidCallback? onListOfTeamTap;
   final String? accountStatus;
 
   const TeamMenuSection({
@@ -22,7 +21,6 @@ class TeamMenuSection extends StatelessWidget {
     this.onAttendanceTap,
     this.onPerformanceTap,
     this.onTalentPoolTap,
-    this.onListOfTeamTap,
     this.accountStatus,
   }) : super(key: key);
 
@@ -128,16 +126,6 @@ class TeamMenuSection extends StatelessWidget {
             badgeCount: 0,
             onTap: onTalentPoolTap,
             isDisabled: isAccountOff,
-          ),
-          DsMenuIcon(
-            title: 'Daftar Tim',
-            icon: const DsAppImage(
-              source: 'assets/images/superapp/home/ic_list_team.svg',
-              width: 48,
-              height: 48,
-            ),
-            onTap: isAccountOff ? null : onListOfTeamTap,
-            textColor: isAccountOff ? AppColors.grey600 : null,
           ),
         ],
       ),
