@@ -32,12 +32,12 @@ class HomeTeamCubit extends Cubit<HomeTeamState> {
 
   void _loadData() {
     invoiceListBloc.add(
-      const InvoviceListPageDidload(type: 'active', limit: 100, offset: 0),
+      const InvoviceListPageDidload(type: null, limit: 100, offset: 0),
     );
     shoppingBloc.add(const GetShoppingListEvent(
       offset: 0,
       limit: 100,
-      status: 'requested',
+      status: '',
       startDate: '',
       endDate: '',
       keyword: '',
@@ -50,7 +50,7 @@ class HomeTeamCubit extends Cubit<HomeTeamState> {
   // ---------------------------------------------------------------------------
 
   void navigateToInvoice() {
-    AppRouter.router.pushNamed(PAGES.invoiceList.screenName);
+    AppRouter.router.pushNamed(PAGES.invoiceNew.screenName);
   }
 
   void navigateToShopping() {

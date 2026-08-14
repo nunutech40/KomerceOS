@@ -5,6 +5,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/widgets/card_feed_empty.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/widget/card_feed.dart';
+import 'package:shimmer/shimmer.dart';
 
 class TeamFeedSection extends StatefulWidget {
   /// Callback dipanggil dengan feedId ketika card ditekan.
@@ -38,11 +39,43 @@ class _TeamFeedSectionState extends State<TeamFeedSection> {
     return BlocBuilder<FeedBloc, FeedState>(
       builder: (context, state) {
         if (state.status == RequestStatus.loading && state.feedList.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.primaryBase),
-            ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Text(
+                  'Informasi Terkini',
+                  style: AppTypography.bodyLgSemiBold.copyWith(
+                    color: AppColors.alwaysBlack,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                height: 275,
+                child: PageView.builder(
+                  controller: PageController(viewportFraction: 0.9),
+                  itemCount: 2,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Shimmer.fromColors(
+                        baseColor: AppColors.grey200,
+                        highlightColor: AppColors.alwaysWhite,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.alwaysWhite,
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
           );
         }
 

@@ -22,6 +22,7 @@ enum PAGES {
   rateTalentNotifPage,
   rateTalentCheckPage,
   evaluationKompointPage,
+  invoiceNew,
 
   // kompoy
   withdrawKompoyPage,
@@ -105,6 +106,8 @@ extension AppPageExtension on PAGES {
         return "/invoice_list";
       case PAGES.invoiceReportSummary:
         return "/invoice_summary_report";
+      case PAGES.invoiceNew:
+        return "/invoice_new_page";
       case PAGES.rateTalentNotifPage:
         return "/rate_talent_notif_page";
       case PAGES.rateTalentCheckPage:
@@ -191,6 +194,8 @@ extension AppPageExtension on PAGES {
         return "INVOICE LIST";
       case PAGES.invoiceReportSummary:
         return "INVOICEREPORT SUMMARY";
+      case PAGES.invoiceNew:
+        return "INVOICE NEW";
       case PAGES.rateTalentNotifPage:
         return "RATETALENT NOTIF PAGE";
       case PAGES.rateTalentCheckPage:
@@ -270,6 +275,8 @@ extension AppPageExtension on PAGES {
         return "Invoice";
       case PAGES.invoiceReportSummary:
         return "Invoice Report Summary";
+      case PAGES.invoiceNew:
+        return "Invoice";
       case PAGES.rateTalentNotifPage:
         return "Rate Talent Notif Page";
       case PAGES.rateTalentCheckPage:
