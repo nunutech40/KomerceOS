@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/global/widgets/custom_text_labeling_error.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/styles.dart' hide AppTypography;
 
-import '../../../../../../common/global/widgets/custom_text_labeling.dart';
 import '../../../../../../common/utils/currency_format.dart';
 import '../../../../../../common/utils/custom_date_format.dart';
 import '../../../../../../core/domain/entities/invoice_detail_model.dart';
@@ -182,43 +181,54 @@ class _CardReportInvoiceState extends State<CardReportInvoice> {
   }
 
   Widget rowItemHeader(String text2, String statusTransaction) {
-    String? statuspayment;
+    String statuspayment;
+    Color textColor;
+    Color bgColor;
+
     switch (statusTransaction) {
       case 'canceled':
         statuspayment = "Dibatalkan";
+        textColor = AppColors.errorBase;
+        bgColor = AppColors.errorLight;
         break;
       case 'paid':
-        statuspayment = "Dibayar";
+        statuspayment = "Berhasil";
+        textColor = AppColors.successBase;
+        bgColor = AppColors.successLight;
         break;
       case 'unpaid':
         statuspayment = "Belum Dibayar";
+        textColor = AppColors.errorBase;
+        bgColor = AppColors.errorLight;
         break;
       case 'expired':
         statuspayment = "Kedaluwarsa";
+        textColor = AppColors.grey700;
+        bgColor = AppColors.grey100;
         break;
       default:
+        statuspayment = statusTransaction;
+        textColor = AppColors.grey700;
+        bgColor = AppColors.grey100;
     }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        statusTransaction == 'paid'
-            ? CustomTextLabeling(
-                text: statuspayment ?? "",
-                backgroundColor: Colors.white,
-                textColor: primaryColor,
-                borderColor: primaryColor,
-                buttonHeight: 32.0,
-                borderRadius: 8.0,
-              )
-            : CustomTextLabelingError(
-                text: statuspayment ?? "",
-                backgroundColor: Colors.white,
-                buttonHeight: 32.0,
-                borderRadius: 8.0,
-              ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(99.0),
+          ),
+          child: Text(
+            statuspayment,
+            style: AppTypography.labelSm.copyWith(color: textColor),
+          ),
+        ),
         Text(text2,
-            style: AppTypography.interSemiBold14.copyWith(color: onlyGray)),
+            style:
+                AppTypography.bodyMdMedium.copyWith(color: AppColors.grey600)),
       ],
     );
   }
@@ -289,24 +299,24 @@ class _CardReportInvoiceState extends State<CardReportInvoice> {
               const SizedBox(height: 8.0),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
                 decoration: BoxDecoration(
-                  color: lightWarningColor,
-                  borderRadius: BorderRadius.circular(16.0),
+                  color: AppColors.primarySubtle,
+                  borderRadius: BorderRadius.circular(99.0),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.access_time,
-                      size: 14.0,
-                      color: warningColor,
+                      Icons.schedule,
+                      color: AppColors.primaryBase,
+                      size: 14,
                     ),
                     const SizedBox(width: 4.0),
                     Text(
                       'Jatuh Tempo: ${CustomDateFormat.convertToDateFormatOnlyDate(invoiceDetail?.dueDate ?? '', format: 'dd MMMM yyyy')}',
-                      style: AppTypography.interRegular12.copyWith(
-                        color: warningColor,
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.primaryBase,
                       ),
                     ),
                   ],

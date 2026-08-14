@@ -333,4 +333,44 @@ abstract final class AppTypography {
     height: 1.3,
     letterSpacing: -0.25,
   );
+
+  // ---------------------------------------------------------------------------
+  // LEGACY STYLES (To be refactored)
+  // ---------------------------------------------------------------------------
+
+  /// Inter SemiBold 18
+  static const TextStyle interSemiBold18 = TextStyle(
+    fontFamily: _secondaryFont,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+    letterSpacing: 0,
+  );
+
+  /// Inter SemiBold 16
+  static const TextStyle interSemiBold16 = TextStyle(
+    fontFamily: _secondaryFont,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+    letterSpacing: 0,
+  );
+
+  /// Inter Regular 14
+  static const TextStyle interRegular14 = TextStyle(
+    fontFamily: _secondaryFont,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    letterSpacing: 0,
+  );
+
+  /// Inter Regular 12
+  static const TextStyle interRegular12 = TextStyle(
+    fontFamily: _secondaryFont,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    letterSpacing: 0,
+  );
 }

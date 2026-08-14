@@ -320,7 +320,7 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
       onTap: () {
         String transactionType = invoice.transactionType ?? 'invoice';
         String invoiceId = invoice.invoiceCode ?? '0';
-        if (transactionType == 'invoice') {
+        if (transactionType != 'topup' && transactionType != 'withdrawal') {
           AppRouter.router.pushNamed(
             PAGES.invoiceReportSummary.screenName,
             queryParameters: {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/loading/loading_overlay.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_report_summary_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/widget/card_report_invoice.dart';
@@ -13,6 +13,7 @@ import '../../../../../../common/enum_status.dart';
 import '../../../../../../common/global/router/app_router.dart';
 import '../../../../../../common/utils/loading/shimmer_placeholder_invoice_list.dart';
 
+// ignore: must_be_immutable
 class InvoiceReportSummaryPage extends StatefulWidget {
   final String invoiceId;
   String xenditUrl;
@@ -249,7 +250,7 @@ class _InvoiceReportSummaryPageState extends State<InvoiceReportSummaryPage>
                       ),
                 label: Text(
                   Strings.label_download_payment,
-                  style: AppTypography.interSemiBold14.copyWith(
+                  style: AppTypography.headingXxs.copyWith(
                     color: Colors.black87,
                   ),
                 ),
@@ -259,37 +260,20 @@ class _InvoiceReportSummaryPageState extends State<InvoiceReportSummaryPage>
                     width: 1.0,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   backgroundColor: Colors.white,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            // Continue payment button - solid orange rounded
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await _bloc.add(CheckEvalutionEvent(
-                      state.invoiceDetail?.invoiceId.toString() ?? ""));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24.0),
-                  ),
-                ),
-                child: Text(
-                  Strings.label_continue_payment,
-                  style: AppTypography.interSemiBold14.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            const SizedBox(height: AppSpacing.md),
+            // Continue payment button - solid orange rounded using DsButton
+            DsButton(
+              text: Strings.label_continue_payment,
+              onPressed: () async {
+                await _bloc.add(CheckEvalutionEvent(
+                    state.invoiceDetail?.invoiceId.toString() ?? ""));
+              },
             ),
           ],
         ),
@@ -315,92 +299,46 @@ class _InvoiceReportSummaryPageState extends State<InvoiceReportSummaryPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Download button
+            // Download button - solid orange using DsButton
+            DsButton(
+              text: Strings.label_download_payment,
+              leftIcon: const Icon(
+                Icons.file_download_outlined,
+                size: 20,
+                color: Colors.white,
+              ),
+              state: state.isDownloading
+                  ? DsButtonState.loading
+                  : DsButtonState.enabled,
+              onPressed: () {
+                context
+                    .read<InvoiceDetailBloc>()
+                    .add(InvoiceDownloadFile(widget.invoiceId));
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Back button - outlined style
             SizedBox(
               width: double.infinity,
-              height: 48,
-              child: OutlinedButton.icon(
-                onPressed:
-                    state.invoiceDetail?.transactionStatus == "expired" ||
-                            state.invoiceDetail?.transactionStatus == "canceled"
-                        ? null
-                        : () {
-                            context
-                                .read<InvoiceDetailBloc>()
-                                .add(InvoiceDownloadFile(widget.invoiceId));
-                          },
-                icon: state.isDownloading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.black87),
-                        ),
-                      )
-                    : Icon(
-                        Icons.file_download_outlined,
-                        size: 20,
-                        color: state.invoiceDetail?.transactionStatus ==
-                                    "expired" ||
-                                state.invoiceDetail?.transactionStatus ==
-                                    "canceled"
-                            ? onlyGray
-                            : Colors.black87,
-                      ),
-                label: Text(
-                  Strings.label_download_payment,
-                  style: AppTypography.interSemiBold14.copyWith(
-                    color: state.invoiceDetail?.transactionStatus ==
-                                "expired" ||
-                            state.invoiceDetail?.transactionStatus == "canceled"
-                        ? onlyGray
-                        : Colors.black87,
-                  ),
-                ),
+              height: 50,
+              child: OutlinedButton(
+                onPressed: () {
+                  AppRouter.router.pop();
+                },
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
-                    color: state.invoiceDetail?.transactionStatus ==
-                                "expired" ||
-                            state.invoiceDetail?.transactionStatus == "canceled"
-                        ? Colors.grey.shade300
-                        : Colors.grey.shade300,
+                    color: Colors.grey.shade300,
                     width: 1.0,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
-                  backgroundColor: state.invoiceDetail?.transactionStatus ==
-                              "expired" ||
-                          state.invoiceDetail?.transactionStatus == "canceled"
-                      ? Colors.grey.shade100
-                      : Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Back button - outline style
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                    color: primaryColor,
-                    width: 1.5,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24.0),
-                  ),
+                  backgroundColor: Colors.white,
                 ),
                 child: Text(
                   'Kembali',
-                  style: AppTypography.interSemiBold14.copyWith(
-                    color: primaryColor,
+                  style: AppTypography.labelLg.copyWith(
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -424,7 +362,6 @@ class _InvoiceReportSummaryPageState extends State<InvoiceReportSummaryPage>
                 padding: const EdgeInsets.only(
                   left: 24.0,
                   right: 24.0,
-                  top: 24.0,
                   bottom: 24.0,
                 ),
                 child: CardReportInvoice(invoiceDetail: state.invoiceDetail),
