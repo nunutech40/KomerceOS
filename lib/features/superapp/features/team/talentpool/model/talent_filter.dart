@@ -54,7 +54,7 @@ abstract final class TalentFilterOptions {
     TalentExperienceOption(value: '0-6', label: '0-6 Bulan'),
     TalentExperienceOption(value: '7-12', label: '7-12 Bulan'),
     TalentExperienceOption(value: '12-24', label: '1-2 Tahun'),
-    TalentExperienceOption(value: '24+', label: '> 2 Tahun'),
+    TalentExperienceOption(value: '25', label: '> 2 Tahun'),
   ];
 }
 

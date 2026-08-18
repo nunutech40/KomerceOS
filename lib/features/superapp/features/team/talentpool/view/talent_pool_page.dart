@@ -29,8 +29,8 @@ class TalentPoolPage extends StatelessWidget {
             ..add(const FetchBusinessSectorEvent()),
         ),
         BlocProvider(
-          create: (_) => locator<TalentPoolBloc>()
-            ..add(const FetchTalentPoolEvent()),
+          create: (_) =>
+              locator<TalentPoolBloc>()..add(const FetchTalentPoolEvent()),
         ),
       ],
       child: const _TalentPoolView(),
@@ -52,8 +52,7 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   bool _isGridView = true;
   TalentFilter _filter = TalentFilter.empty;
 
-  String get _baseUrlTalentPool =>
-      Config.instance.baseUrlWebUrlTalentPool;
+  String get _baseUrlTalentPool => Config.instance.baseUrlWebUrlTalentPool;
 
   @override
   void initState() {
@@ -186,8 +185,9 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
 
   Widget _buildContent() {
     return BlocConsumer<TalentPoolBloc, TalentPoolState>(
-      listenWhen: (previous, current) => 
-          current is TalentPoolWishlistSuccess || current is TalentPoolWishlistFailed,
+      listenWhen: (previous, current) =>
+          current is TalentPoolWishlistSuccess ||
+          current is TalentPoolWishlistFailed,
       listener: (context, state) {
         if (state is TalentPoolWishlistSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -225,7 +225,9 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
 
         final talents = state is TalentPoolLoaded
             ? state.talents
-            : (state is TalentPoolLoadingMore ? state.talents : <TalentRecommendationModel>[]);
+            : (state is TalentPoolLoadingMore
+                ? state.talents
+                : <TalentRecommendationModel>[]);
         final isLoadingMore = state is TalentPoolLoadingMore;
 
         if (_isGridView) {
@@ -236,8 +238,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
             onTap: _openTalentDetail,
             onWishlistTap: (talent) {
               context.read<TalentPoolBloc>().add(
-                ToggleWishlistTalentPoolEvent(talent.id),
-              );
+                    ToggleWishlistTalentPoolEvent(talent.id),
+                  );
             },
           );
         } else {
@@ -248,8 +250,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
             onTap: _openTalentDetail,
             onWishlistTap: (talent) {
               context.read<TalentPoolBloc>().add(
-                ToggleWishlistTalentPoolEvent(talent.id),
-              );
+                    ToggleWishlistTalentPoolEvent(talent.id),
+                  );
             },
           );
         }
@@ -289,8 +291,8 @@ class _ActiveFilterChips extends StatelessWidget {
           onTap: onClear,
           child: Text(
             'Hapus semua',
-            style: AppTypography.bodySmRegular
-                .copyWith(color: AppColors.grey600),
+            style:
+                AppTypography.bodySmRegular.copyWith(color: AppColors.grey600),
           ),
         ),
       ],
@@ -487,34 +489,14 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.person_search_rounded,
-              size: AppSpacing.iconXxl,
-              color: AppColors.grey400,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Talent tidak ditemukan',
-              style: AppTypography.bodyLgSemiBold
-                  .copyWith(color: AppColors.grey700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Coba ubah kata kunci atau filter pencarianmu.',
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmRegular
-                  .copyWith(color: AppColors.grey600),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const Center(
+        child: Padding(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            child: DsAppImage(
+              source: "assets/images/team/empty_state_feed.svg",
+              width: 200,
+              height: 200,
+            )));
   }
 }
 
