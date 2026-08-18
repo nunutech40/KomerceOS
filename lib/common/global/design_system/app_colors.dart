@@ -130,6 +130,8 @@ abstract final class AppColors {
 
   static const Color textDark = Color(0xFF737373);
 
+  static const Color grayF5F5 = Color(0xFFF5F5F5);
+
   // ---------------------------------------------------------------------------
   // ALWAYS — Absolute values independent of theme
   // ---------------------------------------------------------------------------
