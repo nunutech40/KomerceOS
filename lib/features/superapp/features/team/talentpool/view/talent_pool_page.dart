@@ -128,7 +128,7 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.alwaysWhite,
       appBar: const DsAppBar(title: 'Talent Pool'),
       body: SafeArea(
         top: false,
@@ -220,7 +220,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
           );
         }
         if (state is TalentPoolEmpty) {
-          return const _RefreshableMessage(child: _EmptyState());
+          return _RefreshableMessage(
+              child: _EmptyState(isSearchActive: !_filter.isEmpty));
         }
 
         final talents = state is TalentPoolLoaded
@@ -485,18 +486,44 @@ class _RefreshableMessage extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  final bool isSearchActive;
+
+  const _EmptyState({required this.isSearchActive});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-        child: Padding(
-            padding: EdgeInsets.all(AppSpacing.lg),
-            child: DsAppImage(
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const DsAppImage(
               source: "assets/images/team/empty_state_feed.svg",
               width: 200,
               height: 200,
-            )));
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              isSearchActive
+                  ? 'Talent tidak ditemukan'
+                  : 'Belum ada talent tersedia',
+              style: AppTypography.bodyLgSemiBold
+                  .copyWith(color: AppColors.black0A0A),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              isSearchActive
+                  ? 'Kami tidak menemukan talent yang cocok dengan pencarianmu. Coba kata kunci lain atau ubah filter.'
+                  : 'Saat ini belum ada talent yang dapat direkomendasikan. Coba kembali nanti.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMdRegular
+                  .copyWith(color: AppColors.textDark),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
