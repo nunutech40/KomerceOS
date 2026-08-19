@@ -45,12 +45,27 @@ class _TalentPoolView extends StatefulWidget {
   State<_TalentPoolView> createState() => _TalentPoolViewState();
 }
 
+/// Daftar role hardcode untuk quick-filter.
+/// Value dikirim sebagai `skill_name` ke API (URL-encoded otomatis oleh Dio).
+/// Value kosong ('') = "Semua" → tidak mengirim skill_name, identik dengan load awal.
+const List<({String label, String value})> _kHardcodedRoles = [
+  (label: 'Semua', value: ''),
+  (label: 'Customer Service', value: 'customer service'),
+  (label: 'Admin Marketplace', value: 'admin marketplace'),
+  (label: 'Advertiser', value: 'advertiser'),
+  (label: 'Live Streamer', value: 'live streamer'),
+];
+
 class _TalentPoolViewState extends State<_TalentPoolView> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   bool _isGridView = true;
   TalentFilter _filter = TalentFilter.empty;
+
+  /// Role yang sedang dipilih.
+  /// '' = "Semua" (aktif by default) → API dipanggil tanpa skill_name.
+  String _selectedRole = '';
 
   String get _baseUrlTalentPool => Config.instance.baseUrlWebUrlTalentPool;
 
@@ -81,10 +96,29 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
     }
   }
 
+  /// Pilih role. Single-select.
+  /// Memilih role yang sudah aktif (selain Semua) → kembali ke Semua.
+  /// Memilih Semua → selalu kembali ke '' (fetch tanpa skill_name).
+  void _onRoleSelected(String value) {
+    // Tap role yang sama (bukan Semua) → kembali ke Semua.
+    final newRole = (value == _selectedRole && value.isNotEmpty) ? '' : value;
+    setState(() => _selectedRole = newRole);
+
+    context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
+          ratings: _filter.selectedRatings.toList(),
+          experiences: _filter.selectedExperiences.toList(),
+          businessSectorIds: _filter.selectedBusinessSectorIds.toList(),
+          skillName: newRole, // '' = tanpa filter skill, sama seperti init
+        ));
+  }
+
   /// Pull-to-refresh: reset filter & pencarian, lalu fetch ulang dari awal.
   Future<void> _onRefresh() async {
     _searchController.clear();
-    setState(() => _filter = TalentFilter.empty);
+    setState(() {
+      _filter = TalentFilter.empty;
+      _selectedRole = ''; // kembali ke Semua
+    });
 
     final bloc = context.read<TalentPoolBloc>()
       ..add(const FetchTalentPoolEvent());
@@ -154,16 +188,23 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
                     onViewChanged: (value) =>
                         setState(() => _isGridView = value),
                   ),
-                  // Active filter chips
+                  const SizedBox(height: AppSpacing.sm),
+                  // Role quick-filter chips (hardcoded, single-select)
+                  _RoleFilterRow(
+                    roles: _kHardcodedRoles,
+                    selectedRole: _selectedRole,
+                    onRoleSelected: _onRoleSelected,
+                  ),
+                  // Active filter chips (dari bottom sheet)
                   if (!_filter.isEmpty) ...[
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.xs),
                     _ActiveFilterChips(
                       filter: _filter,
                       onClear: () {
                         setState(() => _filter = TalentFilter.empty);
-                        context
-                            .read<TalentPoolBloc>()
-                            .add(const FetchTalentPoolEvent());
+                        context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
+                              skillName: _selectedRole,
+                            ));
                       },
                     ),
                   ],
@@ -262,6 +303,87 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
 }
 
 // ────────────────────────────────────────────────
+// Role quick-filter chips (hardcoded, single-select)
+// ────────────────────────────────────────────────
+
+class _RoleFilterRow extends StatelessWidget {
+  final List<({String label, String value})> roles;
+  final String? selectedRole;
+  final void Function(String value) onRoleSelected;
+
+  const _RoleFilterRow({
+    required this.roles,
+    required this.selectedRole,
+    required this.onRoleSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: roles.length,
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs),
+        itemBuilder: (context, index) {
+          final role = roles[index];
+          final isSelected = selectedRole == role.value;
+          return Center(
+            child: _RoleChip(
+              label: role.label,
+              isSelected: isSelected,
+              onTap: () => onRoleSelected(role.value),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _RoleChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RoleChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryBase : AppColors.alwaysWhite,
+          borderRadius: BorderRadius.circular(AppRadius.circular),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryBase : AppColors.grey300,
+            width: 1.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.bodySmSemiBold.copyWith(
+            color: isSelected ? AppColors.alwaysWhite : AppColors.grey600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ────────────────────────────────────────────────
 // Active filter chips row
 // ────────────────────────────────────────────────
 
@@ -322,7 +444,29 @@ class _TalentGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
+    // ── Manual 2-column masonry (tanpa package eksternal) ──
+    // Item genap → kolom kiri, ganjil → kolom kanan.
+    // Setiap kolom adalah Column biasa → card auto-fit kontennya.
+    final leftIndices = <int>[];
+    final rightIndices = <int>[];
+    for (int i = 0; i < talents.length; i++) {
+      if (i.isEven) {
+        leftIndices.add(i);
+      } else {
+        rightIndices.add(i);
+      }
+    }
+
+    Widget buildCard(int index) {
+      final talent = talents[index];
+      return TalentRecommendationGridCard(
+        talent: talent,
+        onTap: () => onTap(talent),
+        onWishlistTap: () => onWishlistTap(talent),
+      );
+    }
+
+    return SingleChildScrollView(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(
@@ -331,24 +475,40 @@ class _TalentGrid extends StatelessWidget {
         AppSpacing.md,
         isLoadingMore ? AppSpacing.sm : AppSpacing.lg,
       ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: AppSpacing.md,
-        crossAxisSpacing: AppSpacing.md,
-        childAspectRatio: 0.52,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Kolom kiri — item genap (0, 2, 4, ...)
+          Expanded(
+            child: Column(
+              children: [
+                ...leftIndices.map(
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: buildCard(i),
+                  ),
+                ),
+                if (isLoadingMore) const _GridShimmerCard(),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // Kolom kanan — item ganjil (1, 3, 5, ...)
+          Expanded(
+            child: Column(
+              children: [
+                ...rightIndices.map(
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: buildCard(i),
+                  ),
+                ),
+                if (isLoadingMore) const _GridShimmerCard(),
+              ],
+            ),
+          ),
+        ],
       ),
-      itemCount: talents.length + (isLoadingMore ? 2 : 0),
-      itemBuilder: (context, index) {
-        if (index >= talents.length) {
-          return const _GridShimmerCard();
-        }
-        final talent = talents[index];
-        return TalentRecommendationGridCard(
-          talent: talent,
-          onTap: () => onTap(talent),
-          onWishlistTap: () => onWishlistTap(talent),
-        );
-      },
     );
   }
 }

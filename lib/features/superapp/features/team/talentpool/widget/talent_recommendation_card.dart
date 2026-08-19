@@ -31,6 +31,7 @@ class TalentRecommendationGridCard extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Foto ──
@@ -45,31 +46,6 @@ class TalentRecommendationGridCard extends StatelessWidget {
                     width: double.infinity,
                     height: double.infinity,
                   ),
-                  // Badge wishlist
-                  // TODO: Enable wishlist badge when ready
-                  /* Positioned(
-                    top: AppSpacing.sm,
-                    right: AppSpacing.sm,
-                    child: GestureDetector(
-                      onTap: onWishlistTap,
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.xs),
-                        decoration: const BoxDecoration(
-                          color: AppColors.alwaysWhite,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          talent.isWishlist
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          size: AppSpacing.iconSm,
-                          color: talent.isWishlist
-                              ? AppColors.errorBase
-                              : AppColors.grey300,
-                        ),
-                      ),
-                    ),
-                  ), */
                 ],
               ),
             ),
@@ -80,31 +56,64 @@ class TalentRecommendationGridCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    talent.fullName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.bodySmSemiBold
-                        .copyWith(color: AppColors.grey800),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            talent.fullName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.bodySmSemiBold
+                                .copyWith(color: AppColors.grey800),
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            talent.skillName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelXs
+                                .copyWith(color: AppColors.grey600),
+                          ),
+                        ],
+                      ),
+                      // InkWell(
+                      //   onTap: onWishlistTap,
+                      //   borderRadius: BorderRadius.circular(AppRadius.circular),
+                      //   child: Container(
+                      //     padding: const EdgeInsets.all(AppSpacing.xs),
+                      //     decoration: BoxDecoration(
+                      //       shape: BoxShape.circle,
+                      //       border: Border.all(
+                      //         color: AppColors.grey300,
+                      //       ),
+                      //     ),
+                      //     child: Icon(
+                      //       talent.isWishlist
+                      //           ? Icons.favorite_rounded
+                      //           : Icons.favorite_border_rounded,
+                      //       size: AppSpacing.iconSm,
+                      //       color: talent.isWishlist
+                      //           ? AppColors.errorBase
+                      //           : AppColors.grey300,
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    talent.skillName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.labelXs
-                        .copyWith(color: AppColors.grey600),
-                  ),
+
                   const SizedBox(height: AppSpacing.sm),
                   // Stats row
                   Row(
                     children: [
                       Flexible(
-                        child: _StatBadge.cr(talent.closingRate),
+                        child: _StatBadge.rate(talent.rate.toDouble()),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Flexible(
-                        child: _StatBadge.rate(talent.rate.toDouble()),
+                        child: _StatBadge.cr(talent.closingRate),
                       ),
                     ],
                   ),
@@ -145,25 +154,56 @@ class TalentRecommendationGridCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs2),
                   // Wishlist count
                   // TODO: Enable wishlist count when ready
-                  /* Row(
+                  const SizedBox(height: AppSpacing.md3),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.favorite_rounded,
-                        size: AppSpacing.iconXs,
-                        color: AppColors.errorBase,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Flexible(
-                        child: Text(
-                          'Ditandai oleh ${talent.wishlistCount} partner lain',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.labelXs
-                              .copyWith(color: AppColors.grey600),
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const DsAppImage(
+                              source:
+                                  'assets/images/superapp/team/ic_heart.png',
+                              width: 14,
+                              height: 14,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: RichText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                text: TextSpan(
+                                  style: AppTypography.bodySmRegular
+                                      .copyWith(color: AppColors.black0A0A),
+                                  children: [
+                                    TextSpan(
+                                      text: 'Ditandai oleh ',
+                                      style: AppTypography.bodySmRegular
+                                          .copyWith(color: AppColors.black0A0A),
+                                    ),
+                                    TextSpan(
+                                      text: talent.wishlistCount.toString(),
+                                      style: AppTypography.bodySmSemiBold
+                                          .copyWith(color: AppColors.black0A0A),
+                                    ),
+                                    TextSpan(
+                                      text: ' partner lain',
+                                      style: AppTypography.bodySmRegular
+                                          .copyWith(color: AppColors.black0A0A),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ), */
+                  ),
                 ],
               ),
             ),
@@ -193,42 +233,140 @@ class TalentRecommendationListCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.lg),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md3),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           color: AppColors.alwaysWhite,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(color: AppColors.grey200),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  child: DsAppImage(
-                    source: talent.photoUrl,
-                    width: 44,
-                    height: 44,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.alwaysWhite,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: AppColors.grey200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        talent.fullName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodyMdSemiBold
-                            .copyWith(color: AppColors.grey800),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        child: DsAppImage(
+                          source: talent.photoUrl,
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.xxs),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              talent.fullName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.bodyMdSemiBold
+                                  .copyWith(color: AppColors.grey800),
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              talent.skillName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.bodySmRegular
+                                  .copyWith(color: AppColors.grey600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      // Experience label
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs2,
+                          vertical: AppSpacing.xxs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.grayF5F5,
+                          borderRadius: BorderRadius.circular(AppRadius.md2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const DsAppImage(
+                              source: 'assets/images/superapp/team/ic_work.png',
+                              width: 14,
+                              height: 14,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              talent.experience,
+                              style: AppTypography.labelXs
+                                  .copyWith(color: AppColors.grey700),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md3),
+                  Row(
+                    children: [
+                      _StatBadge.rate(talent.rate.toDouble()),
+                      const SizedBox(width: AppSpacing.xs),
+                      _StatBadge.cr(talent.closingRate),
+                      if (talent.industryName.isNotEmpty) ...[
+                        const SizedBox(width: AppSpacing.xs),
+                        Builder(builder: (context) {
+                          final industries = talent.industryName
+                              .split(',')
+                              .map((e) => e.trim())
+                              .where((e) => e.isNotEmpty)
+                              .toList();
+                          final primaryIndustry =
+                              industries.isNotEmpty ? industries.first : '';
+                          final extraCount =
+                              industries.length > 1 ? industries.length - 1 : 0;
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (primaryIndustry.isNotEmpty)
+                                IndustryTag(label: primaryIndustry),
+                              if (extraCount > 0) ...[
+                                const SizedBox(width: AppSpacing.xs),
+                                IndustryMoreTag(count: extraCount),
+                              ],
+                            ],
+                          );
+                        }),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md3),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      const DsAppImage(
+                        source: 'assets/images/superapp/team/ic_heart.png',
+                        width: 20,
+                        height: 20,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
                       Text(
-                        talent.skillName,
+                        'Ditandai oleh ${talent.wishlistCount} partner lain',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTypography.bodySmRegular
@@ -237,89 +375,30 @@ class TalentRecommendationListCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                // Experience label
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.access_time_rounded,
-                      size: AppSpacing.iconXs,
-                      color: AppColors.grey600,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      talent.experience,
-                      style: AppTypography.labelXs
-                          .copyWith(color: AppColors.grey700),
-                    ),
-                  ],
-                ),
+                // InkWell(
+                //   onTap: onWishlistTap,
+                //   borderRadius: BorderRadius.circular(AppRadius.circular),
+                //   child: Container(
+                //     padding: const EdgeInsets.all(AppSpacing.xs),
+                //     decoration: BoxDecoration(
+                //       shape: BoxShape.circle,
+                //       border: Border.all(
+                //         color: AppColors.grey300,
+                //       ),
+                //     ),
+                //     child: Icon(
+                //       talent.isWishlist
+                //           ? Icons.favorite_rounded
+                //           : Icons.favorite_border_rounded,
+                //       size: AppSpacing.iconSm,
+                //       color: talent.isWishlist
+                //           ? AppColors.errorBase
+                //           : AppColors.grey300,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md3),
-            Row(
-              children: [
-                _StatBadge.cr(talent.closingRate),
-                const SizedBox(width: AppSpacing.xs),
-                _StatBadge.rate(talent.rate.toDouble()),
-                if (talent.industryName.isNotEmpty) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Builder(builder: (context) {
-                    final industries = talent.industryName
-                        .split(',')
-                        .map((e) => e.trim())
-                        .where((e) => e.isNotEmpty)
-                        .toList();
-                    final primaryIndustry =
-                        industries.isNotEmpty ? industries.first : '';
-                    final extraCount =
-                        industries.length > 1 ? industries.length - 1 : 0;
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (primaryIndustry.isNotEmpty)
-                          IndustryTag(label: primaryIndustry),
-                        if (extraCount > 0) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          IndustryMoreTag(count: extraCount),
-                        ],
-                      ],
-                    );
-                  }),
-                ],
-              ],
-            ),
-            // TODO: Enable wishlist section when ready
-            /* const SizedBox(height: AppSpacing.md3),
-            const Divider(height: 1, color: AppColors.grey200),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: onWishlistTap,
-                  child: Icon(
-                    talent.isWishlist
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    size: AppSpacing.iconSm,
-                    color: talent.isWishlist
-                        ? AppColors.errorBase
-                        : AppColors.grey300,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    'Ditandai oleh ${talent.wishlistCount} partner lain',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.bodySmRegular
-                        .copyWith(color: AppColors.grey600),
-                  ),
-                ),
-              ],
-            ), */
           ],
         ),
       ),

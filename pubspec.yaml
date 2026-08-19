@@ -86,6 +86,7 @@ flutter:
     - assets/images/superapp/setting/
     - assets/images/superapp/topup/
     - assets/images/team/
+    - assets/images/superapp/team/
     - assets/json/
   fonts:
     - family: PlusJakartaSans

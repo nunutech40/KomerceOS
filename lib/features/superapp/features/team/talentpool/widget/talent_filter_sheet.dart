@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/core/domain/entities/business_sector_model.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/business_sector_bloc.dart';
+
 import '../model/talent_filter.dart';
 
 /// Bottom sheet filter Talent Pool bergaya checkbox multi-select.
@@ -131,21 +132,11 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
                         style: AppTypography.headingXs
                             .copyWith(color: AppColors.grey800),
                       ),
-                      TextButton(
-                        onPressed: _reset,
-                        child: Text(
-                          'Reset',
-                          style: AppTypography.bodyMdSemiBold
-                              .copyWith(color: AppColors.primaryBase),
-                        ),
-                      ),
                     ],
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColors.grey100),
-
             // Scrollable content
             Expanded(
               child: ListView(
@@ -190,7 +181,8 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
                   _FilterSection(
                     title: 'Pengalaman',
                     children: TalentFilterOptions.experiences.map((opt) {
-                      final isSelected = _selectedExperiences.contains(opt.value);
+                      final isSelected =
+                          _selectedExperiences.contains(opt.value);
                       return _CheckboxItem(
                         isSelected: isSelected,
                         onTap: () => _toggleExperience(opt.value),
@@ -220,16 +212,15 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
                                 child: SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 ),
                               ),
                             );
                           }
                           if (state is BusinessSectorError) {
                             return Padding(
-                              padding:
-                                  const EdgeInsets.all(AppSpacing.sm),
+                              padding: const EdgeInsets.all(AppSpacing.sm),
                               child: Text(
                                 'Gagal memuat industri',
                                 style: AppTypography.bodySmRegular
@@ -286,17 +277,16 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
                           onPressed: _reset,
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.primaryBase,
-                            side: const BorderSide(
-                                color: AppColors.primaryBase),
+                            side:
+                                const BorderSide(color: AppColors.primaryBase),
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.lg),
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
                             ),
                           ),
                           child: Text(
                             'Reset Filter',
-                            style: AppTypography.headingXxs.copyWith(
-                                color: AppColors.primaryBase),
+                            style: AppTypography.headingXxs
+                                .copyWith(color: AppColors.primaryBase),
                           ),
                         ),
                       ),
@@ -305,8 +295,8 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
                     Expanded(
                       child: SizedBox(
                         height: 48,
-                        child:
-                            DsButton(text: 'Terapkan Filter', onPressed: _apply),
+                        child: DsButton(
+                            text: 'Terapkan Filter', onPressed: _apply),
                       ),
                     ),
                   ],
@@ -321,6 +311,7 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
 }
 
 /// Section filter dengan judul + chevron collapse/expand.
+/// Default: terbuka (_expanded = true). Divider di atas judul.
 class _FilterSection extends StatefulWidget {
   final String title;
   final List<Widget> children;
@@ -332,13 +323,15 @@ class _FilterSection extends StatefulWidget {
 }
 
 class _FilterSectionState extends State<_FilterSection> {
-  bool _expanded = true;
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Divider(height: 1, color: AppColors.grey100),
+        const SizedBox(height: AppSpacing.md),
         InkWell(
           onTap: () => setState(() => _expanded = !_expanded),
           child: Row(
@@ -361,8 +354,6 @@ class _FilterSectionState extends State<_FilterSection> {
           ),
         ),
         if (_expanded) ...[
-          const SizedBox(height: AppSpacing.sm),
-          const Divider(height: 1, color: AppColors.grey100),
           const SizedBox(height: AppSpacing.xs),
           ...widget.children,
         ],
@@ -396,13 +387,10 @@ class _CheckboxItem extends StatelessWidget {
               width: 22,
               height: 22,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primaryBase
-                    : AppColors.alwaysWhite,
+                color:
+                    isSelected ? AppColors.primaryBase : AppColors.alwaysWhite,
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primaryBase
-                      : AppColors.grey300,
+                  color: isSelected ? AppColors.primaryBase : AppColors.grey300,
                   width: 1.5,
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
