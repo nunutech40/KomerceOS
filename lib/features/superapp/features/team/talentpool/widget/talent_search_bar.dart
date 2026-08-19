@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_search_field.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_square_icon_button.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_view_toggle.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 /// Baris pencarian pada Talent Pool: input "Cari talent",
@@ -67,10 +71,7 @@ class TalentSearchBar extends StatelessWidget {
           onTap: onFilterTap,
         ),
         const SizedBox(width: AppSpacing.sm),
-        _ViewToggle(
-          isGridView: isGridView,
-          onChanged: onViewChanged,
-        ),
+        DsViewToggle(isGridView: isGridView, onChanged: onViewChanged),
       ],
     );
   }
