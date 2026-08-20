@@ -14,7 +14,7 @@ class ShimmerPlaceholderAttendance extends StatelessWidget {
 
   Widget _buildShimmerItem(BuildContext context, int index) {
     return Container(
-      margin: EdgeInsets.only(left: 4, right: 4, top: index == 0 ? 0 : 16),
+      margin: EdgeInsets.only(left: 12, right: 12, top: index == 0 ? 0 : 16),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
           boxShadow: [

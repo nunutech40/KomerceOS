@@ -252,7 +252,7 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
         }
         if (state is TalentPoolError) {
           return _RefreshableMessage(
-            child: _ErrorState(
+            child: DsErrorState(
               message: state.message,
               onRetry: () => context
                   .read<TalentPoolBloc>()
@@ -262,7 +262,16 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
         }
         if (state is TalentPoolEmpty) {
           return _RefreshableMessage(
-              child: _EmptyState(isSearchActive: !_filter.isEmpty));
+            child: DsEmptyState(
+              imagePath: 'assets/images/team/empty_state_feed.svg',
+              title: !_filter.isEmpty
+                  ? 'Talent tidak ditemukan'
+                  : 'Belum ada talent tersedia',
+              description: !_filter.isEmpty
+                  ? 'Kami tidak menemukan talent yang cocok dengan pencarianmu. Coba kata kunci lain atau ubah filter.'
+                  : 'Saat ini belum ada talent yang dapat direkomendasikan. Coba kembali nanti.',
+            ),
+          );
         }
 
         final talents = state is TalentPoolLoaded
@@ -619,7 +628,7 @@ class _ListShimmerCard extends StatelessWidget {
 }
 
 // ────────────────────────────────────────────────
-// Empty & Error state
+// Refreshable wrapper
 // ────────────────────────────────────────────────
 
 /// Membungkus pesan (empty/error) agar tetap bisa ditarik untuk refresh
@@ -641,89 +650,6 @@ class _RefreshableMessage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final bool isSearchActive;
-
-  const _EmptyState({required this.isSearchActive});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const DsAppImage(
-              source: "assets/images/team/empty_state_feed.svg",
-              width: 200,
-              height: 200,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              isSearchActive
-                  ? 'Talent tidak ditemukan'
-                  : 'Belum ada talent tersedia',
-              style: AppTypography.bodyLgSemiBold
-                  .copyWith(color: AppColors.black0A0A),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              isSearchActive
-                  ? 'Kami tidak menemukan talent yang cocok dengan pencarianmu. Coba kata kunci lain atau ubah filter.'
-                  : 'Saat ini belum ada talent yang dapat direkomendasikan. Coba kembali nanti.',
-              textAlign: TextAlign.center,
-              style: AppTypography.bodyMdRegular
-                  .copyWith(color: AppColors.textDark),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.wifi_off_rounded,
-              size: AppSpacing.iconXxl,
-              color: AppColors.grey400,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Gagal memuat data',
-              style: AppTypography.bodyLgSemiBold
-                  .copyWith(color: AppColors.grey700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmRegular
-                  .copyWith(color: AppColors.grey600),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            DsButton(text: 'Coba Lagi', onPressed: onRetry),
-          ],
-        ),
-      ),
     );
   }
 }

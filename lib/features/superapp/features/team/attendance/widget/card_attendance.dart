@@ -32,18 +32,22 @@ class _CardAttendanceState extends State<CardAttendance> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin:
-          EdgeInsets.only(left: 4, right: 4, top: widget.index == 0 ? 0 : 16),
+      margin: EdgeInsets.only(
+        top: widget.index == 0 ? 8 : 16,
+        left: 12,
+        right: 12,
+        bottom: 8,
+      ),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.2),
-              spreadRadius: 1,
-              blurRadius: 1,
-            )
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 9,
+              spreadRadius: 0.3,
+              offset: Offset.zero, // 0,0 = shadow menyebar rata semua sisi
+            ),
           ],
-          border: Border.all(width: 0.1),
           color: Colors.white),
       child: Column(
         children: [

@@ -10,7 +10,7 @@ class ShimmerPlaceholderAbasence extends StatelessWidget {
       children: [
         for (int i = 0; i < 5; i++)
           Container(
-            margin: const EdgeInsets.only(left: 4, right: 4),
+            margin: const EdgeInsets.only(left: 12, right: 12),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 boxShadow: [

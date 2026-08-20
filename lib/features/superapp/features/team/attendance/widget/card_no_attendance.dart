@@ -39,7 +39,7 @@ class _CardNoAttendanceState extends State<CardNoAttendance> {
             : const Radius.circular(0),
       ),
       child: Container(
-        margin: const EdgeInsets.only(left: 4, right: 4),
+        margin: const EdgeInsets.only(left: 12, right: 12),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: widget.index == 0

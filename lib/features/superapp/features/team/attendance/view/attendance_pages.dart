@@ -2,19 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/widgets/custom_showmodal_bottomsheet.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/bloc/attendance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/widget/card_no_attendance.dart';
-import 'package:komtim_partner/features/superapp/features/team/attendance/widget/card_search_empty_list.dart';
 
 import '../../../../../../common/enum_status.dart';
 import '../../../../../../common/global/mixin/handling_error_page.dart';
-import '../../../../../../common/global/router/app_router.dart';
-import '../../../../../../common/global/widgets/custom_outline_button.dart';
-import '../../../../../../common/styles.dart';
 import '../../../../../../common/utils/loading/shimmer_placeholder_attendance.dart';
 import '../widget/card_attendance.dart';
-import '../widget/card_empty_list.dart';
 import '../widget/fail_attendance_card.dart';
 import '../widget/shimmer_place_holder.dart';
 import '../widget/shimmer_place_holder_fail.dart';
@@ -104,73 +100,50 @@ class _AttendancePagesState extends State<AttendancePages>
       builder: (context, state) {
         return Scaffold(
             resizeToAvoidBottomInset: false,
-            appBar: AppBar(
-              title: const Text('Report Presensi',
-                  style: AppTypography.interSemiBold16),
-              leading: IconButton(
-                icon: SvgPicture.asset('assets/images/ic-arrow-left.svg'),
-                onPressed: () {
-                  AppRouter.router.pop();
-                },
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(180),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
-                      child: TabBar(
+            appBar: const DsAppBar(title: 'Report Presensi'),
+            backgroundColor: AppColors.alwaysWhite,
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: Column(
+                    children: [
+                      AppTabLayout(
                         controller: _tabController,
-                        indicatorColor: primaryColor,
-                        labelColor: primaryColor,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        unselectedLabelColor: onlyGray,
-                        padding: EdgeInsets.zero,
-                        onTap: ((value) {
-                          showHiddenButton(value);
-                        }),
+                        variant: AppTabLayoutVariant.elevated,
+                        onTap: showHiddenButton,
                         tabs: const [
-                          Tab(
-                            child: Center(
-                              child: Text(
-                                "Hadir",
-                                textAlign: TextAlign.center,
-                                style: AppTypography.interRegular14,
-                              ),
-                            ),
-                          ),
-                          Tab(
-                            child: Center(
-                              child: Text(
-                                "Tidak Hadir",
-                                textAlign: TextAlign.center,
-                                style: AppTypography.interRegular14,
-                              ),
-                            ),
-                          ),
-                          Tab(
-                            child: Center(
-                              child: Text(
-                                "Gagal Presensi",
-                                textAlign: TextAlign.center,
-                                style: AppTypography.interRegular14,
-                              ),
-                            ),
-                          ),
+                          Tab(text: 'Hadir'),
+                          Tab(text: 'Tidak Hadir'),
+                          Tab(text: 'Gagal Presensi'),
                         ],
                       ),
-                    ),
-                    Container(
-                        margin:
-                            const EdgeInsets.only(top: 24, left: 24, right: 24),
-                        padding: const EdgeInsets.only(left: 10.5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: backgroundContainerColor),
-                        child: InkWell(
-                          onTap: () {
-                            // _selectDate(context);
-                            showModalBottomSheet(
+                      const SizedBox(height: AppSpacing.md),
+                      // Search + date filter
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DsSearchField(
+                              controller: _textEditingController,
+                              hintText: 'Cari Nama Talent',
+                              onChanged: (_) => _onSearchChanged(),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          DsSquareIconButton(
+                            customIcon: SvgPicture.asset(
+                              'assets/images/team/ic_calender.svg',
+                              width: 20,
+                              height: 20,
+                            ),
+                            isActive: statusFilter != 'all',
+                            onTap: () {
+                              showModalBottomSheet(
                                 context: context,
                                 isScrollControlled: true,
                                 builder: (context) {
@@ -180,324 +153,249 @@ class _AttendancePagesState extends State<AttendancePages>
                                     value: valueFilter,
                                     textEditor: _textEditingController.text,
                                   );
-                                }).then((value) {
-                              if (value != null) {
-                                setState(() {
-                                  firstDate = value['firstDate'];
-                                  lastDate = value['lastDate'];
-                                  statusFilter = value['statusFilter'];
-                                  valueFilter = value['value'];
-                                  _textEditingController.text =
-                                      value['textEditor'];
-                                  listDataAttendance.clear();
-                                  listDataAttendanceAbsence.clear();
-                                  listDataAttendanceFail.clear();
-                                  _offset = 0;
-                                  attemptCount = 0;
-                                  _hasNextPage = true;
-                                  if (statTab == 0) {
-                                    _loadData();
-                                  } else if (statTab == 1) {
-                                    _loadDataAbsence();
-                                  } else if (statTab == 2) {
-                                    _loadDataFail();
-                                  }
-                                });
-                              }
-                            });
-                          },
-                          child: TextField(
-                            style: AppTypography.regular14,
-                            decoration: InputDecoration(
-                                suffixIconConstraints: const BoxConstraints(
-                                  minHeight: 20,
-                                  minWidth: 20,
-                                ),
-                                enabled: false,
-                                border: InputBorder.none,
-                                hintStyle: statusFilter == 'all'
-                                    ? AppTypography.regular14inActive
-                                    : AppTypography.regular14Active,
-                                hintText: statusFilterString(statusFilter),
-                                suffixIcon: Container(
-                                  margin: const EdgeInsets.only(right: 10),
-                                  child: SvgPicture.asset(
-                                      "assets/images/ic_calendar-add.svg",
-                                      width: 20,
-                                      height: 20),
-                                )),
+                                },
+                              ).then((value) {
+                                if (value != null) {
+                                  setState(() {
+                                    firstDate = value['firstDate'];
+                                    lastDate = value['lastDate'];
+                                    statusFilter = value['statusFilter'];
+                                    valueFilter = value['value'];
+                                    _textEditingController.text =
+                                        value['textEditor'];
+                                    listDataAttendance.clear();
+                                    listDataAttendanceAbsence.clear();
+                                    listDataAttendanceFail.clear();
+                                    _offset = 0;
+                                    attemptCount = 0;
+                                    _hasNextPage = true;
+                                    if (statTab == 0) {
+                                      _loadData();
+                                    } else if (statTab == 1) {
+                                      _loadDataAbsence();
+                                    } else if (statTab == 2) {
+                                      _loadDataFail();
+                                    }
+                                  });
+                                }
+                              });
+                            },
                           ),
-                        )),
-                    Container(
-                        margin:
-                            const EdgeInsets.only(top: 8, left: 24, right: 24),
-                        padding: const EdgeInsets.only(left: 10.5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: backgroundContainerColor),
-                        child: TextField(
-                          controller: _textEditingController,
-                          style: AppTypography.regular14,
-                          decoration: InputDecoration(
-                              suffixIconConstraints: const BoxConstraints(
-                                minHeight: 20,
-                                minWidth: 20,
-                              ),
-                              border: InputBorder.none,
-                              hintStyle: AppTypography.regular14inActive,
-                              hintText: 'Cari Nama Talent',
-                              suffixIcon: Container(
-                                margin: const EdgeInsets.only(right: 10),
-                                child: SvgPicture.asset(
-                                    "assets/images/ic_search.svg",
-                                    width: 20,
-                                    height: 20),
-                              )),
-                        ))
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            body: Container(
-              margin: const EdgeInsets.only(left: 24, right: 24, top: 15),
-              child: TabBarView(
-                controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  RefreshIndicator(
-                      onRefresh: () async {
-                        await refreshData();
-                        _loadData();
-                      },
-                      child: Center(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 50),
-                          controller: _scrollController,
-                          itemCount: listDataAttendance.length + 1,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            if (index < listDataAttendance.length) {
-                              return CardAttendance(
-                                name: listDataAttendance[index].fullName,
-                                type: listDataAttendance[index].workMode,
-                                date: listDataAttendance[index].checkInDatetime,
-                                imagesClockIn:
-                                    listDataAttendance[index].checkInPhotoUrl,
-                                imagesClockOut:
-                                    listDataAttendance[index].checkOutPhotoUrl,
-                                clockIn:
-                                    listDataAttendance[index].checkInDatetime,
-                                clockOut:
-                                    listDataAttendance[index].checkOutDatetime,
-                                index: index,
-                              );
-                              // Tampilkan data
-                            } else if (_isLoading) {
-                              return ShimmerPlaceholderAttendance(index: index);
-                            } else if (_hasNextPage == true && _isLoadingMore) {
-                              return Column(children: [
-                                Container(
-                                  height: 20,
-                                  width: 20,
-                                  margin: const EdgeInsets.only(top: 10),
-                                  child: const CircularProgressIndicator(
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 4,
-                                ),
-                                const Text("Loading")
-                              ]);
-                            } else if (listDataAttendance.isEmpty &&
-                                state.statusAttendance ==
-                                    RequestStatus.success) {
-                              if (_textEditingController.text.isNotEmpty ||
-                                  statusFilter != 'all') {
-                                return CardSearchEmptyList(
-                                  onPressed: () {
-                                    _textEditingController.clear();
-                                    statusFilter = 'all';
-                                    getDate();
-                                    _loadData();
-                                    setState(() {});
-                                  },
-                                );
-                              } else {
-                                return const CardEmptyList();
-                              }
-                            }
-                            return null;
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(
+                      AppSpacing.xs,
+                      AppSpacing.md,
+                      AppSpacing.xs,
+                      AppSpacing.sm,
+                    ),
+                    child: TabBarView(
+                      controller: _tabController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        RefreshIndicator(
+                            onRefresh: () async {
+                              await refreshData();
+                              _loadData();
+                            },
+                            child: Center(
+                              child: ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 50),
+                                controller: _scrollController,
+                                itemCount: listDataAttendance.length + 1,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  if (index < listDataAttendance.length) {
+                                    return CardAttendance(
+                                      name: listDataAttendance[index].fullName,
+                                      type: listDataAttendance[index].workMode,
+                                      date: listDataAttendance[index]
+                                          .checkInDatetime,
+                                      imagesClockIn: listDataAttendance[index]
+                                          .checkInPhotoUrl,
+                                      imagesClockOut: listDataAttendance[index]
+                                          .checkOutPhotoUrl,
+                                      clockIn: listDataAttendance[index]
+                                          .checkInDatetime,
+                                      clockOut: listDataAttendance[index]
+                                          .checkOutDatetime,
+                                      index: index,
+                                    );
+                                    // Tampilkan data
+                                  } else if (_isLoading) {
+                                    return ShimmerPlaceholderAttendance(
+                                        index: index);
+                                  } else if (_hasNextPage == true &&
+                                      _isLoadingMore) {
+                                    return Column(children: [
+                                      Container(
+                                        height: 20,
+                                        width: 20,
+                                        margin: const EdgeInsets.only(top: 10),
+                                        child: const CircularProgressIndicator(
+                                          color: AppColors.primaryBase,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      const Text("Loading")
+                                    ]);
+                                  } else if (listDataAttendance.isEmpty &&
+                                      state.statusAttendance ==
+                                          RequestStatus.success) {
+                                    return const DsEmptyState(
+                                      imagePath:
+                                          'assets/images/team/empty_state_feed.svg',
+                                      title: 'Tidak Ada Data Tersedia',
+                                      description:
+                                          'Belum ada talent yang hadir',
+                                    );
+                                  }
+                                  return null;
+                                },
+                              ),
+                            )),
+                        RefreshIndicator(
+                          onRefresh: () async {
+                            await refreshData();
+                            _loadDataAbsence();
                           },
+                          child: Center(
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: listDataAttendanceAbsence.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index < listDataAttendanceAbsence.length) {
+                                  return CardNoAttendance(
+                                    name: listDataAttendanceAbsence[index]
+                                        .fullName,
+                                    date: listDataAttendanceAbsence[index]
+                                        .absenceDate,
+                                    index: index,
+                                    length: listDataAttendanceAbsence.length,
+                                  );
+                                } else if (_isLoading) {
+                                  return const ShimmerPlaceholderAbasence();
+                                } else if (listDataAttendanceAbsence.isEmpty &&
+                                    state.statusAttendanceAbsence ==
+                                        RequestStatus.success) {
+                                  return const DsEmptyState(
+                                    imagePath:
+                                        'assets/images/team/empty_state_feed.svg',
+                                    title: 'Tidak Ada Data Tersedia',
+                                    description: 'Belum ada talent yang hadir',
+                                  );
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
                         ),
-                      )),
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await refreshData();
-                      _loadDataAbsence();
-                    },
-                    child: Center(
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: listDataAttendanceAbsence.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index < listDataAttendanceAbsence.length) {
-                            return CardNoAttendance(
-                              name: listDataAttendanceAbsence[index].fullName,
-                              date:
-                                  listDataAttendanceAbsence[index].absenceDate,
-                              index: index,
-                              length: listDataAttendanceAbsence.length,
-                            );
-                          } else if (_isLoading) {
-                            return const ShimmerPlaceholderAbasence();
-                          } else if (listDataAttendanceAbsence.isEmpty &&
-                              state.statusAttendanceAbsence ==
-                                  RequestStatus.success) {
-                            if (_textEditingController.text.isNotEmpty ||
-                                statusFilter != 'all') {
-                              return CardSearchEmptyList(
-                                onPressed: () {
-                                  _textEditingController.clear();
-                                  statusFilter = 'all';
-                                  getDate();
-                                  _loadDataAbsence();
-                                  setState(() {});
-                                },
-                              );
-                            } else {
-                              return const CardEmptyList();
-                            }
-                          }
-                          return null;
-                        },
-                      ),
+                        RefreshIndicator(
+                          onRefresh: () async {
+                            await refreshData();
+                            _loadDataFail();
+                          },
+                          child: Center(
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.only(bottom: 50),
+                              controller: _scrollControllerAttendanceFail,
+                              itemCount: listDataAttendanceFail.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index < listDataAttendanceFail.length) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: FailAttendanceCard(
+                                      name: listDataAttendanceFail[index]
+                                          .fullName,
+                                      date: listDataAttendanceFail[index]
+                                          .createdAt,
+                                      deskripsi: listDataAttendanceFail[index]
+                                          .description,
+                                      index: index,
+                                    ),
+                                  );
+                                } else if (_isLoading) {
+                                  return ShimmerPlaceholderPresenceFail(
+                                      index: index);
+                                } else if (_hasNextPage == true &&
+                                    _isLoadingMore) {
+                                  return Column(children: [
+                                    Container(
+                                      height: 20,
+                                      width: 20,
+                                      margin: const EdgeInsets.only(top: 10),
+                                      child: const CircularProgressIndicator(
+                                        color: AppColors.primaryBase,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                    const Text("Loading")
+                                  ]);
+                                } else if (listDataAttendanceFail.isEmpty &&
+                                    state.statusAttendanceFail ==
+                                        RequestStatus.success) {
+                                  return const DsEmptyState(
+                                    imagePath:
+                                        'assets/images/team/empty_state_feed.svg',
+                                    title: 'Tidak Ada Data Tersedia',
+                                    description: 'Belum ada talent yang hadir',
+                                  );
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await refreshData();
-                      _loadDataFail();
-                    },
-                    child: Center(
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(bottom: 50),
-                        controller: _scrollControllerAttendanceFail,
-                        itemCount: listDataAttendanceFail.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index < listDataAttendanceFail.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: FailAttendanceCard(
-                                name: listDataAttendanceFail[index].fullName,
-                                date: listDataAttendanceFail[index].createdAt,
-                                deskripsi:
-                                    listDataAttendanceFail[index].description,
-                                index: index,
-                              ),
-                            );
-                          } else if (_isLoading) {
-                            return ShimmerPlaceholderPresenceFail(index: index);
-                          } else if (_hasNextPage == true && _isLoadingMore) {
-                            return Column(children: [
-                              Container(
-                                height: 20,
-                                width: 20,
-                                margin: const EdgeInsets.only(top: 10),
-                                child: const CircularProgressIndicator(
-                                  color: primaryColor,
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 4,
-                              ),
-                              const Text("Loading")
-                            ]);
-                          } else if (listDataAttendanceFail.isEmpty &&
-                              state.statusAttendanceFail ==
-                                  RequestStatus.success) {
-                            if (_textEditingController.text.isNotEmpty ||
-                                statusFilter != 'all') {
-                              return CardSearchEmptyList(
-                                onPressed: () {
-                                  _textEditingController.clear();
-                                  statusFilter = 'all';
-                                  getDate();
-                                  _loadDataFail();
-                                  setState(() {});
-                                },
-                              );
-                            } else {
-                              return const CardEmptyList();
-                            }
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
             bottomNavigationBar: button == true
                 ? Container(
                     color: Colors.white,
-                    child: Container(
-                      height: 88.0,
-                      decoration: BoxDecoration(boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.5),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0,
-                              -1), // Shadow position, negative y value to place at the top
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: SafeArea(
+                      child: DsButton(
+                        text: 'Export',
+                        leftIcon: SvgPicture.asset(
+                          'assets/images/ic_export.svg',
+                          width: 20,
+                          height: 20,
                         ),
-                      ], color: Colors.white),
-                      child: Center(
-                        child: SafeArea(
-                            child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 24),
-                                width: MediaQuery.of(context).size.width,
-                                height: 55,
-                                child: listDataAttendance.isNotEmpty
-                                    ? Container(
-                                        child: _isloadingDownload == false
-                                            ? CustomOutlineButton(
-                                                icon: SvgPicture.asset(
-                                                    "assets/images/ic_export.svg"),
-                                                text: 'Export',
-                                                onPressed: () async {
-                                                  _isloadingDownload = true;
-                                                  ceckMessageDownload = true;
+                        state: listDataAttendance.isEmpty
+                            ? DsButtonState.disabled
+                            : (_isloadingDownload
+                                ? DsButtonState.loading
+                                : DsButtonState.enabled),
+                        onPressed: () async {
+                          _isloadingDownload = true;
+                          ceckMessageDownload = true;
 
-                                                  await _bloc.add(
-                                                      DownloadAttendanceEvent(
-                                                          startDate: firstDate,
-                                                          endDate: lastDate));
-                                                },
-                                                color: Colors.white,
-                                                backGroundColor: primaryColor,
-                                              )
-                                            : CustomOutlineButton(
-                                                text: '',
-                                                onPressed: () async {},
-                                                isLoading: true,
-                                                color: Colors.white,
-                                                backGroundColor: Colors.grey,
-                                              ),
-                                      )
-                                    : CustomOutlineButton(
-                                        icon: SvgPicture.asset(
-                                            "assets/images/ic_export.svg"),
-                                        text: 'Export',
-                                        onPressed: () {},
-                                        color: Colors.white,
-                                        backGroundColor: e2Gray,
-                                      ))),
+                          await _bloc.add(
+                            DownloadAttendanceEvent(
+                              startDate: firstDate,
+                              endDate: lastDate,
+                            ),
+                          );
+                        },
                       ),
-                    ))
+                    ),
+                  )
                 : null);
       },
     );

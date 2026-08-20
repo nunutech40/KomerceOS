@@ -11,7 +11,7 @@ class ShimmerPlaceholderPresenceFail extends StatelessWidget {
       children: [
         for (int i = 0; i < 5; i++)
           Container(
-            margin: EdgeInsets.only(left: 4, right: 4, top: i == 0 ? 0 : 16),
+            margin: EdgeInsets.only(left: 12, right: 12, top: i == 0 ? 0 : 16),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 boxShadow: [
