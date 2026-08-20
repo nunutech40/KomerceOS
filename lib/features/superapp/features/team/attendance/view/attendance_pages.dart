@@ -266,36 +266,77 @@ class _AttendancePagesState extends State<AttendancePages>
                             await refreshData();
                             _loadDataAbsence();
                           },
-                          child: Center(
-                            child: ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: listDataAttendanceAbsence.length + 1,
-                              itemBuilder: (context, index) {
-                                if (index < listDataAttendanceAbsence.length) {
-                                  return CardNoAttendance(
-                                    name: listDataAttendanceAbsence[index]
-                                        .fullName,
-                                    date: listDataAttendanceAbsence[index]
-                                        .absenceDate,
-                                    index: index,
-                                    length: listDataAttendanceAbsence.length,
-                                  );
-                                } else if (_isLoading) {
-                                  return const ShimmerPlaceholderAbasence();
-                                } else if (listDataAttendanceAbsence.isEmpty &&
-                                    state.statusAttendanceAbsence ==
-                                        RequestStatus.success) {
-                                  return const DsEmptyState(
-                                    imagePath:
-                                        'assets/images/team/empty_state_feed.svg',
-                                    title: 'Tidak Ada Data Tersedia',
-                                    description: 'Belum ada talent yang hadir',
-                                  );
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const Center(
+                                  child: ShimmerPlaceholderAbasence(),
+                                )
+                              : listDataAttendanceAbsence.isEmpty &&
+                                      state.statusAttendanceAbsence ==
+                                          RequestStatus.success
+                                  ? ListView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      children: const [
+                                        DsEmptyState(
+                                          imagePath:
+                                              'assets/images/team/empty_state_feed.svg',
+                                          title: 'Tidak Ada Data Tersedia',
+                                          description:
+                                              'Belum ada talent yang hadir',
+                                        ),
+                                      ],
+                                    )
+                                  : ListView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      children: [
+                                        Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.xs,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.alwaysWhite,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.05),
+                                                blurRadius: 9,
+                                                spreadRadius: 0.3,
+                                                offset: Offset.zero,
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: List.generate(
+                                                listDataAttendanceAbsence
+                                                    .length,
+                                                (index) => CardNoAttendance(
+                                                  name:
+                                                      listDataAttendanceAbsence[
+                                                              index]
+                                                          .fullName,
+                                                  date:
+                                                      listDataAttendanceAbsence[
+                                                              index]
+                                                          .absenceDate,
+                                                  index: index,
+                                                  length:
+                                                      listDataAttendanceAbsence
+                                                          .length,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                         ),
                         RefreshIndicator(
                           onRefresh: () async {
