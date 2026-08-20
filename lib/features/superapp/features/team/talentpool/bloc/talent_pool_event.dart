@@ -9,22 +9,57 @@ abstract class TalentPoolEvent extends Equatable {
 }
 
 /// Fetch pertama kali atau refresh (reset offset ke 0).
+/// Jika [filter] null, gunakan [TalentFilter.empty].
 class FetchTalentPoolEvent extends TalentPoolEvent {
-  final List<int> ratings;
-  final List<String> experiences;
-  final List<int> businessSectorIds;
-  final String skillName;
+  final TalentFilter filter;
 
-  const FetchTalentPoolEvent({
-    this.ratings = const [],
-    this.experiences = const [],
-    this.businessSectorIds = const [],
-    this.skillName = '',
+  const FetchTalentPoolEvent({this.filter = TalentFilter.empty});
+
+  @override
+  List<Object?> get props => [filter];
+}
+
+/// Pilih role dari quick-filter chip (single-select).
+/// Memilih role yang sama (bukan '') → kembali ke ''.
+class SelectRoleTalentPoolEvent extends TalentPoolEvent {
+  final String role;
+
+  const SelectRoleTalentPoolEvent(this.role);
+
+  @override
+  List<Object?> get props => [role];
+}
+
+/// Update query pencarian dari search bar.
+class SearchTalentPoolEvent extends TalentPoolEvent {
+  final String query;
+
+  const SearchTalentPoolEvent(this.query);
+
+  @override
+  List<Object?> get props => [query];
+}
+
+/// Apply filter dari bottom sheet.
+class ApplyFilterTalentPoolEvent extends TalentPoolEvent {
+  final Set<int> selectedRatings;
+  final Set<String> selectedExperiences;
+  final Set<int> selectedBusinessSectorIds;
+
+  const ApplyFilterTalentPoolEvent({
+    required this.selectedRatings,
+    required this.selectedExperiences,
+    required this.selectedBusinessSectorIds,
   });
 
   @override
   List<Object?> get props =>
-      [ratings, experiences, businessSectorIds, skillName];
+      [selectedRatings, selectedExperiences, selectedBusinessSectorIds];
+}
+
+/// Reset semua filter (pull-to-refresh / hapus semua).
+class ResetFilterTalentPoolEvent extends TalentPoolEvent {
+  const ResetFilterTalentPoolEvent();
 }
 
 /// Load halaman berikutnya (pagination).

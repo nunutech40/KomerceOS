@@ -8,14 +8,14 @@ import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/b
 import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/talent_pool_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../model/talent_filter.dart';
+import '../widget/talent_filter.dart';
 import '../widget/talent_filter_sheet.dart';
 import '../widget/talent_pool_header.dart';
 import '../widget/talent_recommendation_card.dart';
 import '../widget/talent_search_bar.dart';
 
 /// Halaman Talent Pool: daftar talent dari API dengan filter multi-select
-/// (rating, pengalaman, industri) dan pagination.
+/// (rating, pengalaman, industri, role) dan pagination.
 /// Tap kartu → buka web detail talent.
 class TalentPoolPage extends StatelessWidget {
   const TalentPoolPage({super.key});
@@ -45,27 +45,11 @@ class _TalentPoolView extends StatefulWidget {
   State<_TalentPoolView> createState() => _TalentPoolViewState();
 }
 
-/// Daftar role hardcode untuk quick-filter.
-/// Value dikirim sebagai `skill_name` ke API (URL-encoded otomatis oleh Dio).
-/// Value kosong ('') = "Semua" → tidak mengirim skill_name, identik dengan load awal.
-const List<({String label, String value})> _kHardcodedRoles = [
-  (label: 'Semua', value: ''),
-  (label: 'Customer Service', value: 'customer service'),
-  (label: 'Admin Marketplace', value: 'admin marketplace'),
-  (label: 'Advertiser', value: 'advertiser'),
-  (label: 'Live Streamer', value: 'live streamer'),
-];
-
 class _TalentPoolViewState extends State<_TalentPoolView> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   bool _isGridView = true;
-  TalentFilter _filter = TalentFilter.empty;
-
-  /// Role yang sedang dipilih.
-  /// '' = "Semua" (aktif by default) → API dipanggil tanpa skill_name.
-  String _selectedRole = '';
 
   String get _baseUrlTalentPool => Config.instance.baseUrlWebUrlTalentPool;
 
@@ -82,46 +66,25 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
     }
   }
 
-  Future<void> _openFilter() async {
-    final result =
-        await TalentFilterSheet.show(context, initialFilter: _filter);
+  Future<void> _openFilter(TalentFilter currentFilter) async {
+    final result = await TalentFilterSheet.show(
+      context,
+      initialFilter: currentFilter,
+    );
     if (result != null && mounted) {
-      setState(() => _filter = result);
-      context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
-            ratings: result.selectedRatings.toList(),
-            experiences: result.selectedExperiences.toList(),
-            businessSectorIds: result.selectedBusinessSectorIds.toList(),
-            skillName: result.skillName,
+      context.read<TalentPoolBloc>().add(ApplyFilterTalentPoolEvent(
+            selectedRatings: result.selectedRatings,
+            selectedExperiences: result.selectedExperiences,
+            selectedBusinessSectorIds: result.selectedBusinessSectorIds,
           ));
     }
   }
 
-  /// Pilih role. Single-select.
-  /// Memilih role yang sudah aktif (selain Semua) → kembali ke Semua.
-  /// Memilih Semua → selalu kembali ke '' (fetch tanpa skill_name).
-  void _onRoleSelected(String value) {
-    // Tap role yang sama (bukan Semua) → kembali ke Semua.
-    final newRole = (value == _selectedRole && value.isNotEmpty) ? '' : value;
-    setState(() => _selectedRole = newRole);
-
-    context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
-          ratings: _filter.selectedRatings.toList(),
-          experiences: _filter.selectedExperiences.toList(),
-          businessSectorIds: _filter.selectedBusinessSectorIds.toList(),
-          skillName: newRole, // '' = tanpa filter skill, sama seperti init
-        ));
-  }
-
-  /// Pull-to-refresh: reset filter & pencarian, lalu fetch ulang dari awal.
+  /// Pull-to-refresh: reset semua filter, fetch ulang dari awal.
   Future<void> _onRefresh() async {
     _searchController.clear();
-    setState(() {
-      _filter = TalentFilter.empty;
-      _selectedRole = ''; // kembali ke Semua
-    });
-
     final bloc = context.read<TalentPoolBloc>()
-      ..add(const FetchTalentPoolEvent());
+      ..add(const ResetFilterTalentPoolEvent());
 
     // Tunggu sampai proses fetch selesai agar indikator refresh berhenti
     // tepat ketika data baru siap ditampilkan.
@@ -129,14 +92,7 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   }
 
   void _onSearchChanged(String value) {
-    setState(() => _filter = _filter.copyWith(skillName: value));
-    // Debounce bisa ditambahkan; untuk saat ini fetch langsung
-    context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
-          ratings: _filter.selectedRatings.toList(),
-          experiences: _filter.selectedExperiences.toList(),
-          businessSectorIds: _filter.selectedBusinessSectorIds.toList(),
-          skillName: value,
-        ));
+    context.read<TalentPoolBloc>().add(SearchTalentPoolEvent(value));
   }
 
   Future<void> _openTalentDetail(TalentRecommendationModel talent) async {
@@ -168,48 +124,59 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
         top: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const TalentPoolHeader(),
-                  const SizedBox(height: AppSpacing.md),
-                  TalentSearchBar(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    onFilterTap: _openFilter,
-                    isGridView: _isGridView,
-                    onViewChanged: (value) =>
-                        setState(() => _isGridView = value),
+            // Filter header — rebuild hanya bagian ini saat filter berubah
+            BlocBuilder<TalentPoolBloc, TalentPoolState>(
+              buildWhen: (prev, curr) =>
+                  _activeFilterOf(prev) != _activeFilterOf(curr),
+              builder: (context, state) {
+                final filter = _activeFilterOf(state);
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.sm,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  // Role quick-filter chips (hardcoded, single-select)
-                  _RoleFilterRow(
-                    roles: _kHardcodedRoles,
-                    selectedRole: _selectedRole,
-                    onRoleSelected: _onRoleSelected,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const TalentPoolHeader(),
+                      const SizedBox(height: AppSpacing.md),
+                      TalentSearchBar(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        onFilterTap: () => _openFilter(filter),
+                        isGridView: _isGridView,
+                        onViewChanged: (value) =>
+                            setState(() => _isGridView = value),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      // Role quick-filter chips
+                      _RoleFilterRow(
+                        roles: TalentFilterOptions.roles,
+                        selectedRole: filter.selectedSkillName,
+                        onRoleSelected: (value) => context
+                            .read<TalentPoolBloc>()
+                            .add(SelectRoleTalentPoolEvent(value)),
+                      ),
+                      // Active filter chips (dari bottom sheet)
+                      if (filter.hasSheetFilter) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        _ActiveFilterChips(
+                          filter: filter,
+                          onClear: () => context
+                              .read<TalentPoolBloc>()
+                              .add(ApplyFilterTalentPoolEvent(
+                                selectedRatings: const {},
+                                selectedExperiences: const {},
+                                selectedBusinessSectorIds: const {},
+                              )),
+                        ),
+                      ],
+                    ],
                   ),
-                  // Active filter chips (dari bottom sheet)
-                  if (!_filter.isEmpty) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    _ActiveFilterChips(
-                      filter: _filter,
-                      onClear: () {
-                        setState(() => _filter = TalentFilter.empty);
-                        context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
-                              skillName: _selectedRole,
-                            ));
-                      },
-                    ),
-                  ],
-                ],
-              ),
+                );
+              },
             ),
             Expanded(
               child: RefreshIndicator(
@@ -222,6 +189,15 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
         ),
       ),
     );
+  }
+
+  /// Ambil filter aktif dari state manapun.
+  TalentFilter _activeFilterOf(TalentPoolState state) {
+    if (state is TalentPoolLoaded) return state.activeFilter;
+    if (state is TalentPoolLoadingMore) return state.activeFilter;
+    if (state is TalentPoolLoading) return state.activeFilter;
+    if (state is TalentPoolEmpty) return state.activeFilter;
+    return TalentFilter.empty;
   }
 
   Widget _buildContent() {
@@ -262,7 +238,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
         }
         if (state is TalentPoolEmpty) {
           return _RefreshableMessage(
-              child: _EmptyState(isSearchActive: !_filter.isEmpty));
+            child: _EmptyState(isSearchActive: !state.activeFilter.isEmpty),
+          );
         }
 
         final talents = state is TalentPoolLoaded
@@ -303,11 +280,11 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
 }
 
 // ────────────────────────────────────────────────
-// Role quick-filter chips (hardcoded, single-select)
+// Role quick-filter chips (dari TalentFilterOptions.roles, single-select)
 // ────────────────────────────────────────────────
 
 class _RoleFilterRow extends StatelessWidget {
-  final List<({String label, String value})> roles;
+  final List<TalentRoleOption> roles;
   final String? selectedRole;
   final void Function(String value) onRoleSelected;
 
@@ -384,7 +361,7 @@ class _RoleChip extends StatelessWidget {
 }
 
 // ────────────────────────────────────────────────
-// Active filter chips row
+// Active filter chips row (dari bottom sheet)
 // ────────────────────────────────────────────────
 
 class _ActiveFilterChips extends StatelessWidget {
@@ -395,17 +372,13 @@ class _ActiveFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int count = filter.selectedRatings.length +
-        filter.selectedExperiences.length +
-        filter.selectedBusinessSectorIds.length;
-
     return Row(
       children: [
         const Icon(Icons.tune_rounded,
             size: AppSpacing.iconSm, color: AppColors.primaryBase),
         const SizedBox(width: AppSpacing.xs),
         Text(
-          '$count filter aktif',
+          '${filter.sheetFilterCount} filter aktif',
           style: AppTypography.bodySmSemiBold
               .copyWith(color: AppColors.primaryBase),
         ),
