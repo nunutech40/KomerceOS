@@ -11,7 +11,7 @@ class StagingConfig implements Config {
 
   @override
   String get baseUrlTalentPool =>
-      ' https://api.internal.komerce.my.id/staging/talent-pool';
+      'https://api.internal.komerce.my.id/staging/talent-pool';
 
   @override
   String get baseUrlWebUrlTalentPool => 'https://stg.komtim.id/talent-pool';
