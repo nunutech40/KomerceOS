@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:komtim_partner/common/styles.dart' as styles;
 
 class CardDetailMonth extends StatelessWidget {
   final String name;
@@ -67,7 +68,7 @@ class CardDetailMonth extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 14, top: 14, left: 20, right: 20),
       decoration: BoxDecoration(
         // color: f4Gray,
-        color: lighPrimaryColor,
+        color: styles.lighPrimaryColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -100,7 +101,7 @@ class CardDetailMonth extends StatelessWidget {
             child: Center(
               child: Text(
                 name ?? "",
-                style: AppTypography.regular12FF6262,
+                style: styles.AppTypography.regular12FF6262,
               ),
             ),
           ),
@@ -128,7 +129,7 @@ class CardDetailMonth extends StatelessWidget {
             children: [
               Text(
                 name ?? "",
-                style: AppTypography.semiBold12,
+                style: styles.AppTypography.semiBold12,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
@@ -139,12 +140,13 @@ class CardDetailMonth extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.symmetric(
                     vertical: 2, horizontal: 14),
                 decoration: BoxDecoration(
-                    color: blueLight,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: primaryColor)),
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(AppRadius.circular),
+                ),
                 child: Text(
                   role ?? "",
-                  style: AppTypography.regular12Primary,
+                  style: AppTypography.bodySmRegular
+                      .copyWith(color: AppColors.primaryBase),
                 ),
               ),
             ],

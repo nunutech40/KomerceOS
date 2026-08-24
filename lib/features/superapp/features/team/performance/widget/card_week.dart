@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 class CardWeek extends StatelessWidget {
   final String name;
   final String role;
+  final String date;
   final String nameProduct;
   final String leads;
   final String transaksi;
@@ -12,6 +13,7 @@ class CardWeek extends StatelessWidget {
   const CardWeek(
       {required this.name,
       required this.role,
+      this.date = '',
       required this.nameProduct,
       required this.leads,
       required this.transaksi,
@@ -22,26 +24,25 @@ class CardWeek extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsetsDirectional.all(12),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsetsDirectional.all(AppSpacing.md3),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-          // Tambahkan warna latar belakang
-          color: Colors.white,
+          color: AppColors.alwaysWhite,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey
-                  .withValues(alpha: 0.7), // Warna bayangan dengan transparansi
-              spreadRadius: 1, // Jarak penyebaran bayangan
-              blurRadius: 4, // Tingkat blur bayangan
-              offset: const Offset(0, 3), // Arah bayangan (x, y)
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 9,
+              spreadRadius: 0.3,
+              offset: Offset.zero,
             ),
           ],
-          borderRadius: BorderRadius.circular(10)),
+          borderRadius: BorderRadius.circular(AppRadius.md)),
       child: Column(
         children: [
           widgetHeader(
             name: name,
             role: role,
+            date: date,
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -71,15 +72,15 @@ class CardWeek extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 14, top: 14, left: 20, right: 20),
       decoration: BoxDecoration(
-        color: f4Gray,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             nameProduct ?? "",
-            style: AppTypography.interSemiBold14,
+            style: AppTypography.numericMdSemiBold,
           ),
           Row(
             children: [
@@ -99,17 +100,18 @@ class CardWeek extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            margin: const EdgeInsets.only(top: AppSpacing.md3),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             width: 60,
             decoration: BoxDecoration(
-              color: lighPrimaryColor,
-              borderRadius: BorderRadius.circular(6),
+              color: AppColors.alwaysWhite,
+              borderRadius: BorderRadius.circular(AppRadius.md3),
             ),
             child: Center(
               child: Text(
                 name ?? "",
-                style: AppTypography.regular12FF6262,
+                style: AppTypography.bodySmRegular
+                    .copyWith(color: AppColors.grey700),
               ),
             ),
           ),
@@ -128,30 +130,39 @@ class CardWeek extends StatelessWidget {
   Widget widgetHeader({
     String? name,
     String? role,
+    String? date,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            name ?? "",
-            style: AppTypography.semiBold12,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-        Container(
-          padding: const EdgeInsetsDirectional.symmetric(
-              vertical: 2, horizontal: 14),
-          decoration: BoxDecoration(
-              color: blueLight,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: primaryColor)),
-          child: Text(
-            role ?? "",
-            style: AppTypography.regular12Primary,
-          ),
-        ),
+            child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Text(
+                name ?? "",
+                style: AppTypography.bodySmSemiBold,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsetsDirectional.symmetric(
+                  vertical: 2, horizontal: 14),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(AppRadius.circular),
+              ),
+              child: Text(
+                role ?? "",
+                style: AppTypography.bodySmRegular
+                    .copyWith(color: AppColors.primaryBase),
+              ),
+            ),
+          ],
+        )),
       ],
     );
   }

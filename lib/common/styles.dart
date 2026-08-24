@@ -132,6 +132,12 @@ class AppTypography {
     fontSize: 12,
     fontWeight: FontWeight.normal,
   );
+
+  static const TextStyle regular12Error = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    color: errorColor,
+  );
   static const TextStyle regular10 = TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.normal,

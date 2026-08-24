@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/common/enum_status.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
-import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/time_convert.dart';
 import 'package:komtim_partner/core/data/datasources/preferences/shared_pref.dart';
 import 'package:komtim_partner/core/data/models/profile_response.dart';
@@ -25,7 +25,6 @@ import 'package:komtim_partner/features/superapp/features/team/performance/widge
 import 'package:komtim_partner/features/superapp/features/team/performance/widget/card_week.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/widget/custom_showmodal_report_performance_today.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/widget/custom_showmodal_report_performance_week.dart';
-import 'package:komtim_partner/common/global/widgets/card_feed_empty.dart';
 
 class ReportPerformancePages extends StatefulWidget {
   const ReportPerformancePages({super.key});
@@ -397,11 +396,34 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      appBar: const DsAppBar(title: 'Report Performa'),
+      backgroundColor: AppColors.alwaysWhite,
       body: Column(
         children: [
-          _buildAppBar(),
-          _buildTabBar(),
-          _buildTabContent(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
+            child: Column(
+              children: [
+                AppTabLayout(
+                  controller: _tabController,
+                  variant: AppTabLayoutVariant.elevated,
+                  onTap: showHiddenButton,
+                  tabs: const [
+                    Tab(text: 'Harian'),
+                    Tab(text: 'Mingguan'),
+                    Tab(text: 'Bulanan'),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _buildTabContent(),
+              ],
+            ),
+          ),
           Expanded(child: _buildListView()),
         ],
       ),
@@ -416,47 +438,28 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     return 'Harian';
   }
 
-  Widget _buildAppBar() {
-    return AppBar(
-      title:
-          const Text('Report Performa', style: AppTypography.interSemiBold16),
-      leading: IconButton(
-        icon: SvgPicture.asset('assets/images/ic-arrow-left.svg'),
-        onPressed: () => AppRouter.router.pop(),
-      ),
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: TabBar(
-        controller: _tabController,
-        indicatorColor: primaryColor,
-        labelColor: primaryColor,
-        indicatorSize: TabBarIndicatorSize.tab,
-        unselectedLabelColor: onlyGray,
-        padding: EdgeInsets.zero,
-        onTap: ((value) {
-          showHiddenButton(value);
-        }),
-        tabs: const [
-          Tab(text: 'Harian'),
-          Tab(text: 'Mingguan'),
-          Tab(text: 'Bulanan'),
-        ],
-      ),
-    );
+  /// Expand division abbreviation to full name
+  String _expandDivisionName(String division) {
+    switch (division.toUpperCase()) {
+      case 'CS':
+        return 'Customer Service';
+      case 'ADV':
+        return 'Advertiser';
+      case 'SPV':
+        return 'Supervisor';
+      default:
+        return division;
+    }
   }
 
   Widget _buildTabContent() {
     switch (valueTab) {
       case 0:
-        return _buildDailyTab();
+        return _buildDailyFilter();
       case 1:
-        return _buildWeeklyTab();
+        return _buildWeeklyFilter();
       case 2:
-        return _buildMonthlyTab();
+        return _buildMonthlyFilter();
       default:
         return const SizedBox();
     }
@@ -562,12 +565,10 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
               slivers: [
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: CardFeedEmpty(
-                      image: 'assets/images/ic_feed_empty.svg',
-                      title: 'Report Performa Kosong',
-                      body: _getEmptyStateMessage(),
-                    ),
+                  child: DsEmptyState(
+                    imagePath: 'assets/images/team/empty_state_feed.svg',
+                    title: 'Report Performa Kosong',
+                    description: _getEmptyStateMessage(),
                   ),
                 ),
               ],
@@ -605,7 +606,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
                 return CardToday(
                   name: item.talentName ?? "",
-                  role: item.division ?? "",
+                  role: _expandDivisionName(item.division ?? ""),
                   date: formatToIndonesianDateNextDay(item.reportDate ?? ""),
                   nameProduct: item.productName ?? "",
                   leads: item.leads.toString(),
@@ -805,12 +806,10 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
             slivers: [
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: Center(
-                  child: CardFeedEmpty(
-                    image: 'assets/images/ic_feed_empty.svg',
-                    title: 'Report Performa Kosong',
-                    body: _getWeeklyEmptyStateMessage(),
-                  ),
+                child: DsEmptyState(
+                  imagePath: 'assets/images/team/empty_state_feed.svg',
+                  title: 'Report Performa Kosong',
+                  description: _getWeeklyEmptyStateMessage(),
                 ),
               ),
             ],
@@ -848,7 +847,8 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
               return CardWeek(
                 name: item.talentName ?? "",
-                role: item.division ?? "",
+                role: _expandDivisionName(item.division ?? ""),
+                date: "",
                 nameProduct: item.productName ?? "",
                 leads: item.totalLeads.toString(),
                 transaksi: item.totalTransaction.toString(),
@@ -998,12 +998,10 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
               slivers: [
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: CardFeedEmpty(
-                      image: 'assets/images/ic_feed_empty.svg',
-                      title: 'Report Performa Kosong',
-                      body: _getMonthlyEmptyStateMessage(),
-                    ),
+                  child: DsEmptyState(
+                    imagePath: 'assets/images/team/empty_state_feed.svg',
+                    title: 'Report Performa Kosong',
+                    description: _getMonthlyEmptyStateMessage(),
                   ),
                 ),
               ],
@@ -1056,182 +1054,164 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     );
   }
 
-  Widget _buildDailyTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _buildSearchField(),
-          const SizedBox(width: 8),
-          _buildActionButton(
-            iconPath: hasDateFilter
-                ? 'assets/images/ic_calender_white.svg'
-                : 'assets/images/ic_calendar-add.svg',
-            isActive: hasDateFilter,
-            onPressed: () => _showTodayFilter(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeeklyTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: backgroundContainerColor,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  borderRadius: BorderRadius.circular(8.0),
-                  menuMaxHeight: 150.0,
-                  value: _selectedWeek,
-                  hint: const Text(
-                    'Pilih Minggu',
-                    style: AppTypography.regular14inActive,
-                  ),
-                  style: AppTypography.regular14black,
-                  items: _listWeek.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? value) {
-                    setState(() {
-                      _selectedWeek = value;
-                    });
-                    if (value != null) {
-                      _loadWeeklyData();
-                    }
-                  },
-                  isExpanded: true,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          _buildActionButton(
-            iconPath: 'assets/images/ic_filter_grey.svg',
-            isActive: hasDateFilter,
-            onPressed: () => _showWeeklyFilter(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMonthlyTab() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: backgroundContainerColor,
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            borderRadius: BorderRadius.circular(8.0),
-            menuMaxHeight: 150.0,
-            value: _selectedMonth,
-            hint: const Text(
-              'Pilih Bulan',
-              style: AppTypography.regular14inActive,
-            ),
-            style: AppTypography.regular14black,
-            items: _listMonths.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? value) {
-              setState(() {
-                _selectedMonth = value;
-                if (value != null) {
-                  _loadMonthlyData();
-                }
-              });
-            },
-            isExpanded: true,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchField() {
-    return Expanded(
-      flex: 8,
-      child: Container(
-        padding: const EdgeInsets.only(left: 10.5),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: backgroundContainerColor,
-        ),
-        child: TextField(
-          controller: _textEditingController,
-          style: AppTypography.regular14,
-          onChanged: (value) {
-            _onSearchChanged(value);
-          },
-          onSubmitted: (value) {
-            _onSearchSubmitted(value);
-          },
-          decoration: InputDecoration(
-            suffixIconConstraints: const BoxConstraints(
-              minHeight: 20,
-              minWidth: 20,
-            ),
-            border: InputBorder.none,
-            hintStyle: AppTypography.regular14inActive,
+  Widget _buildDailyFilter() {
+    return Row(
+      children: [
+        Expanded(
+          child: DsSearchField(
+            controller: _textEditingController,
             hintText: 'Cari Produk dan Nama Talent',
-            suffixIcon: Container(
-              margin: const EdgeInsets.only(right: 10),
-              child: GestureDetector(
-                onTap: () => _onSearchSubmitted(_textEditingController.text),
-                child: SvgPicture.asset(
-                  "assets/images/ic_search.svg",
+            onChanged: (value) => _onSearchChanged(value),
+            onSubmitted: (value) => _onSearchSubmitted(value),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        DsSquareIconButton(
+          customIcon: SvgPicture.asset(
+            'assets/images/superapp/ic_filter.svg',
+            width: 20,
+            height: 20,
+          ),
+          isActive: hasDateFilter,
+          onTap: () => _showTodayFilter(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyFilter() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md3),
+            decoration: BoxDecoration(
+              color: AppColors.alwaysWhite,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: AppColors.grey200),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.alwaysBlack.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                menuMaxHeight: 150.0,
+                value: _selectedWeek,
+                icon: SvgPicture.asset(
+                  'assets/images/ic_arrow_bottom.svg',
                   width: 20,
                   height: 20,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.grey600,
+                    BlendMode.srcIn,
+                  ),
                 ),
+                hint: const Text(
+                  'Pilih Minggu',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.grey600,
+                  ),
+                ),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.alwaysBlack,
+                ),
+                items: _listWeek.map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  setState(() {
+                    _selectedWeek = value;
+                  });
+                  if (value != null) {
+                    _loadWeeklyData();
+                  }
+                },
+                isExpanded: true,
               ),
             ),
           ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.xs),
+        DsSquareIconButton(
+          customIcon: SvgPicture.asset(
+            'assets/images/superapp/ic_filter.svg',
+            width: 20,
+            height: 20,
+          ),
+          isActive: hasDateFilter,
+          onTap: () => _showWeeklyFilter(),
+        ),
+      ],
     );
   }
 
-  Widget _buildActionButton({
-    required String iconPath,
-    required bool isActive,
-    required VoidCallback onPressed,
-  }) {
-    return Expanded(
-      flex: 2,
-      child: InkWell(
-        onTap: onPressed,
-        child: Container(
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: isActive ? primaryColor : backgroundContainerColor,
+  Widget _buildMonthlyFilter() {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md3),
+      decoration: BoxDecoration(
+        color: AppColors.alwaysWhite,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.grey200),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.alwaysBlack.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: SvgPicture.asset(
-            iconPath,
-            width: 18,
-            height: 18,
+        ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          menuMaxHeight: 150.0,
+          value: _selectedMonth,
+          icon: SvgPicture.asset(
+            'assets/images/ic_arrow_bottom.svg',
+            width: 20,
+            height: 20,
+            colorFilter: const ColorFilter.mode(
+              AppColors.grey600,
+              BlendMode.srcIn,
+            ),
           ),
+          hint: const Text(
+            'Pilih Bulan',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.grey600,
+            ),
+          ),
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.alwaysBlack,
+          ),
+          items: _listMonths.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (String? value) {
+            setState(() {
+              _selectedMonth = value;
+              if (value != null) {
+                _loadMonthlyData();
+              }
+            });
+          },
+          isExpanded: true,
         ),
       ),
     );
