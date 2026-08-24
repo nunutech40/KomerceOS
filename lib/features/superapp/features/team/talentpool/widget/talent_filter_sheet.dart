@@ -4,12 +4,14 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/core/domain/entities/business_sector_model.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/business_sector_bloc.dart';
 
-import '../model/talent_filter.dart';
+import 'talent_filter.dart';
 
 /// Bottom sheet filter Talent Pool bergaya checkbox multi-select.
 ///
 /// Section: Bintang, Pengalaman, Industri (dari API via [BusinessSectorBloc]).
 /// Mengembalikan [TalentFilter] baru lewat `Navigator.pop`.
+/// Catatan: [TalentFilter.selectedSkillName] (role chip) TIDAK dikelola
+/// di sini — itu urusan [SelectRoleTalentPoolEvent] di BLoC.
 class TalentFilterSheet extends StatefulWidget {
   final TalentFilter initialFilter;
 
@@ -64,7 +66,10 @@ class _TalentFilterSheetState extends State<TalentFilterSheet> {
   void _apply() {
     Navigator.pop(
       context,
-      TalentFilter(
+      // Hanya kembalikan filter dari bottom sheet.
+      // selectedSkillName & searchQuery dipertahankan dari filter sebelumnya
+      // oleh ApplyFilterTalentPoolEvent di BLoC.
+      widget.initialFilter.copyWith(
         selectedRatings: _selectedRatings,
         selectedExperiences: _selectedExperiences,
         selectedBusinessSectorIds: _selectedBusinessSectorIds,
