@@ -617,3 +617,45 @@ class _RefreshableMessage extends StatelessWidget {
     );
   }
 }
+
+class _EmptyState extends StatelessWidget {
+  final bool isSearchActive;
+
+  const _EmptyState({required this.isSearchActive});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const DsAppImage(
+              source: "assets/images/team/empty_state_feed.svg",
+              width: 200,
+              height: 200,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              isSearchActive
+                  ? 'Talent tidak ditemukan'
+                  : 'Belum ada talent tersedia',
+              style: AppTypography.bodyLgSemiBold
+                  .copyWith(color: AppColors.black0A0A),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              isSearchActive
+                  ? 'Kami tidak menemukan talent yang cocok dengan pencarianmu. Coba kata kunci lain atau ubah filter.'
+                  : 'Saat ini belum ada talent yang dapat direkomendasikan. Coba kembali nanti.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMdRegular
+                  .copyWith(color: AppColors.textDark),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
