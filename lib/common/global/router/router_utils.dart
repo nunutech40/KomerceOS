@@ -11,6 +11,7 @@ enum PAGES {
   // home
   main,
   notification,
+  team,
   // other
   error,
   // prifile
@@ -21,6 +22,7 @@ enum PAGES {
   rateTalentNotifPage,
   rateTalentCheckPage,
   evaluationKompointPage,
+  invoiceNew,
 
   // kompoy
   withdrawKompoyPage,
@@ -62,6 +64,12 @@ enum PAGES {
   reportperformance,
   reportdetailperformance,
 
+  //talent pool
+  talentPool,
+
+  //list of team
+  listOfTeam,
+
 }
 
 extension AppPageExtension on PAGES {
@@ -75,6 +83,8 @@ extension AppPageExtension on PAGES {
         return "/email_check";
       case PAGES.login:
         return "/login";
+      case PAGES.team:
+        return "/team";
       case PAGES.notification:
         return "/notifications";
       case PAGES.forgotPasswrod:
@@ -96,6 +106,8 @@ extension AppPageExtension on PAGES {
         return "/invoice_list";
       case PAGES.invoiceReportSummary:
         return "/invoice_summary_report";
+      case PAGES.invoiceNew:
+        return "/invoice_new_page";
       case PAGES.rateTalentNotifPage:
         return "/rate_talent_notif_page";
       case PAGES.rateTalentCheckPage:
@@ -143,6 +155,10 @@ extension AppPageExtension on PAGES {
         return "/report_performance";
       case PAGES.reportdetailperformance:
         return "/report_detail_performance";
+      case PAGES.talentPool:
+        return "/talent_pool";
+      case PAGES.listOfTeam:
+        return "/list_of_team";
     }
   }
 
@@ -150,6 +166,8 @@ extension AppPageExtension on PAGES {
     switch (this) {
       case PAGES.main:
         return "HOME";
+      case PAGES.team:
+        return "TEAM";
       case PAGES.emailCheck:
         return "EMAIL CHECK";
       case PAGES.login:
@@ -176,6 +194,8 @@ extension AppPageExtension on PAGES {
         return "INVOICE LIST";
       case PAGES.invoiceReportSummary:
         return "INVOICEREPORT SUMMARY";
+      case PAGES.invoiceNew:
+        return "INVOICE NEW";
       case PAGES.rateTalentNotifPage:
         return "RATETALENT NOTIF PAGE";
       case PAGES.rateTalentCheckPage:
@@ -222,6 +242,10 @@ extension AppPageExtension on PAGES {
         return "REPORT PERFORMANCE PAGE";
       case PAGES.reportdetailperformance:
         return "REPORT DETAIL PERFORMANCE PAGE";
+      case PAGES.talentPool:
+        return "TALENT POOL PAGE";
+      case PAGES.listOfTeam:
+        return "LIST OF TEAM PAGE";
     }
   }
 
@@ -229,6 +253,8 @@ extension AppPageExtension on PAGES {
     switch (this) {
       case PAGES.main:
         return "Home";
+      case PAGES.team:
+        return "Team";
       case PAGES.emailCheck:
         return "Email Check";
       case PAGES.login:
@@ -249,6 +275,8 @@ extension AppPageExtension on PAGES {
         return "Invoice";
       case PAGES.invoiceReportSummary:
         return "Invoice Report Summary";
+      case PAGES.invoiceNew:
+        return "Invoice";
       case PAGES.rateTalentNotifPage:
         return "Rate Talent Notif Page";
       case PAGES.rateTalentCheckPage:
@@ -293,6 +321,10 @@ extension AppPageExtension on PAGES {
         return "Report Performancane Page";
       case PAGES.reportdetailperformance:
         return "Report Detail Performancane Page";
+      case PAGES.talentPool:
+        return "Talent Pool";
+      case PAGES.listOfTeam:
+        return "Daftar Tim";
       default:
         return "Home";
     }

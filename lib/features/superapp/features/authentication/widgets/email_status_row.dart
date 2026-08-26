@@ -85,18 +85,15 @@ class _StatusItem extends StatelessWidget {
 }
 
 class _Spinner extends StatelessWidget {
-  final Color color;
-
-  const _Spinner({this.color = AppColors.grey600});
+  const _Spinner();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return const SizedBox(
       width: 14,
       height: 14,
       child: CircularProgressIndicator(
         strokeWidth: 1.5,
-        valueColor: AlwaysStoppedAnimation<Color>(color),
       ),
     );
   }

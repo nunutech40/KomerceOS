@@ -24,10 +24,11 @@ class RevenuePerformanceBloc
   ) async {
     emit(RevenuePerformanceLoading());
 
-    // Generate default date (bulan ini) jika tidak disediakan UI
+    // Generate default date jika tidak disediakan UI:
+    // rentang = awal bulan berjalan s/d TANGGAL SEKARANG (hari ini).
     final now = DateTime.now();
     final defaultStartDate = DateTime(now.year, now.month, 1);
-    final defaultEndDate = DateTime(now.year, now.month + 1, 0);
+    final defaultEndDate = DateTime(now.year, now.month, now.day);
     String format(DateTime d) =>
         '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/features/invoice/bloc/invoice_report_summary_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_report_summary_bloc.dart';
 import '../../../common/global/router/app_router.dart';
 import '../../../common/global/router/router_utils.dart';
 import '../../../common/global/widgets/custom_button.dart';

@@ -19,6 +19,9 @@ class RevenuePerformanceLoaded extends RevenuePerformanceState {
   /// Total omset bulan ini — siap pakai langsung di UI.
   num get totalOmset => data.totalProfit ?? 0;
 
+  /// Total order bulan ini — siap pakai langsung di UI.
+  int get totalOrder => data.totalOrder ?? 0;
+
   /// Data omset per hari dalam format FlSpot, sudah di-sort dan valid.
   /// UI tidak perlu tahu cara parsing "2025-07-24" → FlSpot.
   List<FlSpot> get omzetSpots => _buildSpots(

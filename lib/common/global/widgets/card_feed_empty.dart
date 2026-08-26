@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
 import 'package:komtim_partner/common/styles.dart';
 
 class CardFeedEmpty extends StatelessWidget {
   final String image;
   final String title;
   final String body;
-  const CardFeedEmpty(
-      {super.key,
-      required this.image,
-      required this.title,
-      required this.body});
+  final Color? colorImage;
+  const CardFeedEmpty({
+    super.key,
+    required this.image,
+    required this.title,
+    required this.body,
+    this.colorImage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,11 @@ class CardFeedEmpty extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SvgPicture.asset(image),
+          DsAppImage(
+            source: image,
+            width: 200,
+            height: 200,
+          ),
           const SizedBox(
             height: 8,
           ),
