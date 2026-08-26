@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:komtim_partner/core/domain/entities/invoices_model.dart';
 import 'package:komtim_partner/core/domain/usecases/get_invoices_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/get_transaction_history_need_process_use_case.dart';
 import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:komtim_partner/common/enum_status.dart';
@@ -11,13 +12,16 @@ part 'invoice_list_event.dart';
 part 'invoice_list_state.dart';
 
 class InvoiceListBloc extends Bloc<InvoiceListEvent, InvoiceListState> {
-  InvoiceListBloc({required this.getInvoiceUseCase})
-      : super(const InvoiceListState()) {
+  InvoiceListBloc({
+    required this.getInvoiceUseCase,
+    required this.getTransactionNeedProcessHistoryUseCase,
+  }) : super(const InvoiceListState()) {
     on<InvoviceListPageDidload>(_handleDidLoadPage);
     on<RefreshDataEvent>(_refresStateAndEvent);
   }
 
   final GetInvoiceUseCase getInvoiceUseCase;
+  final GetTransactionNeedProcessHistoryUseCase getTransactionNeedProcessHistoryUseCase;
 
   Future<void> _refresStateAndEvent(
     RefreshDataEvent event,
@@ -34,6 +38,26 @@ class InvoiceListBloc extends Bloc<InvoiceListEvent, InvoiceListState> {
 
     final invoicesResult =
         await getInvoiceUseCase.execute(event.type, event.offset, event.limit);
+        
+    final needProcessResult = 
+        await getTransactionNeedProcessHistoryUseCase.execute();
+
+    List<InvoicesDataModel>? needProcessList;
+    needProcessResult.fold(
+      (failure) => null,
+      (data) {
+        needProcessList = data.map((d) => InvoicesDataModel(
+          invoiceId: d.transactionId,
+          invoiceCode: d.transactionCode,
+          amountTotal: d.transactionNominal,
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt,
+          transactionType: d.transactionType,
+          isPaid: d.transactionStatus == "paid",
+          transactionStatus: d.transactionStatus,
+        )).toList();
+      }
+    );
 
     invoicesResult.fold(
       (failure) {
@@ -49,7 +73,9 @@ class InvoiceListBloc extends Bloc<InvoiceListEvent, InvoiceListState> {
         emit(state.copyWith(
             message: 'Success',
             status: RequestStatus.success,
-            invoicesData: invoicesData));
+            invoicesData: invoicesData,
+            needProcessData: needProcessList ?? state.needProcessData,
+        ));
       },
     );
   }

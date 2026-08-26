@@ -227,7 +227,10 @@ Future<void> initDependencies() async {
         sendForgotPasswordUseCase: locator(),
         recaptchaUseCase: locator(),
       ));
-  locator.registerFactory(() => InvoiceListBloc(getInvoiceUseCase: locator()));
+  locator.registerFactory(() => InvoiceListBloc(
+        getInvoiceUseCase: locator(),
+        getTransactionNeedProcessHistoryUseCase: locator(),
+      ));
   locator.registerFactory(() => InvoiceDetailBloc(
       getInvoiceDetailUseCase: locator(),
       downloadInvoiceUseCase: locator(),

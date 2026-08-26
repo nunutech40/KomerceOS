@@ -96,6 +96,7 @@ class _ListOfTeamViewState extends State<ListOfTeamView>
                 children: [
                   AppTabLayout(
                     controller: _tabController,
+                    variant: AppTabLayoutVariant.elevated,
                     tabs: const [
                       Tab(text: 'Internal'),
                       Tab(text: 'Talent Komtim'),

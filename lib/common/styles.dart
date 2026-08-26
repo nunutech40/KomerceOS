@@ -88,6 +88,13 @@ class AppTypography {
     fontWeight: FontWeight.normal,
   );
 
+  static const TextStyle bodyMdRegular = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+    letterSpacing: 0,
+  );
+
   static const TextStyle regular14PrimaryBold =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryColor);
 

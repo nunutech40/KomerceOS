@@ -14,6 +14,7 @@ import 'package:komtim_partner/features/superapp/features/team/attendance/view/a
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_detail_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_list_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_new_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_report_summary_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/payment_method_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/success_payment_kompay_page.dart';
@@ -200,6 +201,11 @@ class AppRouter {
           final statusAccount = state.queryParameters['statusAccount'] ?? '';
           return InvoiceListPage(statusAccount: statusAccount);
         },
+      ),
+      GoRoute(
+        path: PAGES.invoiceNew.screenPath,
+        name: PAGES.invoiceNew.screenName,
+        builder: (context, state) => const InvoiceNewPage(),
       ),
       GoRoute(
         path: PAGES.invoiceReportSummary.screenPath,

@@ -8,14 +8,14 @@ import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/b
 import 'package:komtim_partner/features/superapp/features/team/talentpool/bloc/talent_pool_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../model/talent_filter.dart';
+import '../widget/talent_filter.dart';
 import '../widget/talent_filter_sheet.dart';
 import '../widget/talent_pool_header.dart';
 import '../widget/talent_recommendation_card.dart';
 import '../widget/talent_search_bar.dart';
 
 /// Halaman Talent Pool: daftar talent dari API dengan filter multi-select
-/// (rating, pengalaman, industri) dan pagination.
+/// (rating, pengalaman, industri, role) dan pagination.
 /// Tap kartu → buka web detail talent.
 class TalentPoolPage extends StatelessWidget {
   const TalentPoolPage({super.key});
@@ -29,8 +29,8 @@ class TalentPoolPage extends StatelessWidget {
             ..add(const FetchBusinessSectorEvent()),
         ),
         BlocProvider(
-          create: (_) => locator<TalentPoolBloc>()
-            ..add(const FetchTalentPoolEvent()),
+          create: (_) =>
+              locator<TalentPoolBloc>()..add(const FetchTalentPoolEvent()),
         ),
       ],
       child: const _TalentPoolView(),
@@ -50,10 +50,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   final ScrollController _scrollController = ScrollController();
 
   bool _isGridView = true;
-  TalentFilter _filter = TalentFilter.empty;
 
-  String get _baseUrlTalentPool =>
-      Config.instance.baseUrlWebUrlTalentPool;
+  String get _baseUrlTalentPool => Config.instance.baseUrlWebUrlTalentPool;
 
   @override
   void initState() {
@@ -68,27 +66,25 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
     }
   }
 
-  Future<void> _openFilter() async {
-    final result =
-        await TalentFilterSheet.show(context, initialFilter: _filter);
+  Future<void> _openFilter(TalentFilter currentFilter) async {
+    final result = await TalentFilterSheet.show(
+      context,
+      initialFilter: currentFilter,
+    );
     if (result != null && mounted) {
-      setState(() => _filter = result);
-      context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
-            ratings: result.selectedRatings.toList(),
-            experiences: result.selectedExperiences.toList(),
-            businessSectorIds: result.selectedBusinessSectorIds.toList(),
-            skillName: result.skillName,
+      context.read<TalentPoolBloc>().add(ApplyFilterTalentPoolEvent(
+            selectedRatings: result.selectedRatings,
+            selectedExperiences: result.selectedExperiences,
+            selectedBusinessSectorIds: result.selectedBusinessSectorIds,
           ));
     }
   }
 
-  /// Pull-to-refresh: reset filter & pencarian, lalu fetch ulang dari awal.
+  /// Pull-to-refresh: reset semua filter, fetch ulang dari awal.
   Future<void> _onRefresh() async {
     _searchController.clear();
-    setState(() => _filter = TalentFilter.empty);
-
     final bloc = context.read<TalentPoolBloc>()
-      ..add(const FetchTalentPoolEvent());
+      ..add(const ResetFilterTalentPoolEvent());
 
     // Tunggu sampai proses fetch selesai agar indikator refresh berhenti
     // tepat ketika data baru siap ditampilkan.
@@ -96,14 +92,7 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   }
 
   void _onSearchChanged(String value) {
-    setState(() => _filter = _filter.copyWith(skillName: value));
-    // Debounce bisa ditambahkan; untuk saat ini fetch langsung
-    context.read<TalentPoolBloc>().add(FetchTalentPoolEvent(
-          ratings: _filter.selectedRatings.toList(),
-          experiences: _filter.selectedExperiences.toList(),
-          businessSectorIds: _filter.selectedBusinessSectorIds.toList(),
-          skillName: value,
-        ));
+    context.read<TalentPoolBloc>().add(SearchTalentPoolEvent(value));
   }
 
   Future<void> _openTalentDetail(TalentRecommendationModel talent) async {
@@ -129,47 +118,65 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.alwaysWhite,
       appBar: const DsAppBar(title: 'Talent Pool'),
       body: SafeArea(
         top: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const TalentPoolHeader(),
-                  const SizedBox(height: AppSpacing.md),
-                  TalentSearchBar(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    onFilterTap: _openFilter,
-                    isGridView: _isGridView,
-                    onViewChanged: (value) =>
-                        setState(() => _isGridView = value),
+            // Filter header — rebuild hanya bagian ini saat filter berubah
+            BlocBuilder<TalentPoolBloc, TalentPoolState>(
+              buildWhen: (prev, curr) =>
+                  _activeFilterOf(prev) != _activeFilterOf(curr),
+              builder: (context, state) {
+                final filter = _activeFilterOf(state);
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.sm,
                   ),
-                  // Active filter chips
-                  if (!_filter.isEmpty) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    _ActiveFilterChips(
-                      filter: _filter,
-                      onClear: () {
-                        setState(() => _filter = TalentFilter.empty);
-                        context
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const TalentPoolHeader(),
+                      const SizedBox(height: AppSpacing.md),
+                      TalentSearchBar(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        onFilterTap: () => _openFilter(filter),
+                        isGridView: _isGridView,
+                        onViewChanged: (value) =>
+                            setState(() => _isGridView = value),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      // Role quick-filter chips
+                      _RoleFilterRow(
+                        roles: TalentFilterOptions.roles,
+                        selectedRole: filter.selectedSkillName,
+                        onRoleSelected: (value) => context
                             .read<TalentPoolBloc>()
-                            .add(const FetchTalentPoolEvent());
-                      },
-                    ),
-                  ],
-                ],
-              ),
+                            .add(SelectRoleTalentPoolEvent(value)),
+                      ),
+                      // Active filter chips (dari bottom sheet)
+                      if (filter.hasSheetFilter) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        _ActiveFilterChips(
+                          filter: filter,
+                          onClear: () => context
+                              .read<TalentPoolBloc>()
+                              .add(ApplyFilterTalentPoolEvent(
+                                selectedRatings: const {},
+                                selectedExperiences: const {},
+                                selectedBusinessSectorIds: const {},
+                              )),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
             ),
             Expanded(
               child: RefreshIndicator(
@@ -184,10 +191,20 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
     );
   }
 
+  /// Ambil filter aktif dari state manapun.
+  TalentFilter _activeFilterOf(TalentPoolState state) {
+    if (state is TalentPoolLoaded) return state.activeFilter;
+    if (state is TalentPoolLoadingMore) return state.activeFilter;
+    if (state is TalentPoolLoading) return state.activeFilter;
+    if (state is TalentPoolEmpty) return state.activeFilter;
+    return TalentFilter.empty;
+  }
+
   Widget _buildContent() {
     return BlocConsumer<TalentPoolBloc, TalentPoolState>(
-      listenWhen: (previous, current) => 
-          current is TalentPoolWishlistSuccess || current is TalentPoolWishlistFailed,
+      listenWhen: (previous, current) =>
+          current is TalentPoolWishlistSuccess ||
+          current is TalentPoolWishlistFailed,
       listener: (context, state) {
         if (state is TalentPoolWishlistSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -220,12 +237,16 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
           );
         }
         if (state is TalentPoolEmpty) {
-          return const _RefreshableMessage(child: _EmptyState());
+          return _RefreshableMessage(
+            child: _EmptyState(isSearchActive: !state.activeFilter.isEmpty),
+          );
         }
 
         final talents = state is TalentPoolLoaded
             ? state.talents
-            : (state is TalentPoolLoadingMore ? state.talents : <TalentRecommendationModel>[]);
+            : (state is TalentPoolLoadingMore
+                ? state.talents
+                : <TalentRecommendationModel>[]);
         final isLoadingMore = state is TalentPoolLoadingMore;
 
         if (_isGridView) {
@@ -236,8 +257,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
             onTap: _openTalentDetail,
             onWishlistTap: (talent) {
               context.read<TalentPoolBloc>().add(
-                ToggleWishlistTalentPoolEvent(talent.id),
-              );
+                    ToggleWishlistTalentPoolEvent(talent.id),
+                  );
             },
           );
         } else {
@@ -248,8 +269,8 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
             onTap: _openTalentDetail,
             onWishlistTap: (talent) {
               context.read<TalentPoolBloc>().add(
-                ToggleWishlistTalentPoolEvent(talent.id),
-              );
+                    ToggleWishlistTalentPoolEvent(talent.id),
+                  );
             },
           );
         }
@@ -259,7 +280,88 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
 }
 
 // ────────────────────────────────────────────────
-// Active filter chips row
+// Role quick-filter chips (dari TalentFilterOptions.roles, single-select)
+// ────────────────────────────────────────────────
+
+class _RoleFilterRow extends StatelessWidget {
+  final List<TalentRoleOption> roles;
+  final String? selectedRole;
+  final void Function(String value) onRoleSelected;
+
+  const _RoleFilterRow({
+    required this.roles,
+    required this.selectedRole,
+    required this.onRoleSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: roles.length,
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs),
+        itemBuilder: (context, index) {
+          final role = roles[index];
+          final isSelected = selectedRole == role.value;
+          return Center(
+            child: _RoleChip(
+              label: role.label,
+              isSelected: isSelected,
+              onTap: () => onRoleSelected(role.value),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _RoleChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RoleChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryBase : AppColors.alwaysWhite,
+          borderRadius: BorderRadius.circular(AppRadius.circular),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryBase : AppColors.grey300,
+            width: 1.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.bodySmSemiBold.copyWith(
+            color: isSelected ? AppColors.alwaysWhite : AppColors.grey600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ────────────────────────────────────────────────
+// Active filter chips row (dari bottom sheet)
 // ────────────────────────────────────────────────
 
 class _ActiveFilterChips extends StatelessWidget {
@@ -270,17 +372,13 @@ class _ActiveFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int count = filter.selectedRatings.length +
-        filter.selectedExperiences.length +
-        filter.selectedBusinessSectorIds.length;
-
     return Row(
       children: [
         const Icon(Icons.tune_rounded,
             size: AppSpacing.iconSm, color: AppColors.primaryBase),
         const SizedBox(width: AppSpacing.xs),
         Text(
-          '$count filter aktif',
+          '${filter.sheetFilterCount} filter aktif',
           style: AppTypography.bodySmSemiBold
               .copyWith(color: AppColors.primaryBase),
         ),
@@ -289,8 +387,8 @@ class _ActiveFilterChips extends StatelessWidget {
           onTap: onClear,
           child: Text(
             'Hapus semua',
-            style: AppTypography.bodySmRegular
-                .copyWith(color: AppColors.grey600),
+            style:
+                AppTypography.bodySmRegular.copyWith(color: AppColors.grey600),
           ),
         ),
       ],
@@ -319,7 +417,29 @@ class _TalentGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
+    // ── Manual 2-column masonry (tanpa package eksternal) ──
+    // Item genap → kolom kiri, ganjil → kolom kanan.
+    // Setiap kolom adalah Column biasa → card auto-fit kontennya.
+    final leftIndices = <int>[];
+    final rightIndices = <int>[];
+    for (int i = 0; i < talents.length; i++) {
+      if (i.isEven) {
+        leftIndices.add(i);
+      } else {
+        rightIndices.add(i);
+      }
+    }
+
+    Widget buildCard(int index) {
+      final talent = talents[index];
+      return TalentRecommendationGridCard(
+        talent: talent,
+        onTap: () => onTap(talent),
+        onWishlistTap: () => onWishlistTap(talent),
+      );
+    }
+
+    return SingleChildScrollView(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(
@@ -328,24 +448,40 @@ class _TalentGrid extends StatelessWidget {
         AppSpacing.md,
         isLoadingMore ? AppSpacing.sm : AppSpacing.lg,
       ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: AppSpacing.md,
-        crossAxisSpacing: AppSpacing.md,
-        childAspectRatio: 0.52,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Kolom kiri — item genap (0, 2, 4, ...)
+          Expanded(
+            child: Column(
+              children: [
+                ...leftIndices.map(
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: buildCard(i),
+                  ),
+                ),
+                if (isLoadingMore) const _GridShimmerCard(),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // Kolom kanan — item ganjil (1, 3, 5, ...)
+          Expanded(
+            child: Column(
+              children: [
+                ...rightIndices.map(
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: buildCard(i),
+                  ),
+                ),
+                if (isLoadingMore) const _GridShimmerCard(),
+              ],
+            ),
+          ),
+        ],
       ),
-      itemCount: talents.length + (isLoadingMore ? 2 : 0),
-      itemBuilder: (context, index) {
-        if (index >= talents.length) {
-          return const _GridShimmerCard();
-        }
-        final talent = talents[index];
-        return TalentRecommendationGridCard(
-          talent: talent,
-          onTap: () => onTap(talent),
-          onWishlistTap: () => onWishlistTap(talent),
-        );
-      },
     );
   }
 }
@@ -483,7 +619,9 @@ class _RefreshableMessage extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  final bool isSearchActive;
+
+  const _EmptyState({required this.isSearchActive});
 
   @override
   Widget build(BuildContext context) {
@@ -493,23 +631,27 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.person_search_rounded,
-              size: AppSpacing.iconXxl,
-              color: AppColors.grey400,
+            const DsAppImage(
+              source: "assets/images/team/empty_state_feed.svg",
+              width: 200,
+              height: 200,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Talent tidak ditemukan',
+              isSearchActive
+                  ? 'Talent tidak ditemukan'
+                  : 'Belum ada talent tersedia',
               style: AppTypography.bodyLgSemiBold
-                  .copyWith(color: AppColors.grey700),
+                  .copyWith(color: AppColors.black0A0A),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Coba ubah kata kunci atau filter pencarianmu.',
+              isSearchActive
+                  ? 'Kami tidak menemukan talent yang cocok dengan pencarianmu. Coba kata kunci lain atau ubah filter.'
+                  : 'Saat ini belum ada talent yang dapat direkomendasikan. Coba kembali nanti.',
               textAlign: TextAlign.center,
-              style: AppTypography.bodySmRegular
-                  .copyWith(color: AppColors.grey600),
+              style: AppTypography.bodyMdRegular
+                  .copyWith(color: AppColors.textDark),
             ),
           ],
         ),

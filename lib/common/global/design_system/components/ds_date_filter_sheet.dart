@@ -160,17 +160,21 @@ class _DsDateFilterSheetState extends State<DsDateFilterSheet> {
   }
 
   void _reset() {
+    final now = DateTime.now();
+    final newMonthIndex = (now.month - 1).clamp(0, 11);
+    final newYearIndex =
+        (now.year - widget.minYear).clamp(0, widget.maxYear - widget.minYear);
     setState(() {
-      _monthIndex = 0;
-      _yearIndex = 0;
+      _monthIndex = newMonthIndex;
+      _yearIndex = newYearIndex;
     });
     _monthController.animateToItem(
-      0,
+      newMonthIndex,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
     );
     _yearController.animateToItem(
-      0,
+      newYearIndex,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
     );
