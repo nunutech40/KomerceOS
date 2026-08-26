@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:komtim_partner/common/global/router/app_router.dart';
-import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_bar.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/widget/card_detail_month.dart';
 
@@ -48,14 +46,7 @@ class _DetailReportPerformanceMonthPagesState
   }
 
   Widget _buildAppBar() {
-    return AppBar(
-      title: Text(widget.productName, style: AppTypography.interSemiBold16),
-      centerTitle: true,
-      leading: IconButton(
-        icon: SvgPicture.asset('assets/images/ic-arrow-left.svg'),
-        onPressed: () => AppRouter.router.pop(),
-      ),
-    );
+    return DsAppBar(title: widget.productName);
   }
 
   String convertCR(num number) {

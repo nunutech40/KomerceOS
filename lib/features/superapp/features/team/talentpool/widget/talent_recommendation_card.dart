@@ -301,7 +301,7 @@ class TalentRecommendationListCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const DsAppImage(
-                              source: 'assets/images/superapp/team/ic_work.png',
+                              source: 'assets/images/team/ic_work.svg',
                               width: 14,
                               height: 14,
                             ),

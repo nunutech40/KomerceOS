@@ -171,7 +171,22 @@ class _ListOfTeamViewState extends State<ListOfTeamView>
     final members = _getVisibleMembers(state);
 
     if (members.isEmpty) {
-      return const _EmptyState();
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: const DsEmptyState(
+                imagePath: 'assets/images/team/empty_state_feed.svg',
+                title: 'Tim Tidak Ditemukan',
+                description:
+                    'Kami tidak menemukan tim yang cocok dengan\npencarianmu. Coba kata kunci lain atau ubah filter.',
+              ),
+            ),
+          );
+        },
+      );
     }
 
     return ListView.separated(
@@ -185,60 +200,6 @@ class _ListOfTeamViewState extends State<ListOfTeamView>
       itemCount: members.length,
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md3),
       itemBuilder: (context, index) => TeamMemberCard(member: members[index]),
-    );
-  }
-}
-
-/// Tampilan ketika hasil pencarian kosong.
-///
-/// Dibungkus `LayoutBuilder` + `ConstrainedBox(minHeight)` + scroll agar
-/// kontennya SELALU tampil di tengah area yang tersedia (bukan cuma di
-/// tengah lebar layar), dan tetap aman dari overflow bila konten lebih
-/// tinggi dari ruang yang tersisa (mis. layar kecil / keyboard terbuka).
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const DsAppImage(
-                      width: 200,
-                      height: 200,
-                      source: 'assets/images/team/empty_state_feed.svg',
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'Tim Tidak Ditemukan',
-                      style: AppTypography.bodyLgSemiBold.copyWith(
-                        color: AppColors.grey800,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Kami tidak menemukan tim yang cocok dengan\npencarianmu. Coba kata kunci lain atau ubah filter.',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.bodySmRegular.copyWith(
-                        color: AppColors.grey800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
@@ -334,4 +295,3 @@ class _TeamListShimmer extends StatelessWidget {
     );
   }
 }
-

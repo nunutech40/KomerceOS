@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/styles.dart' as AppColors;
 
 import '../../../../../../common/styles.dart';
 import '../../../../../../common/time_convert.dart';
@@ -78,21 +79,24 @@ class _BodyCardAttendanceState extends State<BodyCardAttendance> {
                       ),
                     ),
               const SizedBox(
-                width: 7,
+                width: 12,
               ),
               widget.clockIn == ''
                   ? Container()
                   : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           "Datang",
-                          style: AppTypography.regular12Primary,
+                          style: AppTypography.regular12Green,
                         ),
                         const SizedBox(
                           height: 5,
                         ),
-                        Text(timeConvert(widget.clockIn),
-                            style: AppTypography.regular12)
+                        Text(
+                          timeConvert(widget.clockIn),
+                          style: AppTypography.regular120AOA,
+                        )
                       ],
                     )
             ],
@@ -102,6 +106,7 @@ class _BodyCardAttendanceState extends State<BodyCardAttendance> {
             width: 20,
             child: const VerticalDivider(
               width: 0.5,
+              color: AppColors.e2Gray,
             ),
           ),
           Row(
@@ -154,24 +159,25 @@ class _BodyCardAttendanceState extends State<BodyCardAttendance> {
                           ),
                         ),
                   const SizedBox(
-                    width: 10,
+                    width: 12,
                   ),
                   widget.clockOut == ''
                       ? const Text(
                           "Pulang",
-                          style: AppTypography.regular12Primary,
+                          style: AppTypography.regular12Green,
                         )
                       : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                               "Pulang",
-                              style: AppTypography.regular12Primary,
+                              style: AppTypography.regular12Green,
                             ),
                             const SizedBox(
                               height: 5,
                             ),
                             Text(timeConvert(widget.clockOut),
-                                style: AppTypography.regular12)
+                                style: AppTypography.regular120AOA)
                           ],
                         )
                 ],

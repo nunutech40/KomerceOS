@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 class CardToday extends StatelessWidget {
   final String name;
@@ -35,21 +35,19 @@ class CardToday extends StatelessWidget {
     return InkWell(
       onTap: ontap,
       child: Container(
-        padding: const EdgeInsetsDirectional.all(12),
-        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsetsDirectional.all(AppSpacing.md3),
+        margin: const EdgeInsets.only(bottom: AppSpacing.md),
         decoration: BoxDecoration(
-            // Tambahkan warna latar belakang
-            color: Colors.white,
+            color: AppColors.alwaysWhite,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withValues(
-                    alpha: 0.7), // Warna bayangan dengan transparansi
-                spreadRadius: 1, // Jarak penyebaran bayangan
-                blurRadius: 4, // Tingkat blur bayangan
-                offset: const Offset(0, 3), // Arah bayangan (x, y)
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 9,
+                spreadRadius: 0.3,
+                offset: Offset.zero,
               ),
             ],
-            borderRadius: BorderRadius.circular(10)),
+            borderRadius: BorderRadius.circular(AppRadius.md)),
         child: Column(
           children: [
             widgetHeader(
@@ -86,17 +84,18 @@ class CardToday extends StatelessWidget {
             onTap: ontap2,
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 9.5),
-              margin: const EdgeInsets.only(top: 10),
+              margin: const EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primaryBase,
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Selengkapnya",
-                    style: AppTypography.regular12White,
+                    style: AppTypography.bodySmRegular
+                        .copyWith(color: AppColors.alwaysWhite),
                   ),
                   const SizedBox(
                     width: 8,
@@ -125,37 +124,39 @@ class CardToday extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 8),
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: backgroundContainerColor,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Text(
                     note ?? "",
-                    style: AppTypography.regular12FF6262,
+                    style: AppTypography.bodySmRegular
+                        .copyWith(color: AppColors.grey700),
                   ),
                 ),
                 InkWell(
                   onTap: ontap2,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 9.5),
-                    margin: const EdgeInsets.only(top: 10),
+                    margin: const EdgeInsets.only(top: AppSpacing.sm),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: primaryColor),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.alwaysWhite,
+                      border: Border.all(color: AppColors.primaryBase),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           "Lebih Sedikit",
-                          style: AppTypography.regular12Primary,
+                          style: AppTypography.bodySmRegular
+                              .copyWith(color: AppColors.primaryBase),
                         ),
                         const SizedBox(
                           width: 8,
                         ),
                         SvgPicture.asset("assets/images/ic_arrow_up.svg",
                             colorFilter: const ColorFilter.mode(
-                                primaryColor, BlendMode.srcIn),
+                                AppColors.primaryBase, BlendMode.srcIn),
                             width: 20,
                             height: 20),
                       ],
@@ -177,15 +178,15 @@ class CardToday extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 14, top: 14, left: 20, right: 20),
       decoration: BoxDecoration(
-        color: f4Gray,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             nameProduct ?? "",
-            style: AppTypography.interSemiBold14,
+            style: AppTypography.numericMdSemiBold,
           ),
           Row(
             children: [
@@ -205,17 +206,18 @@ class CardToday extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            margin: const EdgeInsets.only(top: AppSpacing.md3),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             width: 60,
             decoration: BoxDecoration(
-              color: lighPrimaryColor,
-              borderRadius: BorderRadius.circular(6),
+              color: AppColors.alwaysWhite,
+              borderRadius: BorderRadius.circular(AppRadius.md3),
             ),
             child: Center(
               child: Text(
                 name ?? "",
-                style: AppTypography.regular12FF6262,
+                style: AppTypography.bodySmRegular
+                    .copyWith(color: AppColors.grey700),
               ),
             ),
           ),
@@ -245,7 +247,7 @@ class CardToday extends StatelessWidget {
           children: [
             Text(
               name ?? "",
-              style: AppTypography.semiBold12,
+              style: AppTypography.bodySmSemiBold,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
@@ -256,12 +258,13 @@ class CardToday extends StatelessWidget {
               padding: const EdgeInsetsDirectional.symmetric(
                   vertical: 2, horizontal: 14),
               decoration: BoxDecoration(
-                  color: blueLight,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(color: primaryColor)),
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(AppRadius.circular),
+              ),
               child: Text(
                 role ?? "",
-                style: AppTypography.regular12Primary,
+                style: AppTypography.bodySmRegular
+                    .copyWith(color: AppColors.primaryBase),
               ),
             ),
           ],

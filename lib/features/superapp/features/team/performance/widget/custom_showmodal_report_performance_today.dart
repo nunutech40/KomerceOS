@@ -295,12 +295,12 @@ class _CustomShowmodalReportPerformanceTodayState
                                         ? const Text(
                                             "Kamu belum memilih tanggal mulai",
                                             textAlign: TextAlign.center,
-                                            style: AppTypography.regular12,
+                                            style: AppTypography.regular12Error,
                                           )
                                         : const Text(
                                             "Kamu belum memilih tanggal akhir",
                                             textAlign: TextAlign.center,
-                                            style: AppTypography.regular12,
+                                            style: AppTypography.regular12Error,
                                           )
                                   ],
                                 ),
@@ -311,7 +311,7 @@ class _CustomShowmodalReportPerformanceTodayState
                       )
                     : Container(),
                 Container(
-                  margin: const EdgeInsets.only(top: 20),
+                  margin: const EdgeInsets.only(top: 20, bottom: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[

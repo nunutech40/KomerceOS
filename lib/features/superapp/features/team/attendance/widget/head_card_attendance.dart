@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/styles.dart' as appColors;
 
 import '../../../../../../common/styles.dart';
 import '../../../../../../common/time_convert.dart';
@@ -20,8 +21,12 @@ class HeadCardAttendance extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration:
-            const BoxDecoration(border: Border(bottom: BorderSide(width: 0.5))),
+        decoration: const BoxDecoration(
+            border: Border(
+                bottom: BorderSide(
+          width: 1,
+          color: appColors.e2Gray,
+        ))),
         child: Container(
           margin: const EdgeInsets.symmetric(
             horizontal: 13,
@@ -35,7 +40,7 @@ class HeadCardAttendance extends StatelessWidget {
                   name ?? "",
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-                  style: AppTypography.regular12,
+                  style: AppTypography.regular120AOA,
                 ),
               ),
               Expanded(

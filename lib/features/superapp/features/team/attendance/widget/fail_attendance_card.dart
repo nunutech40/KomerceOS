@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/styles.dart' as appColors;
 
 import '../../../../../../common/styles.dart';
 import '../../../../../../common/time_convert.dart';
@@ -22,7 +23,7 @@ class _FailAttendanceCardState extends State<FailAttendanceCard> {
     return Container(
       height: 130,
       margin:
-          EdgeInsets.only(left: 4, right: 4, top: widget.index == 0 ? 0 : 16),
+          EdgeInsets.only(left: 12, right: 12, top: widget.index == 0 ? 0 : 16),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
           boxShadow: [
@@ -38,9 +39,16 @@ class _FailAttendanceCardState extends State<FailAttendanceCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(
+              vertical: 12,
+            ),
             decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(width: 0.5))),
+                border: Border(
+                    bottom: BorderSide(
+              width: 1,
+              color: appColors.e2Gray,
+            ))),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -54,7 +62,7 @@ class _FailAttendanceCardState extends State<FailAttendanceCard> {
                             widget.name ?? "",
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
-                            style: AppTypography.regular12,
+                            style: AppTypography.regular120AOA,
                           ),
                         ),
                       ],
@@ -66,7 +74,7 @@ class _FailAttendanceCardState extends State<FailAttendanceCard> {
                       alignment: Alignment.centerRight,
                       child: Text(
                         dateConvertWithT(widget.date),
-                        style: AppTypography.regular12,
+                        style: AppTypography.regular12grey77,
                       ),
                     ),
                   ),

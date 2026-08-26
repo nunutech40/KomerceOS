@@ -166,10 +166,10 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
                           filter: filter,
                           onClear: () => context
                               .read<TalentPoolBloc>()
-                              .add(ApplyFilterTalentPoolEvent(
-                                selectedRatings: const {},
-                                selectedExperiences: const {},
-                                selectedBusinessSectorIds: const {},
+                              .add(const ApplyFilterTalentPoolEvent(
+                                selectedRatings: {},
+                                selectedExperiences: {},
+                                selectedBusinessSectorIds: {},
                               )),
                         ),
                       ],
@@ -228,7 +228,7 @@ class _TalentPoolViewState extends State<_TalentPoolView> {
         }
         if (state is TalentPoolError) {
           return _RefreshableMessage(
-            child: _ErrorState(
+            child: DsErrorState(
               message: state.message,
               onRetry: () => context
                   .read<TalentPoolBloc>()
@@ -592,7 +592,7 @@ class _ListShimmerCard extends StatelessWidget {
 }
 
 // ────────────────────────────────────────────────
-// Empty & Error state
+// Refreshable wrapper
 // ────────────────────────────────────────────────
 
 /// Membungkus pesan (empty/error) agar tetap bisa ditarik untuk refresh
@@ -653,47 +653,6 @@ class _EmptyState extends StatelessWidget {
               style: AppTypography.bodyMdRegular
                   .copyWith(color: AppColors.textDark),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.wifi_off_rounded,
-              size: AppSpacing.iconXxl,
-              color: AppColors.grey400,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Gagal memuat data',
-              style: AppTypography.bodyLgSemiBold
-                  .copyWith(color: AppColors.grey700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmRegular
-                  .copyWith(color: AppColors.grey600),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            DsButton(text: 'Coba Lagi', onPressed: onRetry),
           ],
         ),
       ),

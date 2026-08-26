@@ -12,6 +12,7 @@ const Color darkGray = Color(0xFF626262);
 const Color onlyGray = Color(0xFF828282);
 const Color f4Gray = Color(0xFFF4F4F4);
 const Color e2Gray = Color(0xFFE2E2E2);
+const Color black77Gray = Color(0xFF777777);
 const Color inActiveGray = Color(0xFFC2C2C2);
 const Color borderGray = Color(0xFFCCCCCC);
 
@@ -28,10 +29,12 @@ const Color backgroundContainerColor = Color(0xFFF2F2F2);
 const Color blueMain = Color(0xFF08A0F7);
 const Color blueLight = Color(0xFFDFF3FF);
 const Color blackColors = Color(0xFF000000);
+const Color black0A = Color(0xFF0A0A0A);
 const Color blackColors33 = Color(0xff3333333);
 const Color blue42 = Color(0xFF4285F4);
 const Color purple = Color(0xFF6D3CB8);
 const Color lightPurple = Color(0xFFE2D8F1);
+const Color green30A = Color(0xFF30A46C);
 
 class AppTypography {
   // default familly fonts is jakartans plus
@@ -120,9 +123,20 @@ class AppTypography {
   static const TextStyle regular14black = TextStyle(
       fontSize: 14, fontWeight: FontWeight.normal, color: blackColors33);
 
+  static const TextStyle regular12grey77 = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+  );
+
   static const TextStyle regular12 = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.normal,
+  );
+
+  static const TextStyle regular12Error = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    color: errorColor,
   );
   static const TextStyle regular10 = TextStyle(
     fontSize: 10,
@@ -154,6 +168,8 @@ class AppTypography {
 
   static const TextStyle regular12Primary = TextStyle(
       fontSize: 12, fontWeight: FontWeight.normal, color: primaryColor);
+  static const TextStyle regular12Green =
+      TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: green30A);
 
   static const TextStyle regular12BlueMain =
       TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: blueMain);
@@ -164,6 +180,9 @@ class AppTypography {
     fontWeight: FontWeight.normal,
     fontFamily: 'Inter',
   );
+
+  static const TextStyle regular120AOA =
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: black0A);
 
   static const TextStyle interRegular14 = TextStyle(
     fontSize: 14,

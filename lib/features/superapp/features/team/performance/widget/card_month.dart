@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 class CardMonth extends StatelessWidget {
   final String nameProduct;
@@ -20,21 +20,19 @@ class CardMonth extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsetsDirectional.all(12),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsetsDirectional.all(AppSpacing.md3),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-          // Tambahkan warna latar belakang
-          color: Colors.white,
+          color: AppColors.alwaysWhite,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey
-                  .withValues(alpha: 0.7), // Warna bayangan dengan transparansi
-              spreadRadius: 1, // Jarak penyebaran bayangan
-              blurRadius: 4, // Tingkat blur bayangan
-              offset: const Offset(0, 3), // Arah bayangan (x, y)
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 9,
+              spreadRadius: 0.3,
+              offset: Offset.zero,
             ),
           ],
-          borderRadius: BorderRadius.circular(10)),
+          borderRadius: BorderRadius.circular(AppRadius.md)),
       child: Column(
         children: [
           widgetContent(
@@ -47,17 +45,18 @@ class CardMonth extends StatelessWidget {
             onTap: ontap,
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 9.5),
-              margin: const EdgeInsets.only(top: 10),
+              margin: const EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primaryBase,
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Detail",
-                    style: AppTypography.regular12White,
+                    style: AppTypography.bodySmRegular
+                        .copyWith(color: AppColors.alwaysWhite),
                   ),
                   const SizedBox(
                     width: 8,
@@ -86,15 +85,15 @@ class CardMonth extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 14, top: 14, left: 20, right: 20),
       decoration: BoxDecoration(
-        color: f4Gray,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             nameProduct ?? "",
-            style: AppTypography.interSemiBold14,
+            style: AppTypography.numericMdSemiBold,
           ),
           Row(
             children: [
@@ -113,17 +112,18 @@ class CardMonth extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            margin: const EdgeInsets.only(top: AppSpacing.md3),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             width: 60,
             decoration: BoxDecoration(
-              color: lighPrimaryColor,
-              borderRadius: BorderRadius.circular(6),
+              color: AppColors.alwaysWhite,
+              borderRadius: BorderRadius.circular(AppRadius.md3),
             ),
             child: Center(
               child: Text(
                 name ?? "",
-                style: AppTypography.regular12FF6262,
+                style: AppTypography.bodySmRegular
+                    .copyWith(color: AppColors.grey700),
               ),
             ),
           ),
@@ -163,12 +163,13 @@ class CardMonth extends StatelessWidget {
                   padding: const EdgeInsetsDirectional.symmetric(
                       vertical: 2, horizontal: 14),
                   decoration: BoxDecoration(
-                      color: blueLight,
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: primaryColor)),
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(AppRadius.circular),
+                      border: Border.all(color: AppColors.primaryBase)),
                   child: Text(
                     role ?? "",
-                    style: AppTypography.regular12Primary,
+                    style: AppTypography.bodySmRegular
+                        .copyWith(color: AppColors.primaryBase),
                   ),
                 ),
               ],
