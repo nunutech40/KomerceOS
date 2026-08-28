@@ -280,6 +280,7 @@ Future<void> initDependencies() async {
         getProfileUseCase: locator(),
         getBalanceAnalyticsUseCase: locator(),
         topUpCeckTransactionUseCase: locator(),
+        checkBillUseCase: locator(),
       ));
 
   locator.registerFactory(() => ReportPerformanceBloc(

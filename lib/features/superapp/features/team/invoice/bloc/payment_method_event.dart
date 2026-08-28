@@ -41,3 +41,10 @@ class LoadDataCecktransactionTopUpEvent extends PaymentMethodEvent {
   @override
   List<Object> get props => [typeCheckTrasaction];
 }
+
+class CheckActiveBillEvent extends PaymentMethodEvent {
+  const CheckActiveBillEvent();
+
+  @override
+  List<Object?> get props => [];
+}
