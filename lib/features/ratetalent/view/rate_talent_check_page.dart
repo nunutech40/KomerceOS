@@ -154,7 +154,8 @@ class _RateTalentCheckPageState extends State<RateTalentCheckPage>
             children: [
               const SizedBox(child: RatingInfoWidget()),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14.0, vertical: 6.0),

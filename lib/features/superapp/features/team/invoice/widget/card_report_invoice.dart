@@ -330,12 +330,24 @@ class _CardReportInvoiceState extends State<CardReportInvoice> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'Metode Pembayaran: ${invoiceDetail?.paymentBy == 'kompay' ? 'KomPay' : invoiceDetail?.paymentBy == 'transfer_bank' ? 'Transfer Bank' : invoiceDetail?.paymentBy ?? ''}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF333333),
+              child: RichText(
+                text: TextSpan(
+                  text: 'Metode Pembayaran:',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: gray737373,
+                  ),
+                  children: [
+                    TextSpan(
+                      text:
+                          ' ${invoiceDetail?.paymentBy == 'kompay' ? 'KomPay' : invoiceDetail?.paymentBy == 'transfer_bank' ? 'Transfer Bank' : invoiceDetail?.paymentBy ?? ''}',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: gray737373),
+                    ),
+                  ],
                 ),
               ),
             ),

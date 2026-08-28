@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/app_spacing.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
 import 'package:komtim_partner/common/global/widgets/custom_text_invoice.dart';
 import 'package:komtim_partner/common/styles.dart';
 
@@ -101,7 +103,7 @@ class InvoiceItem extends StatelessWidget {
         case 'invoice':
           return descInvoices(invoiceData.transactionStatus);
         default:
-          return invoiceData.isPaid ? 'Dibayar' : 'Belum Dibayar';
+          return invoiceData.isPaid ? 'Berhasil' : 'Belum Dibayar';
       }
     }
 
@@ -117,7 +119,7 @@ class InvoiceItem extends StatelessWidget {
         isInvoice = false;
         break;
       default:
-        iconAsset = 'assets/images/ic-invoice-list.svg';
+        iconAsset = 'assets/images/superapp/team/ic_invoice_super_app.svg';
         title = 'Invoice';
         isInvoice = true;
         break;
@@ -162,7 +164,7 @@ class InvoiceItem extends StatelessWidget {
           break;
       }
     } else {
-      iconAsset = 'assets/images/ic-invoice-list.svg';
+      iconAsset = 'assets/images/superapp/team/ic_invoice_super_app.svg';
     }
 
     Widget customTextBasedOnInvoice() {
@@ -174,19 +176,19 @@ class InvoiceItem extends StatelessWidget {
 
       switch (invoiceStatus) {
         case 'Dibayar':
-          backgroundColor = backgroundPrimaryColor;
-          textColor = primaryColor;
-          borderColor = backgroundPrimaryColor;
+          backgroundColor = AppColors.greenLightD6;
+          textColor = AppColors.successBase;
+          borderColor = AppColors.greenLightD6;
         case 'Berhasil':
-          backgroundColor = backgroundPrimaryColor;
-          textColor = primaryColor;
-          borderColor = backgroundPrimaryColor;
+          backgroundColor = AppColors.greenLightD6;
+          textColor = AppColors.successBase;
+          borderColor = AppColors.greenLightD6;
 
           break;
         case 'Belum Dibayar':
-          backgroundColor = lightWarningColor; // You would define this color
-          textColor = warningColor; // You would define this color
-          borderColor = lightWarningColor;
+          backgroundColor = primaryColor; // You would define this color
+          textColor = AppColors.alwaysWhite; // You would define this color
+          borderColor = primaryColor;
           break;
         case 'Tidak Berhasil':
           backgroundColor = errorBackground;
@@ -215,8 +217,8 @@ class InvoiceItem extends StatelessWidget {
           break;
         case 'Kedaluwarsa':
           backgroundColor = lightGray;
-          textColor = darkGray;
-          borderColor = darkGray;
+          textColor = gray646464;
+          borderColor = grayF5F5F5;
           break;
         default:
           backgroundColor = Colors.blue.withValues(alpha: 0.1);
@@ -230,6 +232,7 @@ class InvoiceItem extends StatelessWidget {
         backgroundColor: backgroundColor,
         textColor: textColor,
         borderColor: borderColor,
+        borderRadius: 90,
       );
     }
 
@@ -252,12 +255,12 @@ class InvoiceItem extends StatelessWidget {
 
       switch (invoiceStatus) {
         case 'Dibayar':
-          textColor = primaryColor;
+          textColor = AppColors.successBase;
         case 'Berhasil':
-          textColor = primaryColor;
+          textColor = AppColors.successBase;
           break;
         case 'Belum Dibayar':
-          textColor = primaryColor; // You would define this color
+          textColor = AppColors.black0A0A; // You would define this color
           break;
         case 'Tidak Berhasil':
           textColor = errorColor;
@@ -290,11 +293,27 @@ class InvoiceItem extends StatelessWidget {
     }
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SvgPicture.asset(
-          iconAsset,
-          width: 32,
-          height: 32,
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.md3),
+            color: AppColors.alwaysWhite,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.07),
+                blurRadius: 5,
+                spreadRadius: 0.3,
+                offset: Offset.zero,
+              ),
+            ],
+          ),
+          child: DsAppImage(
+            source: iconAsset,
+            width: 24,
+            height: 24,
+          ),
         ),
         const SizedBox(
           width: 12.0,
@@ -339,11 +358,12 @@ class InvoiceItem extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.normal, // medium weight
+                        color: AppColors.textDark,
                         fontSize:
                             invoiceData?.transactionType == 'withdrawal' ||
                                     invoiceData?.transactionType == 'topup'
                                 ? 12
-                                : 14,
+                                : 12,
                       ),
                     ),
                   ),
@@ -360,7 +380,8 @@ class InvoiceItem extends StatelessWidget {
                                   fontFamily: 'Inter',
                                   fontWeight:
                                       FontWeight.normal, // medium weight
-                                  fontSize: 14,
+                                  fontSize: 12,
+                                  color: AppColors.textDark,
                                 ),
                               ),
                             ],
@@ -374,7 +395,7 @@ class InvoiceItem extends StatelessWidget {
                               customTextTitleInvoice(
                                   CurrencyFormat.convertToIdr(
                                       invoiceData?.amountTotal ?? 0, 0),
-                                  14,
+                                  12,
                                   FontWeight.normal),
                             ],
                           ),
@@ -395,7 +416,7 @@ class InvoiceItem extends StatelessWidget {
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.normal, // medium weight
                               fontSize: 12,
-                              color: darkGray),
+                              color: AppColors.textDark),
                         ),
                       )
                     : Container(),
@@ -405,8 +426,9 @@ class InvoiceItem extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            customTextTitleInvoice(
-                                'Lihat Detail', 12, FontWeight.normal),
+                            Text('Lihat Detail',
+                                style: AppTypography.interRegular12
+                                    .copyWith(color: AppColors.successBase)),
                           ],
                         ),
                       )
