@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/global/design_system/app_colors.dart';
-
-import '../../../common/styles.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
 class SmallRating extends StatelessWidget {
   final String rating;
@@ -15,17 +13,16 @@ class SmallRating extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.alwaysWhite,
-        borderRadius: BorderRadius.circular(6.0),
+        borderRadius: BorderRadius.circular(AppRadius.md3),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 12.0),
-        child: Center(
-          child: Text(
-            rating,
-            textAlign: TextAlign.center,
-            style: AppTypography.semiBold14,
-          ),
-        ),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.md3,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        rating,
+        textAlign: TextAlign.center,
+        style: AppTypography.bodyMdSemiBold.copyWith(color: AppColors.grey800),
       ),
     );
   }
