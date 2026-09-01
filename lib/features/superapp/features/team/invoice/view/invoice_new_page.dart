@@ -249,7 +249,13 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
         physics: const AlwaysScrollableScrollPhysics(),
         children: const [
           SizedBox(height: 100),
-          Center(child: Text(Strings.label_no_data)),
+          Center(
+            child: DsEmptyState(
+              imagePath: 'assets/images/team/empty_state_feed.svg',
+              title: 'Tidak ada invoice',
+              description: 'Tidak ada pembayaran invoice.',
+            ),
+          ),
         ],
       );
     }

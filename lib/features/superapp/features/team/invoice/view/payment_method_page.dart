@@ -19,7 +19,6 @@ import 'package:komtim_partner/core/domain/entities/balance_analytics_model.dart
 import 'package:komtim_partner/core/domain/entities/check_bill_model.dart';
 import 'package:komtim_partner/core/domain/entities/invoice_detail_model.dart';
 import 'package:komtim_partner/core/domain/entities/profile_model.dart';
-import 'package:komtim_partner/features/superapp/features/topup/view/web_view_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/payment_method_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/widget/bottom_sheet_balance.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/widget/radio_button_payment_method.dart';
@@ -28,6 +27,7 @@ import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_invo
 import 'package:komtim_partner/features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/barcode_qris_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
+import 'package:komtim_partner/features/superapp/features/topup/view/web_view_page.dart';
 import 'package:lottie/lottie.dart';
 
 class PaymentMethodPage extends StatefulWidget {
@@ -372,152 +372,149 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
         return Stack(
           children: [
             Scaffold(
-                backgroundColor: const Color(0xFFFDF0F1),
-                extendBodyBehindAppBar: true,
-                appBar: const DsAppBar(
-                  title: 'Metode Pembayaran',
-                  backgroundColor: Colors.transparent,
-                  containerLeadingColor: AppColors.alwaysWhite,
-                  textColor: AppColors.alwaysBlack,
-                  iconColor: AppColors.alwaysBlack,
-                ),
-                body: Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 280,
-                            decoration: const BoxDecoration(
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    'assets/images/team/bg_invoice.png'),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter,
-                              ),
+              backgroundColor: const Color(0xFFFDF0F1),
+              extendBodyBehindAppBar: true,
+              appBar: const DsAppBar(
+                title: 'Metode Pembayaran',
+                backgroundColor: Colors.transparent,
+                containerLeadingColor: AppColors.alwaysWhite,
+                textColor: AppColors.alwaysBlack,
+                iconColor: AppColors.alwaysBlack,
+              ),
+              body: Stack(
+                children: [
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 280,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/images/team/bg_invoice.png'),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.topCenter,
                             ),
                           ),
-                          // Gradient fade from image to background
-                          Container(
-                            width: double.infinity,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Color(0xFFFDF0F1),
-                                  Color(0xFFFDF0F1),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SafeArea(
-                      child: Column(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 24),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Total yang harus dibayar:',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: black0A,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  CurrencyFormat.convertToIdr(
-                                      detail?.amountTotal ?? 0, 0),
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w600,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                const Divider(height: 30, thickness: 1),
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Pilih Metode Pembayaran: ',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: black0A),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                PaymentMethodRadio(
-                                  kompayBalance: profileData?.kmPoin ?? 0,
-                                  isKompayBalanceSufficient:
-                                      (profileData?.kmPoin ?? 0) >=
-                                          (detail?.amountTotal ?? 0),
-                                  onChanged: (selected) {
-                                    setState(() {
-                                      selectedMethod = selected;
-                                    });
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 24,
-                                ),
-                                isTopUp()
-                                    ? TopUpButton(
-                                        onPressed: () {
-                                          _checkActiveBillAndNavigate();
-                                        },
-                                      )
-                                    : Container(),
-                                const SizedBox(
-                                  height: 24,
-                                ),
+                        ),
+                        // Gradient fade from image to background
+                        Container(
+                          width: double.infinity,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFFFDF0F1),
+                                Color(0xFFFDF0F1),
                               ],
                             ),
                           ),
-                          const Spacer(),
-                          Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.only(
-                                left: 24.0,
-                                right: 24.0,
-                                bottom: 10.0,
-                              ),
-                              child: CustomButtonIconText(
-                                text: 'Bayar Sekarang',
-                                onPressed: selectedMethod.isEmpty
-                                    ? null
-                                    : () async {
-                                        handlePaymentButtonLogic();
-                                      },
-                                color: Colors.white,
-                                colorText: Colors.white,
-                                backGroundColor: selectedMethod.isEmpty
-                                    ? Colors.grey
-                                    : primaryColor,
-                              )),
-                          const SizedBox(
-                            height: 56,
-                          )
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                )),
+                  ),
+                  SafeArea(
+                    child: Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Total yang harus dibayar:',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: black0A,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                CurrencyFormat.convertToIdr(
+                                    detail?.amountTotal ?? 0, 0),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  color: primaryColor,
+                                ),
+                              ),
+                              const Divider(height: 30, thickness: 1),
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Pilih Metode Pembayaran: ',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: black0A),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              PaymentMethodRadio(
+                                kompayBalance: profileData?.kmPoin ?? 0,
+                                isKompayBalanceSufficient:
+                                    (profileData?.kmPoin ?? 0) >=
+                                        (detail?.amountTotal ?? 0),
+                                onChanged: (selected) {
+                                  setState(() {
+                                    selectedMethod = selected;
+                                  });
+                                },
+                              ),
+                              const SizedBox(
+                                height: 24,
+                              ),
+                              isTopUp()
+                                  ? TopUpButton(
+                                      onPressed: () {
+                                        _checkActiveBillAndNavigate();
+                                      },
+                                    )
+                                  : Container(),
+                              const SizedBox(
+                                height: 24,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              bottomNavigationBar: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    bottom: 10.0,
+                  ),
+                  child: CustomButtonIconText(
+                    text: 'Bayar Sekarang',
+                    onPressed: selectedMethod.isEmpty
+                        ? null
+                        : () async {
+                            handlePaymentButtonLogic();
+                          },
+                    color: Colors.white,
+                    colorText: Colors.white,
+                    backGroundColor:
+                        selectedMethod.isEmpty ? Colors.grey : primaryColor,
+                  )),
+            ),
           ],
         );
       }),
