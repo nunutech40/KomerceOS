@@ -3,19 +3,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
+import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/global/widgets/custom_button.dart';
 import 'package:komtim_partner/common/string.dart';
+import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/common/utils/loading/loading_overlay.dart';
+import 'package:komtim_partner/common/utils/loading/shimmer_loaders.dart';
+import 'package:komtim_partner/core/domain/entities/talents_model.dart';
 
 // import 'package:komtim_partner/features/ratetalent/view/web_view_page.dart';
 
-import '../../../common/enum_status.dart';
-import '../../../common/global/router/app_router.dart';
-import '../../../common/styles.dart';
-import '../../../common/utils/loading/loading_overlay.dart';
-import '../../../common/utils/loading/shimmer_loaders.dart';
-import '../../../core/domain/entities/talents_model.dart';
 import '../bloc/rate_talent_bloc.dart';
 import '../widget/item_row_set_setting.dart';
 import '../widget/rating_info_widget.dart';

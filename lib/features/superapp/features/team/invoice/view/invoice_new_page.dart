@@ -260,6 +260,17 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
       );
     }
 
+    // Helper: menentukan apakah invoice masih belum dibayar.
+    // Fallback ke isPaid jika transactionStatus null/kosong,
+    // dan perbandingan status dibuat case-insensitive.
+    bool isUnpaid(InvoicesDataModel invoice) {
+      final status = invoice.transactionStatus?.toLowerCase();
+      if (status != null && status.isNotEmpty) {
+        return status == 'unpaid';
+      }
+      return !invoice.isPaid;
+    }
+
     final filteredInvoices = _invoices.where((invoice) {
       final type = invoice.transactionType?.toLowerCase();
       if (type != 'invoice' && type != null) return false;
@@ -272,14 +283,13 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
     final actionRequiredList = allNeedProcess.where((invoice) {
       final type = invoice.transactionType?.toLowerCase();
       if (type != 'invoice' && type != null) return false;
-      if (invoice.transactionStatus != 'unpaid') return false;
+      if (!isUnpaid(invoice)) return false;
       if (_searchQuery.isEmpty) return true;
       final code = (invoice.invoiceCode ?? '').toLowerCase();
       return code.contains(_searchQuery);
     }).toList();
 
-    final completedList =
-        filteredInvoices.where((i) => i.transactionStatus != 'unpaid').toList();
+    final completedList = filteredInvoices.where((i) => !isUnpaid(i)).toList();
 
     return ListView(
       controller: _scrollController,

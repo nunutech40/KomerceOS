@@ -6,7 +6,7 @@ import 'package:komtim_partner/core/domain/usecases/get_talent_evaluation_use_ca
 import 'package:komtim_partner/core/domain/usecases/get_talent_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/set_rating_talents_use_case.dart';
 
-import '../../../core/domain/entities/talents_model.dart';
+import '../../../../../../core/domain/entities/talents_model.dart';
 
 part 'rate_talent_event.dart';
 part 'rate_talent_state.dart';

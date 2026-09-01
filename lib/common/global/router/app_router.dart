@@ -12,9 +12,6 @@ import 'package:komtim_partner/core/domain/usecases/reset_password_use_case.dart
 import 'package:komtim_partner/features/pin/view/pin_page.dart';
 import 'package:komtim_partner/features/pin/view/verification_email_page.dart';
 import 'package:komtim_partner/features/profile/view/profile_info_update_page.dart';
-import 'package:komtim_partner/features/ratetalent/view/evaluation_kompoint_page.dart';
-import 'package:komtim_partner/features/ratetalent/view/rate_talent_check_page.dart';
-import 'package:komtim_partner/features/ratetalent/view/rate_talent_notif_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/email_check_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/forgot_password.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/login_page.dart';
@@ -23,6 +20,7 @@ import 'package:komtim_partner/features/superapp/features/authentication/views/o
 import 'package:komtim_partner/features/superapp/features/authentication/views/success_new_password.dart';
 import 'package:komtim_partner/features/superapp/features/home/view/main_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/view/attendance_pages.dart';
+import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_detail_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/home/bloc/home_team_cubit.dart';
@@ -33,14 +31,16 @@ import 'package:komtim_partner/features/superapp/features/team/invoice/view/invo
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_report_summary_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/payment_method_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/success_payment_kompay_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/listteam/view/list_of_team_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/view/detail_report_performance_month_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/view/report_performance_pages.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/view/evaluation_kompoint_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/view/rate_talent_check_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/view/rate_talent_notif_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/detail_shopping_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/shopping_list_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/view/talent_pool_page.dart';
-import 'package:komtim_partner/features/superapp/features/team/listteam/view/list_of_team_page.dart';
-import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/splash_screen_page.dart';
 import 'package:komtim_partner/features/unhire/view/dialog_unhire_finish.dart';
 import 'package:komtim_partner/features/unhire/view/reason_unhire_page.dart';
@@ -374,7 +374,8 @@ class AppRouter {
               int.tryParse(state.queryParameters['index'] ?? '0') ?? 0;
           final allCount =
               int.tryParse(state.queryParameters['allCount'] ?? '0') ?? 0;
-          return UnhireReasonPage(count: count, index: index, allCount: allCount);
+          return UnhireReasonPage(
+              count: count, index: index, allCount: allCount);
         },
       ),
       GoRoute(

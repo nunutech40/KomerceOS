@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/custom_filtering_text_input.dart';
+import 'package:komtim_partner/common/extension.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/widgets/checkbox_default.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/features/ratetalent/widget/small_rating_white.dart';
-
-import '../../../common/custom_filtering_text_input.dart';
-import '../../../common/extension.dart';
-import '../../../common/global/widgets/checkbox_default.dart';
-import '../../../common/styles.dart';
-import '../../../core/domain/entities/talents_model.dart';
+import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/core/domain/entities/talents_model.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/widget/small_rating_white.dart';
 
 class ItemRowSetRating extends StatefulWidget {
   final TalentsDataModel? talents;

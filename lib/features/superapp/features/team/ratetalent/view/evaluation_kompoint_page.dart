@@ -8,8 +8,9 @@ import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/global/widgets/custom_button_icon_text.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
-import 'package:komtim_partner/features/ratetalent/bloc/rate_talent_bloc.dart';
-import '../../../common/styles.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/bloc/rate_talent_bloc.dart';
+
+import '../../../../../../common/styles.dart';
 
 class EvaluationKompointPage extends StatefulWidget {
   final int komPoint;

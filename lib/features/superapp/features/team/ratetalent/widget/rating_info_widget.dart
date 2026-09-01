@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/features/ratetalent/widget/small_rating.dart';
-
-import '../../../common/styles.dart';
+import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/widget/small_rating.dart';
 
 class RatingInfoWidget extends StatelessWidget {
   const RatingInfoWidget({

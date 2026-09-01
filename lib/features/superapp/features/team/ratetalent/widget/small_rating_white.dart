@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../../common/styles.dart';
+import 'package:komtim_partner/common/styles.dart';
 
 class SmallRatingWhite extends StatelessWidget {
   final String rating;

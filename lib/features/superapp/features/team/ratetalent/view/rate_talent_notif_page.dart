@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_report_summary_bloc.dart';
-import '../../../common/global/router/app_router.dart';
-import '../../../common/global/router/router_utils.dart';
-import '../../../common/global/widgets/custom_button.dart';
-import '../../../common/styles.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:komtim_partner/common/global/router/app_router.dart';
+import 'package:komtim_partner/common/global/router/router_utils.dart';
+import 'package:komtim_partner/common/global/widgets/custom_button.dart';
+import 'package:komtim_partner/common/string.dart';
+import 'package:komtim_partner/common/styles.dart';
+import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_report_summary_bloc.dart';
 
 class RateTalentNotifPage extends StatefulWidget {
   final String xenditUrl;
   final int invoiceId;
   final String invoiceCode;
   const RateTalentNotifPage(
-      {Key? key, required this.xenditUrl, required this.invoiceId, required this.invoiceCode})
+      {Key? key,
+      required this.xenditUrl,
+      required this.invoiceId,
+      required this.invoiceCode})
       : super(key: key);
 
   @override
