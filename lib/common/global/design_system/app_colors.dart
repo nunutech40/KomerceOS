@@ -143,4 +143,10 @@ abstract final class AppColors {
   static const Color black0A0A = Color(0xFF0A0A0A);
 
   static const Color greenLightD6 = Color(0xFFD6F1DF);
+
+  static const Color borderColor = Color(0xFF737373);
+
+  /// Focus ring shadow — #A1A1A1 at 50% opacity
+  /// (CSS equivalent: box-shadow: 0px 0px 0px 3px #A1A1A180)
+  static const Color focusRingShadow = Color(0x80A1A1A1);
 }

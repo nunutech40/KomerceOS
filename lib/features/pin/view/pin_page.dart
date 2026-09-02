@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart'
+    as ds;
 import 'package:komtim_partner/common/global/mixin/pop_up_pin_page.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
@@ -13,7 +15,6 @@ import '../../../common/enum_status.dart';
 import '../../../common/utils/loading/loading_overlay.dart';
 import '../../../core/data/shared/payload.dart';
 import '../bloc/pin_bloc.dart';
-import '../widget/pin_input.dart';
 
 enum PinPageType { setPin, confirmPin, verifyPin, updatePin }
 
@@ -173,7 +174,10 @@ class _PinPageState extends State<PinPage> with PopUpPin {
           await storage.delete(
               key: 'tempFirstPin'); // clear the temp pin after use
         } else {
-          // display error message
+          // display error message (PIN konfirmasi tidak sama)
+          setState(() {
+            errorMessage = Strings.label_inputed_pin_incorrect;
+          });
         }
         break;
       case PinPageType.verifyPin:
@@ -317,8 +321,8 @@ class _PinPageState extends State<PinPage> with PopUpPin {
           children: [
             Scaffold(
               appBar: AppBar(
-                title: Text(appBarTitle ?? '',
-                    style: AppTypography.interSemiBold16),
+                title:
+                    Text(appBarTitle ?? '', style: AppTypography.interBold16),
               ),
               body: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -337,18 +341,19 @@ class _PinPageState extends State<PinPage> with PopUpPin {
                     ),
                     const SizedBox(height: 35.0),
                     Center(
-                      child: PinInput(
+                      child: ds.DsOtpField(
                         onCompleted: handlePinCompleted,
-                        onChanged: (currentPin) {},
-                        validator: (pin) {
-                          setState(() {
-                            errorMessage =
-                                (widget.pinType == PinPageType.confirmPin &&
-                                        pin != widget.firstPin)
-                                    ? Strings.label_inputed_pin_incorrect
-                                    : '';
-                          });
-                          return null;
+                        onChanged: (currentPin) {
+                          // Validasi konfirmasi PIN: tampilkan error jika
+                          // 6 digit sudah terisi tapi tidak sama dengan PIN pertama
+                          if (widget.pinType == PinPageType.confirmPin &&
+                              currentPin.length == 6) {
+                            setState(() {
+                              errorMessage = (currentPin != widget.firstPin)
+                                  ? Strings.label_inputed_pin_incorrect
+                                  : '';
+                            });
+                          }
                         },
                       ),
                     ),

@@ -20,6 +20,11 @@ import '../app_typography.dart';
 //   - Paste support (auto-distributes 6-digit paste across fields)
 //   - Callback with complete OTP string
 //   - Fully controlled component via TextEditingController (optional)
+//   - Show/hide toggle (eye icon) for PIN-style masking (default: hidden)
+//   - Focus highlight border + ring shadow on the active digit box
+//     (CSS equivalent: box-shadow: 0px 0px 0px 3px #A1A1A180)
+//   - Auto scale-down (FittedBox) on narrow screens — width & height shrink
+//     proportionally, guaranteeing no right overflow
 // -----------------------------------------------------------------------------
 
 class DsOtpField extends StatefulWidget {
@@ -31,6 +36,7 @@ class DsOtpField extends StatefulWidget {
     this.errorText,
     this.isEnabled = true,
     this.autoFocus = false,
+    this.obscureText = true,
     this.length = 6,
   }) : assert(length == 6, 'DsOtpField currently only supports length = 6');
 
@@ -52,6 +58,11 @@ class DsOtpField extends StatefulWidget {
   /// Whether the first field should be auto-focused.
   final bool autoFocus;
 
+  /// Whether the digits are masked with bullets and a show/hide (eye) toggle
+  /// is displayed next to the field. Set to false for plain OTP inputs.
+  /// Defaults to true (PIN-style, initially hidden).
+  final bool obscureText;
+
   /// Number of OTP digits. Must be 6.
   final int length;
 
@@ -60,11 +71,20 @@ class DsOtpField extends StatefulWidget {
 }
 
 class _DsOtpFieldState extends State<DsOtpField> {
+  /// Natural digit-box size (width = height). The whole row is wrapped in a
+  /// FittedBox so it scales down proportionally on narrow screens.
+  static const double _boxSize = 44.0;
+
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
   late final List<FocusNode> _keyboardNodes;
 
-  bool get _hasError => widget.errorText != null && widget.errorText!.isNotEmpty;
+  /// Internal show/hide state — only relevant when [DsOtpField.obscureText]
+  /// is true. Defaults to hidden (masked).
+  bool _isObscured = true;
+
+  bool get _hasError =>
+      widget.errorText != null && widget.errorText!.isNotEmpty;
 
   @override
   void initState() {
@@ -75,10 +95,10 @@ class _DsOtpFieldState extends State<DsOtpField> {
 
     // Dengarkan perubahan dari parent controller jika ada
     widget.controller?.addListener(_syncFromParent);
-    
+
     // Inisialisasi value awal jika controller parent sudah memiliki teks saat halaman di-load
     if (widget.controller != null && widget.controller!.text.isNotEmpty) {
-       _syncFromParent();
+      _syncFromParent();
     }
   }
 
@@ -86,7 +106,7 @@ class _DsOtpFieldState extends State<DsOtpField> {
   void dispose() {
     // Bersihkan listener saat komponen dihancurkan
     widget.controller?.removeListener(_syncFromParent);
-    
+
     for (final c in _controllers) {
       c.dispose();
     }
@@ -105,6 +125,13 @@ class _DsOtpFieldState extends State<DsOtpField> {
 
   String get _currentOtp => _controllers.map((c) => c.text).join();
 
+  /// Toggle between masked (•) and visible digits.
+  void _toggleObscure() {
+    setState(() {
+      _isObscured = !_isObscured;
+    });
+  }
+
   /// Menyinkronkan 6 kotak internal jika controller dari luar diubah (misal di-clear)
   void _syncFromParent() {
     final parentText = widget.controller?.text ?? '';
@@ -120,7 +147,7 @@ class _DsOtpFieldState extends State<DsOtpField> {
 
   void _notifyChanged() {
     final otp = _currentOtp;
-    
+
     // Update parent controller jika berbeda (hindari infinite loop)
     if (widget.controller != null && widget.controller!.text != otp) {
       widget.controller!.text = otp;
@@ -148,7 +175,7 @@ class _DsOtpFieldState extends State<DsOtpField> {
 
   void _handlePaste(String pastedText) {
     // Only keep digits
-    final digits = pastedText.replaceAll(RegExp(r'[^0-9]'), ''); 
+    final digits = pastedText.replaceAll(RegExp(r'[^0-9]'), '');
     for (int i = 0; i < widget.length; i++) {
       if (i < digits.length) {
         _controllers[i].text = digits[i];
@@ -182,27 +209,54 @@ class _DsOtpFieldState extends State<DsOtpField> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // --- First group (indices 0, 1, 2) ---
-            _buildGroup(0, 3),
+        // FittedBox (scaleDown): baris dirender pada ukuran natural lalu
+        // di-scale down otomatis (lebar & tinggi mengecil proporsional)
+        // saat layar terlalu sempit — menjamin tidak ada right overflow.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // --- First group (indices 0, 1, 2) ---
+              _buildGroup(0, 3),
 
-            // --- Dash separator ---
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: SizedBox(
-                width: 16,
-                child: Divider(
-                  color: AppColors.grey400,
-                  thickness: 2,
+              // --- Dash separator ---
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: SizedBox(
+                  width: 16,
+                  child: Divider(
+                    color: AppColors.grey400,
+                    thickness: 2,
+                  ),
                 ),
               ),
-            ),
 
-            // --- Second group (indices 3, 4, 5) ---
-            _buildGroup(3, 6),
-          ],
+              // --- Second group (indices 3, 4, 5) ---
+              _buildGroup(3, 6),
+
+              // --- Show / hide toggle (eye icon) ---
+              if (widget.obscureText) ...[
+                const SizedBox(width: AppSpacing.sm),
+                IconButton(
+                  onPressed: widget.isEnabled ? _toggleObscure : null,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
+                  icon: Icon(
+                    _isObscured
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    size: 24,
+                    color: widget.isEnabled
+                        ? AppColors.grey600
+                        : AppColors.grey400,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
 
         // --- Error text ---
@@ -239,52 +293,131 @@ class _DsOtpFieldState extends State<DsOtpField> {
             if (i != startIndex)
               Container(
                 width: 1,
-                height: 48,
+                height: _boxSize,
                 color: AppColors.grey200,
               ),
-            _buildDigitBox(i),
+            _buildDigitBox(
+              i,
+              isGroupStart: i == startIndex,
+              isGroupEnd: i == endIndex - 1,
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildDigitBox(int index) {
-    return SizedBox(
-      width: 48,
-      height: 48,
-      child: KeyboardListener(
-        focusNode: _keyboardNodes[index], // managed focus node to prevent memory leak
-        onKeyEvent: (event) => _handleKeyEvent(index, event),
-        child: TextField(
-          controller: _controllers[index],
-          focusNode: _focusNodes[index],
-          enabled: widget.isEnabled,
-          autofocus: widget.autoFocus && index == 0,
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          obscureText: true,
-          obscuringCharacter: '*',
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            _OtpInputFormatter(maxLength: widget.length),
-          ],
-          style: AppTypography.headingMd.copyWith(
-            color: widget.isEnabled ? AppColors.grey800 : AppColors.grey400,
+  Widget _buildDigitBox(
+    int index, {
+    bool isGroupStart = false,
+    bool isGroupEnd = false,
+  }) {
+    return ListenableBuilder(
+      // dengarkan focus DAN perubahan teks, karena overlay Text butuh rebuild
+      // saat digit berubah, bukan cuma saat fokus berubah.
+      listenable: Listenable.merge([_focusNodes[index], _controllers[index]]),
+      builder: (context, _) {
+        final bool hasFocus = _focusNodes[index].hasFocus;
+        final String rawText = _controllers[index].text;
+        final String displayText = rawText.isEmpty
+            ? ''
+            : (widget.obscureText && _isObscured ? '*' : rawText);
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: _boxSize,
+          height: _boxSize,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.only(
+              topLeft:
+                  Radius.circular(isGroupStart ? AppRadius.lg : AppRadius.sm),
+              bottomLeft:
+                  Radius.circular(isGroupStart ? AppRadius.lg : AppRadius.sm),
+              topRight:
+                  Radius.circular(isGroupEnd ? AppRadius.lg : AppRadius.sm),
+              bottomRight:
+                  Radius.circular(isGroupEnd ? AppRadius.lg : AppRadius.sm),
+            ),
+            border: Border.all(
+              color: hasFocus ? AppColors.borderColor : AppColors.transparent,
+              width: 2,
+            ),
+            boxShadow: hasFocus
+                ? const [
+                    BoxShadow(
+                      color: AppColors.focusRingShadow,
+                      blurRadius: 0,
+                      spreadRadius: 3,
+                    ),
+                  ]
+                : const [],
           ),
-          decoration: const InputDecoration(
-            counterText: '',
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
-            errorBorder: InputBorder.none,
-            focusedErrorBorder: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
+          child: KeyboardListener(
+            focusNode: _keyboardNodes[index],
+            onKeyEvent: (event) => _handleKeyEvent(index, event),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Layer tampilan: benar-benar center, tidak terpengaruh
+                // metrik font/InputDecorator sama sekali.
+                IgnorePointer(
+                  child: Transform.translate(
+                    offset: Offset(
+                        0,
+                        displayText == '*'
+                            ? 3
+                            : 0), // kompensasi glyph * yg nangkring di atas
+                    child: Text(
+                      displayText,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.headingMd.copyWith(
+                        color: widget.isEnabled
+                            ? AppColors.grey800
+                            : AppColors.grey400,
+                      ),
+                    ),
+                  ),
+                ),
+                // Layer input: menangani keyboard, cursor, dan paste.
+                // Teksnya disembunyikan (transparent) karena tampilan
+                // sudah diambil alih layer Text di atas.
+                TextField(
+                  controller: _controllers[index],
+                  focusNode: _focusNodes[index],
+                  enabled: widget.isEnabled,
+                  autofocus: widget.autoFocus && index == 0,
+                  textAlign: TextAlign.center,
+                  textAlignVertical: TextAlignVertical.center,
+                  keyboardType: TextInputType.number,
+                  obscureText: false, // masking sudah ditangani layer Text
+                  cursorColor: widget.isEnabled
+                      ? AppColors.grey800
+                      : AppColors.transparent,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _OtpInputFormatter(maxLength: widget.length),
+                  ],
+                  style: AppTypography.headingMd.copyWith(
+                    color: Colors.transparent, // sembunyikan glyph asli
+                  ),
+                  decoration: const InputDecoration(
+                    counterText: '',
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (value) => _handleChanged(index, value),
+                ),
+              ],
+            ),
           ),
-          onChanged: (value) => _handleChanged(index, value),
-        ),
-      ),
+        );
+      },
     );
   }
 }

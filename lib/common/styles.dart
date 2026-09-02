@@ -207,6 +207,11 @@ class AppTypography {
     fontFamily: 'Inter',
   );
 
+  static const TextStyle interBold16 = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    fontFamily: 'Inter',
+  );
   static const TextStyle interSemiBold18 = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
