@@ -20,10 +20,9 @@ class CustomCircularIndicator extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   Lottie.asset(
-                    'assets/json/loading-komtim.json',
-                    fit: BoxFit.cover,
-                    height: 100,
-                    width: 100,
+                    'assets/json/loading-superapp.json',
+                    width: 80,
+                    height: 80,
                   ),
                 ],
               ),

@@ -311,7 +311,7 @@ class _PinPageState extends State<PinPage> with PopUpPin {
             showToast(context, 'PIN Gagal Dibuat');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message ?? 'Unknown Error')),
+              SnackBar(content: Text(state.message)),
             );
           }
         }
