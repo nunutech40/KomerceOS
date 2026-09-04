@@ -7,16 +7,18 @@ import 'package:komtim_partner/core/domain/entities/report_performance_product_m
 
 class CustomShowmodalReportPerformanceWeek extends StatefulWidget {
   final BuildContext? context;
-  DateTime? selectedDate;
-  int? value;
-  String? textEditor;
+  final DateTime? selectedDate;
+  final int? value;
+  final String? textEditor;
+  final String? selectedProductId;
   final List<ReportPerformanceProductModel> listProduct;
-  CustomShowmodalReportPerformanceWeek({
+  const CustomShowmodalReportPerformanceWeek({
     super.key,
     this.context,
     this.selectedDate,
     this.value,
     this.textEditor,
+    this.selectedProductId,
     required this.listProduct,
   });
 
@@ -34,7 +36,10 @@ class _CustomShowmodalReportPerformanceWeekState
   void initState() {
     super.initState();
     _listProduct = widget.listProduct;
-    if (_listProduct.isNotEmpty) {
+
+    if ((widget.selectedProductId ?? '').isNotEmpty) {
+      selectProductId = widget.selectedProductId;
+    } else if (_listProduct.isNotEmpty) {
       selectProductId = _listProduct.first.id?.toString();
     }
   }

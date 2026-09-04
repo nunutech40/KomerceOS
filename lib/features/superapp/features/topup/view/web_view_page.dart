@@ -4,8 +4,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
+  final bool returnToPaymentMethod;
 
-  const WebViewPage({Key? key, required this.url}) : super(key: key);
+  const WebViewPage({
+    Key? key,
+    required this.url,
+    this.returnToPaymentMethod = false,
+  }) : super(key: key);
 
   @override
   _WebViewPageState createState() => _WebViewPageState();
@@ -26,7 +31,6 @@ class _WebViewPageState extends State<WebViewPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
-            // Update loading bar.
             Center(
               child: Lottie.asset(
                 'assets/json/loading-superapp.json',
@@ -49,17 +53,23 @@ class _WebViewPageState extends State<WebViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        return false;
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && widget.returnToPaymentMethod) {
+          Navigator.of(context).pop();
+        }
       },
       child: Scaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                if (widget.returnToPaymentMethod) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }
               },
             ),
             title: const Text('Pembayaran Top Up'),
@@ -67,19 +77,6 @@ class _WebViewPageState extends State<WebViewPage> {
           body: WebViewWidget(
             controller: _controller,
           )
-          // WebView(
-          //   initialUrl: widget.url,
-          //   ..javascriptMode: JavascriptMode.unrestricted,
-          //   onWebViewCreated: (WebViewController webViewController) {
-          //     _controller = webViewController;
-          //   },
-          //   navigationDelegate: (NavigationRequest request) {
-          //     if (request.url.startsWith('https://www.youtube.com/')) {
-          //       return NavigationDecision.prevent;
-          //     }
-          //     return NavigationDecision.navigate;
-          //   },
-          // ),
           ),
     );
   }

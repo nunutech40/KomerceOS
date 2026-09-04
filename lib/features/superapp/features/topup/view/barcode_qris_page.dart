@@ -17,6 +17,7 @@ class BarcodeQrisPage extends StatefulWidget {
   final String qrString;
   final String expiresAt;
   final String qrId;
+  final bool returnToPaymentMethod;
 
   const BarcodeQrisPage({
     super.key,
@@ -24,6 +25,7 @@ class BarcodeQrisPage extends StatefulWidget {
     required this.qrString,
     required this.expiresAt,
     this.qrId = '',
+    this.returnToPaymentMethod = false,
   });
 
   @override
@@ -206,7 +208,11 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                     _showLoadingDialog();
                   } else if (state is ExpireQrcodeSuccess) {
                     _hideLoadingDialog();
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    if (widget.returnToPaymentMethod) {
+                      Navigator.of(context).pop();
+                    } else {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
                   } else if (state is ExpireQrcodeError) {
                     _hideLoadingDialog();
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -230,28 +236,38 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                         status.isEmpty) {
                       setState(() => _showPaymentError = true);
                     } else if (status == 'EXPIRED' || status == 'FAILED') {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      if (widget.returnToPaymentMethod) {
+                        Navigator.of(context).pop();
+                      } else {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      }
                     } else {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DsAppResultPage(
-                            illustration: SvgPicture.asset(
-                              'assets/images/superapp/topu/ilustration_top_up_success.svg',
-                            ),
-                            title: 'Top Up Berhasil',
-                            description:
-                                'Top up saldo berhasil, silahkan refresh halaman beranda kamu, ya',
-                            action: DsButton(
-                              text: 'Kembali',
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .popUntil((route) => route.isFirst);
-                              },
+                      if (widget.returnToPaymentMethod) {
+                        // Kembali ke PaymentMethodPage, tidak perlu tampilkan success page
+                        Navigator.of(context).pop(); // pop BarcodeQrisPage
+                        // Optional: bisa trigger refresh di PaymentMethodPage via callback
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DsAppResultPage(
+                              illustration: SvgPicture.asset(
+                                'assets/images/superapp/topu/ilustration_top_up_success.svg',
+                              ),
+                              title: 'Top Up Berhasil',
+                              description:
+                                  'Top up saldo berhasil, silahkan refresh halaman beranda kamu, ya',
+                              action: DsButton(
+                                text: 'Kembali',
+                                onPressed: () {
+                                  Navigator.of(context)
+                                      .popUntil((route) => route.isFirst);
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     }
                   } else if (state is CheckQrcodeFailed) {
                     _hideLoadingDialog();
@@ -265,11 +281,12 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
               ),
             ],
             child: Builder(builder: (innerContext) {
-              return WillPopScope(
-                  onWillPop: () async {
-                    Navigator.of(innerContext)
-                        .popUntil((route) => route.isFirst);
-                    return false;
+              return PopScope(
+                  canPop: true,
+                  onPopInvokedWithResult: (didPop, result) {
+                    if (!didPop && widget.returnToPaymentMethod) {
+                      Navigator.of(innerContext).pop();
+                    }
                   },
                   child: Scaffold(
                     backgroundColor: AppColors.alwaysWhite,

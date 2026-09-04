@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/styles.dart';
 
 class PaymentMethodRadio extends StatefulWidget {
   final int kompayBalance;
@@ -35,6 +36,7 @@ class _PaymentMethodRadioState extends State<PaymentMethodRadio> {
           label: 'Transfer Bank',
           showDetails: false,
         ),
+        const SizedBox(height: 16),
         _buildOption(
           value: 'kompoint',
           label: 'KomPay',
@@ -54,59 +56,71 @@ class _PaymentMethodRadioState extends State<PaymentMethodRadio> {
     bool isBalanceSufficient = true,
   }) {
     return InkWell(
-      onTap: () {
-        _updateSelection(value); // ✅ Gunakan fungsi update
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Radio<String>(
-              value: value,
-              groupValue: selectedMethod,
-              onChanged: (val) {
-                if (val != null) {
-                  _updateSelection(val); // ✅ Gunakan fungsi update
-                }
-              },
-              activeColor: Colors.green,
+      onTap: () => _updateSelection(value),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Padding(
+            // sesuaikan angka ini biar pas sejajar sama baris pertama teks
+            padding: const EdgeInsets.only(top: 2),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: Radio<String>(
+                value: value,
+                groupValue: selectedMethod,
+                onChanged: (val) {
+                  if (val != null) _updateSelection(val);
+                },
+                side: const BorderSide(
+                  width: 1,
+                ),
+                activeColor: primaryColor,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity:
+                    const VisualDensity(horizontal: -4, vertical: -4),
+              ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: showDetails
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(label, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Saldo tersedia: Rp ${_formatCurrency(balance)}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        if (!isBalanceSufficient)
-                          const Text(
-                            "Saldo tidak mencukupi",
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 12,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: showDetails
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 4),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: "Saldo tersedia:",
+                              style: TextStyle(color: gray737373),
                             ),
-                          ),
-                      ],
-                    )
-                  : Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        label,
-                        style: const TextStyle(fontSize: 16),
+                            TextSpan(
+                              text: "Rp ${_formatCurrency(balance)}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: black0A,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-            ),
-          ],
-        ),
+                      if (!isBalanceSufficient)
+                        const Text(
+                          "Saldo tidak mencukupi",
+                          style: TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                    ],
+                  )
+                : Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(label, style: const TextStyle(fontSize: 16)),
+                  ),
+          ),
+        ],
       ),
     );
   }

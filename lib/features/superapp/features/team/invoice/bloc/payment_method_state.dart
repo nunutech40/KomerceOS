@@ -9,7 +9,8 @@ class PaymentMethodState extends Equatable {
       this.profileData,
       this.balanceData,
       this.detailTopup,
-      this.pinData});
+      this.pinData,
+      this.checkBillData});
 
   final String message;
   final RequestStatus status;
@@ -19,6 +20,7 @@ class PaymentMethodState extends Equatable {
   final ChekPinModel? pinData;
   final DashboardBalanceDataModel? balanceData;
   final TopupDetailResponse? detailTopup;
+  final CheckBillModel? checkBillData;
 
   PaymentMethodState copyWith(
       {RequestStatus? status,
@@ -28,7 +30,8 @@ class PaymentMethodState extends Equatable {
       ProfileModel? profileData,
       DashboardBalanceDataModel? balanceData,
       TopupDetailResponse? detailTopup,
-      ChekPinModel? pinData}) {
+      ChekPinModel? pinData,
+      CheckBillModel? checkBillData}) {
     return PaymentMethodState(
         status: status ?? this.status,
         message: message ?? this.message,
@@ -37,7 +40,8 @@ class PaymentMethodState extends Equatable {
         profileData: profileData ?? this.profileData,
         balanceData: balanceData ?? this.balanceData,
         detailTopup: detailTopup ?? this.detailTopup,
-        pinData: pinData ?? this.pinData);
+        pinData: pinData ?? this.pinData,
+        checkBillData: checkBillData ?? this.checkBillData);
   }
 
   @override
@@ -50,5 +54,6 @@ class PaymentMethodState extends Equatable {
         balanceData,
         detailTopup,
         pinData,
+        checkBillData,
       ];
 }
