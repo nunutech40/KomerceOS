@@ -9,7 +9,9 @@ import 'package:komtim_partner/core/domain/entities/auth_state.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
 import 'package:komtim_partner/core/domain/usecases/reset_password_use_case.dart';
+import 'package:komtim_partner/features/pin/view/choose_otp_method_page.dart';
 import 'package:komtim_partner/features/pin/view/pin_page.dart';
+import 'package:komtim_partner/features/pin/view/pin_success_page.dart';
 import 'package:komtim_partner/features/pin/view/verification_email_page.dart';
 import 'package:komtim_partner/features/profile/view/profile_info_update_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/email_check_page.dart';
@@ -338,6 +340,8 @@ class AppRouter {
               extra['invoiceId'] ?? state.queryParameters['invoiceId'];
           final String? statusA =
               extra['statusA'] ?? state.queryParameters['statusA'];
+          final String? xenditUrl =
+              extra['xenditUrl'] ?? state.queryParameters['xenditUrl'];
 
           return PinPage(
             pinType: pinType,
@@ -345,6 +349,7 @@ class AppRouter {
             doJobfor: doJobFor,
             invoiceId: invoiceId,
             statusA: statusA,
+            xenditUrl: xenditUrl,
           );
         },
       ),
@@ -354,7 +359,37 @@ class AppRouter {
         builder: (context, state) {
           final String? email = state.queryParameters['email'];
           final String? time = state.queryParameters['time'];
-          return VerificationEmailPage(email: email, time: time);
+          final String? invoiceId = state.queryParameters['invoiceId'];
+          final String? xenditUrl = state.queryParameters['xenditUrl'];
+          return VerificationEmailPage(
+            email: email,
+            time: time,
+            invoiceId: invoiceId,
+            xenditUrl: xenditUrl,
+          );
+        },
+      ),
+      GoRoute(
+        path: PAGES.chooseOtpMethod.screenPath,
+        name: PAGES.chooseOtpMethod.screenName,
+        builder: (context, state) {
+          final String? email = state.queryParameters['email'];
+          final String? invoiceId = state.queryParameters['invoiceId'];
+          final String? xenditUrl = state.queryParameters['xenditUrl'];
+          return ChooseOtpMethodPage(
+            email: email,
+            invoiceId: invoiceId,
+            xenditUrl: xenditUrl,
+          );
+        },
+      ),
+      GoRoute(
+        path: PAGES.pinSuccess.screenPath,
+        name: PAGES.pinSuccess.screenName,
+        builder: (context, state) {
+          final String? xenditUrl = state.queryParameters['xenditUrl'];
+          final String? invoiceId = state.queryParameters['id'];
+          return PinSuccessPage(xenditUrl: xenditUrl, invoiceId: invoiceId);
         },
       ),
 

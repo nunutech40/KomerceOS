@@ -7,8 +7,9 @@ abstract class PinRepository {
   Future<Either<Failure, ChekPinModel>> checkPin();
   Future<Either<Failure, VerifyPinModel>> verifyPin(String pin);
   Future<Either<Failure, bool>> savePin(String pin);
-  Future<Either<Failure, DataOtpModel>> forgetPin();
-  Future<Either<Failure, VerifyPinModel>> verifyOtp(String otp);
+  Future<Either<Failure, DataOtpModel>> forgetPin({String? purpose});
+  Future<Either<Failure, VerifyPinModel>> verifyOtp(String otp, {String? token});
+  Future<Either<Failure, bool>> updatePinSecured(String pin, String token);
   Future<Either<Failure, bool>> saveTime(String time);
   Future<Either<Failure, bool>> deleteTime();
   Future<Either<Failure, DataOtpModel>> getTime();

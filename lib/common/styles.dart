@@ -133,6 +133,12 @@ class AppTypography {
     fontWeight: FontWeight.normal,
   );
 
+  static const TextStyle regular14grey73 = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: gray737373,
+  );
+
   static const TextStyle regular12 = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.normal,
@@ -155,6 +161,9 @@ class AppTypography {
 
   static const TextStyle regular12Grey = TextStyle(
       fontSize: 12, fontWeight: FontWeight.normal, color: inActiveGray);
+
+  static const TextStyle regular12Grey737373 =
+      TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: gray737373);
 
   static const TextStyle regular12FF6262 =
       TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: darkGray);

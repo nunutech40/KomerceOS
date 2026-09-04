@@ -246,8 +246,8 @@ class _DsOtpFieldState extends State<DsOtpField> {
                       const BoxConstraints(minWidth: 32, minHeight: 32),
                   icon: Icon(
                     _isObscured
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                     size: 24,
                     color: widget.isEnabled
                         ? AppColors.grey600

@@ -8,7 +8,10 @@ class PinState extends Equatable {
       this.isSetPin = false,
       this.pinData,
       this.expiredAt,
-    this.profileData,});
+      this.profileData,
+      this.otpToken,
+      this.attemptLeft = 0,
+      this.nextRequestAt,});
 
   final String message;
   final RequestStatus status;
@@ -18,6 +21,16 @@ class PinState extends Equatable {
   final DataOtpModel? expiredAt;
   final ProfileModel? profileData;
 
+  /// Token dari request-otp (flow lupa PIN) — dipakai untuk
+  /// update-pin via endpoint secured.
+  final String? otpToken;
+
+  /// Sisa percobaan salah OTP/PIN dari API.
+  final int attemptLeft;
+
+  /// `next_request_at` dari API — cooldown kirim ulang OTP.
+  final String? nextRequestAt;
+
   PinState copyWith(
       {RequestStatus? status,
       String? message,
@@ -25,7 +38,10 @@ class PinState extends Equatable {
       bool isSetPin = false,
       VerifyPinModel? pinData,
       DataOtpModel? expiredAt,
-    ProfileModel? profileData,}) {
+      ProfileModel? profileData,
+      String? otpToken,
+      int? attemptLeft,
+      String? nextRequestAt,}) {
     return PinState(
         status: status ?? this.status,
         message: message ?? this.message,
@@ -33,7 +49,10 @@ class PinState extends Equatable {
         isSetPin: isSetPin,
         pinData: pinData ?? this.pinData,
         expiredAt: expiredAt,
-      profileData: profileData ?? this.profileData,);
+        profileData: profileData ?? this.profileData,
+        otpToken: otpToken ?? this.otpToken,
+        attemptLeft: attemptLeft ?? this.attemptLeft,
+        nextRequestAt: nextRequestAt ?? this.nextRequestAt,);
   }
 
   @override
@@ -45,5 +64,8 @@ class PinState extends Equatable {
         pinData,
         expiredAt,
         profileData,
+        otpToken,
+        attemptLeft,
+        nextRequestAt,
       ];
 }

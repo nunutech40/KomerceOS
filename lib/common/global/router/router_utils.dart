@@ -45,6 +45,9 @@ enum PAGES {
   bankpayment,
   //otp verification
   pinOtpVerification,
+  //forgot pin
+  chooseOtpMethod,
+  pinSuccess,
 
   //shopping list
   shoppingListPage,
@@ -135,6 +138,10 @@ extension AppPageExtension on PAGES {
         return "/bankpayment";
       case PAGES.pinOtpVerification:
         return "/verification_email_page";
+      case PAGES.chooseOtpMethod:
+        return "/choose_otp_method";
+      case PAGES.pinSuccess:
+        return "/pin_success";
       case PAGES.shoppingListPage:
         return "/shopping_list_page";
       case PAGES.detailShoppingPage:
@@ -222,6 +229,10 @@ extension AppPageExtension on PAGES {
         return "BANK PAYMENT PAGES";
       case PAGES.pinOtpVerification:
         return "PIN OTP VERIFICATION";
+      case PAGES.chooseOtpMethod:
+        return "CHOOSE OTP METHOD";
+      case PAGES.pinSuccess:
+        return "PIN SUCCESS";
       case PAGES.shoppingListPage:
         return "SHOPPING LIST PAGE";
       case PAGES.detailShoppingPage:
@@ -301,6 +312,10 @@ extension AppPageExtension on PAGES {
         return "Bank PAYMENT Pages";
       case PAGES.pinOtpVerification:
         return "Pin Otp Verification";
+      case PAGES.chooseOtpMethod:
+        return "Choose Otp Method";
+      case PAGES.pinSuccess:
+        return "Pin Success";
       case PAGES.shoppingListPage:
         return "Shopping List Page";
       case PAGES.detailShoppingPage:

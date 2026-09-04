@@ -18,8 +18,8 @@ class OtpInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final defaultPinTheme = PinTheme(
-      width: 50,
-      height: 50,
+      width: 42,
+      height: 52,
       textStyle: const TextStyle(
         fontSize: 16,
         color: Colors.black,
@@ -29,7 +29,7 @@ class OtpInput extends StatelessWidget {
         shape: BoxShape.rectangle,
         color: Colors.white,
         border: Border.all(
-          color: isFailed ? Colors.red : primaryColor,
+          color: isFailed ? errorColor : primaryColor,
           width: 1.0,
         ),
         borderRadius: BorderRadius.circular(8.0),
@@ -38,8 +38,8 @@ class OtpInput extends StatelessWidget {
 
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
       border: Border.all(
-        color: isFailed ? Colors.red : primaryColor,
-        width: 1.0,
+        color: isFailed ? errorColor : primaryColor,
+        width: 1.5,
       ),
     );
 
@@ -52,9 +52,10 @@ class OtpInput extends StatelessWidget {
       validator: validator,
       pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
       showCursor: true,
+      keyboardType: TextInputType.number,
       onChanged: onChanged,
       onCompleted: onCompleted,
-      length: 4,
+      length: 6,
     );
   }
 }

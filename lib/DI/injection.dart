@@ -94,6 +94,8 @@ import 'package:komtim_partner/core/domain/usecases/topup_detail_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/topup_kompoin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/topup_qris_usecase.dart';
 import 'package:komtim_partner/core/domain/usecases/topup_usecase.dart';
+import 'package:komtim_partner/core/domain/usecases/update_pin_secured_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/update_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_otp_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
@@ -250,6 +252,9 @@ Future<void> initDependencies() async {
         getTimeUseCase: locator(),
         deleteTimeUseCase: locator(),
         doPaymentKompayUseCase: locator(),
+        updatePinUseCase: locator(),
+        updatePinSecuredUseCase: locator(),
+        getLocaleProfileUseCase: locator(),
       ));
   locator.registerFactory(() => TalentListBloc(
       getTalensUseCase: locator(), saveSelectedTalentUseCase: locator()));
@@ -349,6 +354,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => CheckPinUseCase(locator()));
   locator.registerLazySingleton(() => VerifyPinUseCase(locator()));
   locator.registerLazySingleton(() => SavePinUseCase(locator()));
+  locator.registerLazySingleton(() => UpdatePinUseCase(locator()));
+  locator.registerLazySingleton(() => UpdatePinSecuredUseCase(locator()));
   locator.registerLazySingleton(() => TopupKompoinUseCase(locator()));
   locator.registerLazySingleton(() => WithdrawKompoinUseCase(locator()));
   locator.registerLazySingleton(() => GetTransactionHistoryUseCase(locator()));

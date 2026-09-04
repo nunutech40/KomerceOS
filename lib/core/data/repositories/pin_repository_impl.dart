@@ -45,20 +45,29 @@ class PinRepositoryImpl extends BaseRepository implements PinRepository {
   }
 
   @override
-  Future<Either<Failure, DataOtpModel>> forgetPin() async {
+  Future<Either<Failure, DataOtpModel>> forgetPin({String? purpose}) async {
     return executeEither(() async {
-      final result = await remoteDataSource.forgetPin();
+      final result = await remoteDataSource.forgetPin(purpose: purpose);
       final otpModel = result.toEntity();
       return otpModel;
     });
   }
 
   @override
-  Future<Either<Failure, VerifyPinModel>> verifyOtp(String otp) async {
+  Future<Either<Failure, VerifyPinModel>> verifyOtp(String otp,
+      {String? token}) async {
     return executeEither(() async {
-      final result = await remoteDataSource.verifyOtp(otp);
+      final result = await remoteDataSource.verifyOtp(otp, token: token);
       final otpModel = result.toEntity();
       return otpModel;
+    });
+  }
+
+  @override
+  Future<Either<Failure, bool>> updatePinSecured(String pin, String token) {
+    return executeEither(() async {
+      final result = await remoteDataSource.updatePinSecured(pin, token);
+      return result;
     });
   }
 

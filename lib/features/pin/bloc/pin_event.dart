@@ -49,7 +49,7 @@ class DoWithdrawalEvent extends PinEvent {
 class DoPaymentKompayEvent extends PinEvent {
   final String? id;
   const DoPaymentKompayEvent({
-     this.id,
+    this.id,
   });
 
   @override
@@ -71,6 +71,12 @@ class VerifyOtpEvent extends PinEvent {
 }
 
 class GetProfileEmail extends PinEvent {
+  @override
+  List<Object?> get props => [];
+}
+
+/// Ambil profil dari local storage (SharedPreferences) sebagai fallback email.
+class GetProfileLocalEvent extends PinEvent {
   @override
   List<Object?> get props => [];
 }

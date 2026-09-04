@@ -70,7 +70,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
   }
 
   void handlePaymentButtonLogic() {
-    debugPrint('isSetPin $isSetPin');
     if (selectedMethod != '' && selectedMethod == 'kompoint') {
       if (isTopUp()) {
         _checkActiveBillAndNavigate();
@@ -92,7 +91,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
               'pinType': 'verifyPin',
               'doJobFor': 'payment',
               'invoiceId': widget.id,
-              'statusA': profileData?.accountStatus
+              'statusA': profileData?.accountStatus,
+              'xenditUrl': widget.xenditUrl
             });
           }
         } else {

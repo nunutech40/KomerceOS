@@ -1,16 +1,18 @@
-
-import 'package:equatable/equatable.dart';
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/core/domain/entities/profile_model.dart';
 import 'package:komtim_partner/core/domain/entities/verify_pin_model.dart';
 import 'package:komtim_partner/core/domain/usecases/delete_time_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/do_payment_kompay_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/forget_pin_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/get_locale_profile_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_profile_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_time_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/save_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/save_time_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/update_pin_secured_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/update_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_otp_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
@@ -32,6 +34,9 @@ class PinBloc extends Bloc<PinEvent, PinState> {
     required this.getTimeUseCase,
     required this.deleteTimeUseCase,
     required this.doPaymentKompayUseCase,
+    required this.updatePinUseCase,
+    required this.updatePinSecuredUseCase,
+    required this.getLocaleProfileUseCase,
   }) : super(const PinState()) {
     on<SavePinFullEvent>(_handleSavePin);
     on<UpdatePinFullEvent>(_handleUpdatePin);
@@ -40,6 +45,7 @@ class PinBloc extends Bloc<PinEvent, PinState> {
     on<ForgetPinEvent>(_forgetPin);
     on<VerifyOtpEvent>(_verifyOtp);
     on<GetProfileEmail>(_getProfileEmail);
+    on<GetProfileLocalEvent>(_getProfileLocal);
     on<SaveTimeEvent>(_saveTime);
     on<GetTimeEvent>(_getTime);
     on<DeletetTimeEvent>(_deleteTime);
@@ -48,6 +54,7 @@ class PinBloc extends Bloc<PinEvent, PinState> {
 
   VerifyPinUseCase verifyPinUseCase;
   SavePinUseCase savePinUseCase;
+  GetLocaleProfileUseCase getLocaleProfileUseCase;
   WithdrawKompoinUseCase withdrawKompoinUseCase;
   ForgetPinUseCase forgetPinUseCase;
   VerifyOtpUseCase verifyOtpUseCase;
@@ -56,6 +63,8 @@ class PinBloc extends Bloc<PinEvent, PinState> {
   DeleteTimeUseCase deleteTimeUseCase;
   GetTimeUseCase getTimeUseCase;
   DoPaymentKompayUseCase doPaymentKompayUseCase;
+  UpdatePinUseCase updatePinUseCase;
+  UpdatePinSecuredUseCase updatePinSecuredUseCase;
 
   Future<void> _handleSavePin(
     SavePinFullEvent event,
@@ -92,17 +101,17 @@ class PinBloc extends Bloc<PinEvent, PinState> {
   ) async {
     emit(state.copyWith(status: RequestStatus.loading, operation: 'updatePin'));
 
-    final updatePinResult = await savePinUseCase.execute(event.pin);
+    // Flow lupa PIN: token OTP tersedia -> endpoint secured (internal auth).
+    // Flow ubah PIN (dengan PIN lama): endpoint legacy /pin/save.
+    final updatePinResult =
+        (state.otpToken != null && state.otpToken!.isNotEmpty)
+            ? await updatePinSecuredUseCase.execute(event.pin, state.otpToken!)
+            : await updatePinUseCase.execute(event.pin);
 
     updatePinResult.fold(
       (failure) {
-        if (failure is ConnectionFailure || failure is ServerFailure) {
-          emit(state.copyWith(
-              message: failure.message, status: RequestStatus.failure));
-        } else {
-          emit(state.copyWith(
-              message: failure.message, status: RequestStatus.failure));
-        }
+        emit(state.copyWith(
+            message: failure.message, status: RequestStatus.failure));
       },
       (pinData) {
         emit(state.copyWith(
@@ -221,7 +230,10 @@ class PinBloc extends Bloc<PinEvent, PinState> {
         emit(state.copyWith(
             message: 'Success',
             status: RequestStatus.success,
-            expiredAt: data));
+            expiredAt: data,
+            otpToken: data.token,
+            nextRequestAt: data.nextRequestAt,
+            attemptLeft: 0));
       },
     );
   }
@@ -232,7 +244,8 @@ class PinBloc extends Bloc<PinEvent, PinState> {
   ) async {
     emit(state.copyWith(status: RequestStatus.loading, operation: 'verifyOtp'));
 
-    final verifyOtpResult = await verifyOtpUseCase.execute(event.otp);
+    final verifyOtpResult =
+        await verifyOtpUseCase.execute(event.otp, token: state.otpToken);
 
     verifyOtpResult.fold(
       (failure) {
@@ -249,6 +262,7 @@ class PinBloc extends Bloc<PinEvent, PinState> {
           message: 'Success',
           status: RequestStatus.success,
           pinData: pinData,
+          attemptLeft: pinData.attemptLeft,
         ));
       },
     );
@@ -271,6 +285,30 @@ class PinBloc extends Bloc<PinEvent, PinState> {
         emit(state.copyWith(
             message: 'Success',
             status: RequestStatus.success,
+            profileData: profileData));
+      },
+    );
+  }
+
+  /// Ambil profil dari local storage (SharedPreferences) tanpa memicu loading.
+  /// Dipakai sebagai fallback email di halaman OTP lupa PIN.
+  Future<void> _getProfileLocal(
+    GetProfileLocalEvent event,
+    Emitter<PinState> emit,
+  ) async {
+    final profileResult = await getLocaleProfileUseCase.execute();
+
+    profileResult.fold(
+      (failure) {
+        // Gagal baca lokal tidak perlu mengganggu flow — email fallback tetap kosong.
+        emit(state.copyWith(
+            status: RequestStatus.empty, operation: 'getProfileLocal'));
+      },
+      (profileData) {
+        emit(state.copyWith(
+            message: 'Success',
+            status: RequestStatus.empty,
+            operation: 'getProfileLocal',
             profileData: profileData));
       },
     );
