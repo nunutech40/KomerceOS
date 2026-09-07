@@ -423,6 +423,7 @@ class _MenuContentSectionState extends State<MenuContentSection> {
       buildWhen: (prev, curr) =>
           prev.displayProfile?.isKomship != curr.displayProfile?.isKomship ||
           prev.displayProfile?.isKomcards != curr.displayProfile?.isKomcards ||
+          prev.displayProfile?.isKomtim != curr.displayProfile?.isKomtim ||
           prev.displayProfile?.productMailVerifications !=
               curr.displayProfile?.productMailVerifications ||
           prev.isBackgroundRefresh != curr.isBackgroundRefresh ||
@@ -430,6 +431,7 @@ class _MenuContentSectionState extends State<MenuContentSection> {
       builder: (context, profileState) {
         final hasKomship = profileState.isKomshipVerified;
         final hasKomcards = profileState.isKomcardsVerified;
+        final hasKomtim = profileState.isKomtimVerified;
 
         // Skeleton saat loading / background refresh
         final isLoading =
@@ -460,15 +462,19 @@ class _MenuContentSectionState extends State<MenuContentSection> {
         }
 
         // Menu items
-        final menuItems = <Widget>[
-          DsMenuIcon(
-            icon: Image.asset('assets/images/superapp/home/ic_team.png'),
-            title: 'Team',
-            onTap: () {
-              AppRouter.router.pushNamed(PAGES.team.screenName);
-            },
-          ),
-        ];
+        final menuItems = <Widget>[];
+
+        if (hasKomtim) {
+          menuItems.add(
+            DsMenuIcon(
+              icon: Image.asset('assets/images/superapp/home/ic_team.png'),
+              title: 'Team',
+              onTap: () {
+                AppRouter.router.pushNamed(PAGES.team.screenName);
+              },
+            ),
+          );
+        }
 
         if (hasKomship) {
           menuItems.addAll([
@@ -485,20 +491,22 @@ class _MenuContentSectionState extends State<MenuContentSection> {
           ]);
         }
 
-        // "Daftar Tim" selalu tampil paling akhir di list
-        menuItems.add(
-          DsMenuIcon(
-            icon: const DsAppImage(
-              source: 'assets/images/superapp/home/ic_list_team.png',
-              width: 48,
-              height: 48,
+        // "Daftar Tim" tampil jika hasKomtim
+        if (hasKomtim) {
+          menuItems.add(
+            DsMenuIcon(
+              icon: const DsAppImage(
+                source: 'assets/images/superapp/home/ic_list_team.png',
+                width: 48,
+                height: 48,
+              ),
+              title: 'Daftar Tim',
+              onTap: () {
+                AppRouter.router.pushNamed(PAGES.listOfTeam.screenName);
+              },
             ),
-            title: 'Daftar Tim',
-            onTap: () {
-              AppRouter.router.pushNamed(PAGES.listOfTeam.screenName);
-            },
-          ),
-        );
+          );
+        }
 
         // Swipe pages
         final allSwipePages = [

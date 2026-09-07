@@ -101,6 +101,18 @@ class SuperappProfileState extends Equatable {
         ));
   }
 
+  /// true jika user punya Komtim DAN sudah verifikasi email Komtim.
+  bool get isKomtimVerified {
+    final profile = displayProfile;
+    if (profile == null) return false;
+    return profile.isKomtim == 1 &&
+        (profile.productMailVerifications.any(
+          (e) =>
+              e.productName?.toLowerCase() == 'komtim' &&
+              e.isVerified == true,
+        ));
+  }
+
   SuperappProfileState copyWith({
     SuperappProfileStatus? status,
     SuperappProfileModel? cachedProfile,

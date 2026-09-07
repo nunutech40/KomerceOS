@@ -79,6 +79,7 @@ class SuperappProfileResponse extends Equatable {
   final int? isAffiliate;
   final int? isKomcards;
   final int? isKomchat;
+  final int? isKomtim;
   final String? accountStatus;
   final List<ProductMailVerificationResponse> productMailVerifications;
   final List<UserLevelResponse> userLevels;
@@ -104,6 +105,7 @@ class SuperappProfileResponse extends Equatable {
     this.isAffiliate,
     this.isKomcards,
     this.isKomchat,
+    this.isKomtim,
     this.accountStatus,
     this.productMailVerifications = const [],
     this.userLevels = const [],
@@ -131,6 +133,7 @@ class SuperappProfileResponse extends Equatable {
       isAffiliate: json['is_affiliate'],
       isKomcards: json['is_komcards'],
       isKomchat: json['is_komchat'],
+      isKomtim: json['is_komtim'],
       accountStatus: json['account_status'],
       productMailVerifications: (json['product_mail_verifications'] as List?)
               ?.map((e) =>
@@ -165,6 +168,7 @@ class SuperappProfileResponse extends Equatable {
         'is_affiliate': isAffiliate,
         'is_komcards': isKomcards,
         'is_komchat': isKomchat,
+        'is_komtim': isKomtim,
         'account_status': accountStatus,
         'product_mail_verifications':
             productMailVerifications.map((e) => e.toJson()).toList(),
@@ -194,6 +198,7 @@ class SuperappProfileResponse extends Equatable {
       isAffiliate: json['is_affiliate'],
       isKomcards: json['is_komcards'],
       isKomchat: json['is_komchat'],
+      isKomtim: json['is_komtim'],
       accountStatus: json['account_status'],
       productMailVerifications: (json['product_mail_verifications'] as List?)
               ?.map((e) =>
@@ -229,6 +234,7 @@ class SuperappProfileResponse extends Equatable {
       isAffiliate: isAffiliate,
       isKomcards: isKomcards,
       isKomchat: isKomchat,
+      isKomtim: isKomtim,
       accountStatus: accountStatus,
       productMailVerifications:
           productMailVerifications.map((e) => e.toEntity()).toList(),
@@ -258,6 +264,7 @@ class SuperappProfileResponse extends Equatable {
         isAffiliate,
         isKomcards,
         isKomchat,
+        isKomtim,
         accountStatus,
         productMailVerifications,
         userLevels,
