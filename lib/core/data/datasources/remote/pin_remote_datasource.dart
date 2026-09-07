@@ -7,6 +7,7 @@ import 'package:komtim_partner/core/data/models/verify_pin_response.dart';
 import '../../apiservice/constat_endpoint.dart';
 import '../../apiservice/dio_client.dart';
 import '../../apiservice/dio_response_parser.dart';
+import '../preferences/shared_pref.dart';
 
 abstract class PinRemoteDataSource {
   Future<CheckPinResponse> checkPin();
@@ -20,12 +21,19 @@ abstract class PinRemoteDataSource {
 class PinRemoteDataSourceImpl implements PinRemoteDataSource {
   final DioClient client;
   final DioResponseParser responseParser;
+  final SharedPref sharedPref;
 
-  PinRemoteDataSourceImpl({required this.client, required this.responseParser});
+  PinRemoteDataSourceImpl({
+    required this.client, 
+    required this.responseParser,
+    required this.sharedPref,
+  });
 
   @override
   Future<CheckPinResponse> checkPin() async {
-    final response = await client.get(Endpoints.checkPinExisting);
+    final profile = await sharedPref.getProfileResponse();
+    final partnerId = profile?.partnerId;
+    final response = await client.get('${Endpoints.checkPinExisting}?partner_id=$partnerId');
     return responseParser.parseResponse<CheckPinResponse>(
         response, (json) => CheckPinResponse.fromJson(json));
   }

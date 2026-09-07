@@ -37,22 +37,18 @@ class TalentRemoteDataSourceImpl implements TalentRemoteDataSource {
         'talent_id': talent.talentId,
         'staff_id': null, // set to null for talents
         'rating': talent.rating,
-        'evaluation': talent.evaluation // set to null for talents
+        'evaluation': talent.evaluation ?? ""
       };
     }).toList();
 
     // Map leaders to a list of Map objects, with talent_id set to null
     List<Map<String, dynamic>> jsonLeaders = leaders.map((leader) {
       return {
-        'job_assignee_id':
-            null, // Assuming leaders have jobAssigneeId, please replace it with the actual property if it's different
         'talent_id': null, // set to null for leaders
-        'staff_id': leader
-            .staffId, // Assuming leaders have staffId, please replace it with the actual property if it's different
-        'rating': leader
-            .rating, // Assuming leaders have rating, please replace it with the actual property if it's different
-        'evaluation': leader
-            .evaluation // Assuming leaders have evaluation, please replace it with the actual property if it's different
+        'rating': leader.rating,
+        'evaluation': leader.evaluation ?? "",
+        'job_assignee_id': leader.jobAssigneeId,
+        'staff_id': leader.staffId,
       };
     }).toList();
 

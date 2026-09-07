@@ -516,7 +516,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<KompayRemoteDataSource>(() =>
       KompayRemoteDataSourceImpl(client: locator(), responseParser: locator()));
   locator.registerLazySingleton<PinRemoteDataSource>(() =>
-      PinRemoteDataSourceImpl(client: locator(), responseParser: locator()));
+      PinRemoteDataSourceImpl(client: locator(), responseParser: locator(), sharedPref: locator()));
   locator.registerLazySingleton<KompoinRemoteDataSource>(() =>
       KompoinRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));

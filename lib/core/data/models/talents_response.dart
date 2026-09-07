@@ -39,16 +39,19 @@ class TalentsResponse extends Equatable {
 }
 
 class TalentLeadersData extends Equatable {
+  final int? jobAssigneeId;
   final int staffId;
   final String staffName;
   final String phoneNumber;
 
   const TalentLeadersData(
-      {required this.staffId,
+      {this.jobAssigneeId,
+      required this.staffId,
       required this.staffName,
       required this.phoneNumber});
 
   Map<String, dynamic> toJson() => {
+        "job_assignee_id": jobAssigneeId,
         "staff_id": staffId,
         "staff_name": staffName,
         "phone_number": phoneNumber,
@@ -56,6 +59,7 @@ class TalentLeadersData extends Equatable {
 
   factory TalentLeadersData.fromJson(Map<String, dynamic> json) {
     return TalentLeadersData(
+      jobAssigneeId: json['job_assignee_id'],
       staffId: json['staff_id'],
       staffName: json['staff_name'],
       phoneNumber: json['phone_number'],
@@ -64,6 +68,7 @@ class TalentLeadersData extends Equatable {
 
   TalentLeaderModel toEntity() {
     return TalentLeaderModel(
+      jobAssigneeId: jobAssigneeId,
       staffId: staffId,
       staffName: staffName,
       phoneNumber: phoneNumber,
@@ -71,7 +76,7 @@ class TalentLeadersData extends Equatable {
   }
 
   @override
-  List<Object?> get props => [staffId, staffName, phoneNumber];
+  List<Object?> get props => [jobAssigneeId, staffId, staffName, phoneNumber];
 }
 
 class TalentsData extends Equatable {

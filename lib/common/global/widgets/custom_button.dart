@@ -37,24 +37,28 @@ class _CustomButtonState extends State<CustomButton> {
           horizontal: 24.0,
         ),
       ),
-      child: Center(
-        child: widget.isLoading
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.0,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Text(
-                widget.text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (widget.isLoading)
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.0,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
+            )
+          else
+            Text(
+              widget.text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        ],
       ),
     );
   }
