@@ -74,41 +74,48 @@ class _CustomShowmodalReportPerformanceWeekState
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.only(left: 10.5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: backgroundContainerColor),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            borderRadius: BorderRadius.circular(8.0),
-                            menuMaxHeight: 150.0,
-                            hint: const Text(
-                              'Semua',
-                              style: AppTypography.regular14inActive,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Container(
+                            padding: const EdgeInsets.only(left: 10.5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: backgroundContainerColor,
                             ),
-                            style: AppTypography.regular14black,
-                            value: selectProductId,
-                            items: _listProduct.map((item) {
-                              return DropdownMenuItem<String>(
-                                value: item.id?.toString(),
-                                child: Text(item.name ?? ''),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectProductId = newValue;
-                              });
-                            },
-                            icon: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: SvgPicture.asset(
-                                  "assets/images/ic_arrow_bottom.svg",
-                                  width: 20,
-                                  height: 20),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                padding: EdgeInsets
+                                    .zero, // matikan padding internal default
+                                menuWidth: constraints.maxWidth -
+                                    10.5, // kunci lebar popup = lebar container
+                                borderRadius: BorderRadius.circular(8.0),
+                                menuMaxHeight: 150.0,
+                                isExpanded: true,
+                                hint: const Text('Semua',
+                                    style: AppTypography.regular14inActive),
+                                style: AppTypography.regular14black,
+                                value: selectProductId,
+                                items: _listProduct.map((item) {
+                                  return DropdownMenuItem<String>(
+                                    value: item.id?.toString(),
+                                    child: Text(item.name ?? '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis),
+                                  );
+                                }).toList(),
+                                onChanged: (v) =>
+                                    setState(() => selectProductId = v),
+                                icon: Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: SvgPicture.asset(
+                                      "assets/images/ic_arrow_bottom.svg",
+                                      width: 20,
+                                      height: 20),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
                   ],

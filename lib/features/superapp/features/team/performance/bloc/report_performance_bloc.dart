@@ -72,7 +72,7 @@ class ReportPerformanceBloc
     ));
 
     final reportPerformanceProduct = await getReportPerformanceProductUseCase
-        .call(keyword: event.keyword, partnerId: event.parentId);
+        .call(keyword: event.keyword, partnerId: event.partnerId);
 
     reportPerformanceProduct.fold(
       (failure) {

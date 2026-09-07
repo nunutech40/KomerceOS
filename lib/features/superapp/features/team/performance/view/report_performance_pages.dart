@@ -3,14 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/time_convert.dart';
-import 'package:komtim_partner/core/data/datasources/preferences/shared_pref.dart';
 import 'package:komtim_partner/core/data/models/profile_response.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_model.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
@@ -129,8 +127,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     'Week 5',
   ];
 
-  @override
-  final pref = di.locator<SharedPref>();
   ProfileResponse? profileResponse;
   @override
   void initState() {
@@ -141,7 +137,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     _setDefaultSelections();
     // Pastikan product list di-fetch di awal
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      profileResponse = await pref.getProfileResponse();
       // Fetch product list once during initialization
       _fetchProductList();
     });
@@ -152,15 +147,28 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
   }
 
 // Add method to fetch product list
-  void _fetchProductList() {
-    if (!_isProductListLoaded && profileResponse != null) {
-      String partnerId = profileResponse?.partnerId.toString() ?? '';
-      _bloc.add(GetReportPerformanceProductEvent(
-        keyword: '',
-        parentId: partnerId,
-      ));
-      _isProductListLoaded = true;
+  Future<String> _resolvePartnerId() async {
+    final partnerIdFromSuperappLogin = await pref.getPartnerIdFromSuperappLogin();
+    if (partnerIdFromSuperappLogin != null) {
+      return partnerIdFromSuperappLogin.toString();
     }
+
+    profileResponse ??= await pref.getProfileResponse();
+
+    return profileResponse?.partnerId.toString() ?? '';
+  }
+
+  Future<void> _fetchProductList({bool forceRefresh = false}) async {
+    if (_isProductListLoaded && !forceRefresh) return;
+
+    final partnerId = await _resolvePartnerId();
+    if (partnerId.isEmpty) return;
+
+    _bloc.add(GetReportPerformanceProductEvent(
+      keyword: '',
+      partnerId: partnerId,
+    ));
+    _isProductListLoaded = true;
   }
 
   _initializeBloc() {
@@ -254,6 +262,9 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
           listDataWeek.clear();
           filteredDataWeek.clear();
         });
+
+        _fetchProductList(forceRefresh: true);
+
         if (_selectedWeek != null) {
           _loadWeeklyData();
         }
@@ -1264,31 +1275,8 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
   }
 
   void _showWeeklyFilter() async {
-    // Ambil list produk terbaru dari API saat filter dibuka
+    // Gunakan list produk yang sudah di-prefetch saat tab mingguan aktif
     final bloc = context.read<ReportPerformanceBloc>();
-
-    profileResponse ??= await pref.getProfileResponse();
-    final partnerId = profileResponse?.partnerId.toString() ?? '';
-
-    if (partnerId.isNotEmpty) {
-      final previousLength = bloc.state.reportPerformanceProduct.length;
-      _bloc.add(GetReportPerformanceProductEvent(
-        keyword: '',
-        parentId: partnerId,
-      ));
-
-      try {
-        await bloc.stream
-            .firstWhere((state) =>
-                state.reportPerformanceProduct.length != previousLength ||
-                state.status == RequestStatus.failure)
-            .timeout(const Duration(seconds: 2));
-      } catch (_) {
-        // fallback ke state yang tersedia saat ini
-      }
-    }
-
-    if (!mounted) return;
 
     List<ReportPerformanceProductModel> productList =
         bloc.state.reportPerformanceProduct;
