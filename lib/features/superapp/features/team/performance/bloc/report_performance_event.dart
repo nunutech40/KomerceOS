@@ -74,13 +74,13 @@ class GetReportPerformanceMonthEvent extends ReportPerformanceEvent {
 
 class GetReportPerformanceProductEvent extends ReportPerformanceEvent {
   final String keyword;
-  final String parentId;
+  final String partnerId;
 
   const GetReportPerformanceProductEvent({
     required this.keyword,
-    required this.parentId,
+    required this.partnerId,
   });
 
   @override
-  List<Object?> get props => [keyword, parentId];
+  List<Object?> get props => [keyword, partnerId];
 }

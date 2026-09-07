@@ -152,6 +152,9 @@ class _AttendancePagesState extends State<AttendancePages>
                                     selectedDate: selectedDate,
                                     value: valueFilter,
                                     textEditor: _textEditingController.text,
+                                    firstDate: firstDate,
+                                    lastDate: lastDate,
+                                    statusFilterValue: statusFilter,
                                   );
                                 },
                               ).then((value) {
@@ -729,31 +732,31 @@ class _AttendancePagesState extends State<AttendancePages>
   /// function for first tab
   _firstTabFunction() async {
     statTab = 0;
-    valueFilter = 0;
-    statusFilter = "all";
-    _textEditingController.clear();
-    await refreshData();
-    _loadData();
+    listDataAttendance.clear();
+    _offset = 0;
+    attemptCount = 0;
+    _hasNextPage = true;
+    await _loadData();
   }
 
   /// function for second tab
   _secondTabFunction() async {
     statTab = 1;
-    valueFilter = 0;
-    statusFilter = "all";
-    _textEditingController.clear();
-    await refreshData();
-    _loadDataAbsence();
+    listDataAttendanceAbsence.clear();
+    _offset = 0;
+    attemptCount = 0;
+    _hasNextPage = true;
+    await _loadDataAbsence();
   }
 
   /// function for third tab
   _thirdTabFunction() async {
     statTab = 2;
-    valueFilter = 0;
-    statusFilter = "all";
-    _textEditingController.clear();
-    await refreshData();
-    _loadDataFail();
+    listDataAttendanceFail.clear();
+    _offset = 0;
+    attemptCount = 0;
+    _hasNextPage = true;
+    await _loadDataFail();
   }
 
   /// show hidden button

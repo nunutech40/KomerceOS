@@ -5,18 +5,25 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onBackPressed;
   final List<Widget>? actions;
-
+  final Color? backgroundColor;
+  final Color? textColor;
+  final Color? containerLeadingColor;
+  final Color? iconColor;
   const DsAppBar({
     super.key,
     required this.title,
     this.onBackPressed,
     this.actions,
+    this.backgroundColor,
+    this.textColor,
+    this.containerLeadingColor,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.alwaysWhite,
+      backgroundColor: backgroundColor ?? AppColors.alwaysWhite,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
@@ -31,6 +38,7 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
           onTap: onBackPressed ?? () => Navigator.of(context).pop(),
           child: Container(
             decoration: BoxDecoration(
+              color: containerLeadingColor,
               shape: BoxShape.circle,
               border: Border.all(
                 color: const Color(
@@ -39,20 +47,17 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
             alignment: Alignment.center,
-            child: const Icon(
+            child: Icon(
               Icons.chevron_left_rounded,
-              color: AppColors.alwaysBlack,
+              color: iconColor ?? AppColors.alwaysBlack,
               size: 28,
             ),
           ),
         ),
       ),
-      title: Text(
-        title,
-        style: AppTypography.bodyLgBold.copyWith(
-          color: AppColors.alwaysBlack,
-        ),
-      ),
+      title: Text(title,
+          style: AppTypography.bodyLgBold
+              .copyWith(color: textColor ?? AppColors.alwaysBlack)),
       actions: actions,
     );
   }

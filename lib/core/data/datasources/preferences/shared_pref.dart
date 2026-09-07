@@ -162,6 +162,21 @@ class SharedPref implements TokenProvider {
     return ProfileResponse.fromJson(jsonDecode(dataProfile));
   }
 
+  Future<int?> getPartnerIdFromSuperappLogin() async {
+    final prefs = await sharedPreferences;
+    final userAndToken = prefs.getString(USERANDTOKEN);
+
+    if (userAndToken == null || userAndToken.isEmpty) return null;
+
+    try {
+      final loginResponse =
+          LoginResponse.fromJson(jsonDecode(userAndToken) as Map<String, dynamic>);
+      return loginResponse.data?.id;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Menghapus semua data sesi.
   ///
   /// Menghapus data dari [SharedPreferences] dan token dari [SecureStorageService].

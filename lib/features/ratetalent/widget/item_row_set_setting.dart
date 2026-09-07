@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/string.dart';
 import 'package:komtim_partner/features/ratetalent/widget/small_rating_white.dart';
 
@@ -20,6 +21,7 @@ class ItemRowSetRating extends StatefulWidget {
   final Function(String, bool)?
       onEvaluationChanged; // Updated to include validation result
   int setRating;
+  final int? index;
 
   ItemRowSetRating({
     Key? key,
@@ -32,6 +34,7 @@ class ItemRowSetRating extends StatefulWidget {
     this.setRating = 0,
     this.onEvaluationChanged,
     this.onCheckboxChanged,
+    this.index,
   }) : super(key: key);
 
   @override
@@ -188,189 +191,206 @@ class _ItemRowSetRatingState extends State<ItemRowSetRating> {
             ? (widget.leaders?.rating ?? 0)
             : (widget.talents?.rating ?? 0));
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CheckboxDeft(
-                    isChecked: widget.isChecked,
-                    onChanged: widget.onCheckboxChanged,
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        truncateText(
-                            widget.isLeader
-                                ? (widget.leaders?.staffName ?? 'Semua')
-                                : (widget.talents?.talentName ?? 'Semua'),
-                            18),
-                        style: widget.isHeader
-                            ? AppTypography.semiBold14
-                            : AppTypography.regular14,
-                      ),
-                      if (widget.isLeader)
-                        Text(Strings.label_talent_lead,
-                            style: AppTypography.regular12
-                                .copyWith(color: primaryColor)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 24.0),
-              child: Row(
-                children: [
-                  SmallRatingWhite(
-                    rating: '1',
-                    isSelected: widget.setRating >= 1,
-                    onTap: () => widget.onRatingChecked?.call(1),
-                  ),
-                  const SizedBox(width: 8.0),
-                  SmallRatingWhite(
-                    rating: '2',
-                    isSelected: widget.setRating >= 2,
-                    onTap: () => widget.onRatingChecked?.call(2),
-                  ),
-                  const SizedBox(width: 8.0),
-                  SmallRatingWhite(
-                    rating: '3',
-                    isSelected: widget.setRating >= 3,
-                    onTap: () => widget.onRatingChecked?.call(3),
-                  ),
-                  const SizedBox(width: 8.0),
-                  SmallRatingWhite(
-                    rating: '4',
-                    isSelected: widget.setRating >= 4,
-                    onTap: () => widget.onRatingChecked?.call(4),
-                  ),
-                  const SizedBox(width: 8.0),
-                  SmallRatingWhite(
-                    rating: '5',
-                    isSelected: widget.setRating >= 5,
-                    onTap: () => widget.onRatingChecked?.call(5),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (!widget.isHeader &&
-            (widget.talents?.talentName ?? '') != Strings.label_all_talent)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  alignment: AlignmentDirectional.topEnd,
+    return Container(
+      color: widget.index == 0 ? const Color(0xFFF5F5F5) : Colors.white,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: widget.index == 0 ? 2.0 : 8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      onTap: () {
-                        if (!isExpanded) {
-                          setState(() {
-                            isExpanded = true;
-                          });
-                        }
-                      },
-                      controller: _evaluationController,
-                      maxLines: isExpanded ? 4 : 1,
-                      maxLength: 300,
-                      style: AppTypography.regular12,
-                      inputFormatters: [
-                        CustomTextInputFormatter.denyTextInput(),
-                        CustomTextInputFormatter.allowTextInput()
-                      ],
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.only(
-                            left: 10, right: 24, top: 8, bottom: 8),
-                        hintText: widget.isLeader
-                            ? Strings.dialog_evaluation_talent_lead
-                            : Strings.dialog_evaluation_talent,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: const BorderSide(
-                            width: 1,
-                            style: BorderStyle.solid,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: const BorderSide(
-                            width: 1,
-                            style: BorderStyle.solid,
-                            color: borderGray,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(
-                              width: 1,
-                              style: BorderStyle.solid,
-                              color: isValidEvaluation
-                                  ? Colors.green
-                                  : primaryColor),
-                        ),
-                        isCollapsed: true,
-                      ),
+                    CheckboxDeft(
+                      isChecked: widget.isChecked,
+                      onChanged: widget.onCheckboxChanged,
                     ),
-                    Positioned(
-                      top: 8.0,
-                      right: 8.0,
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            isExpanded = !isExpanded;
-                          });
-                        },
-                        child: ColorFiltered(
-                          colorFilter: const ColorFilter.mode(
-                            Colors.grey,
-                            BlendMode.srcIn,
-                          ),
-                          child: isExpanded
-                              ? SvgPicture.asset(
-                                  'assets/images/ic-arrow-up.svg')
-                              : SvgPicture.asset(
-                                  'assets/images/ic-arrow-down.svg'),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          truncateText(
+                              widget.isLeader
+                                  ? (widget.leaders?.staffName ?? 'Semua')
+                                  : (widget.talents?.talentName ?? 'Semua'),
+                              18),
+                          style: widget.isHeader
+                              ? AppTypography.semiBold14
+                              : AppTypography.regular14,
                         ),
-                      ),
+                        // if (widget.isLeader)
+                        //   Text(Strings.label_talent_lead,
+                        //       style: AppTypography.regular12
+                        //           .copyWith(color: primaryColor)),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                // Hint text
-                // Text(
-                //   'Syarat mendapat 500 Kompoint:\n• Minimal 20 karakter\n• Mengandung huruf (bukan hanya angka/simbol)\n• Tidak spam/karakter berulang',
-                //   style: AppTypography.regular10.copyWith(
-                //     color: Colors.grey[600],
-                //   ),
-                // ),
-                // // Validation message
-                // if (validationMessage.isNotEmpty) ...[
-                //   const SizedBox(height: 4),
-                //   Text(
-                //     validationMessage,
-                //     style: AppTypography.regular10.copyWith(
-                //       color: isValidEvaluation ? Colors.green : Colors.orange,
-                //       fontWeight: isValidEvaluation
-                //           ? FontWeight.w600
-                //           : FontWeight.normal,
-                //     ),
-                //   ),
-                // ],
-              ],
-            ),
-          )
-      ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 24.0),
+                child: Row(
+                  children: [
+                    SmallRatingWhite(
+                      rating: '1',
+                      isSelected: widget.setRating >= 1,
+                      onTap: () => widget.onRatingChecked?.call(1),
+                    ),
+                    const SizedBox(width: 8.0),
+                    SmallRatingWhite(
+                      rating: '2',
+                      isSelected: widget.setRating >= 2,
+                      onTap: () => widget.onRatingChecked?.call(2),
+                    ),
+                    const SizedBox(width: 8.0),
+                    SmallRatingWhite(
+                      rating: '3',
+                      isSelected: widget.setRating >= 3,
+                      onTap: () => widget.onRatingChecked?.call(3),
+                    ),
+                    const SizedBox(width: 8.0),
+                    SmallRatingWhite(
+                      rating: '4',
+                      isSelected: widget.setRating >= 4,
+                      onTap: () => widget.onRatingChecked?.call(4),
+                    ),
+                    const SizedBox(width: 8.0),
+                    SmallRatingWhite(
+                      rating: '5',
+                      isSelected: widget.setRating >= 5,
+                      onTap: () => widget.onRatingChecked?.call(5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!widget.isHeader &&
+              (widget.talents?.talentName ?? '') != Strings.label_all_talent)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24, 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    alignment: AlignmentDirectional.topEnd,
+                    children: [
+                      TextField(
+                        onTap: () {
+                          if (!isExpanded) {
+                            setState(() {
+                              isExpanded = true;
+                            });
+                          }
+                        },
+                        controller: _evaluationController,
+                        maxLines: isExpanded ? 4 : 1,
+                        maxLength: isExpanded ? 300 : null,
+                        style: AppTypography.regular12,
+                        inputFormatters: [
+                          CustomTextInputFormatter.denyTextInput(),
+                          CustomTextInputFormatter.allowTextInput()
+                        ],
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.only(
+                              left: 10, right: 24, top: 8, bottom: 8),
+                          hintText: widget.isLeader
+                              ? Strings.dialog_evaluation_talent_lead
+                              : Strings.dialog_evaluation_talent,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: const BorderSide(
+                              width: 1,
+                              style: BorderStyle.solid,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: const BorderSide(
+                              width: 1,
+                              style: BorderStyle.solid,
+                              color: borderGray,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(
+                                width: 1,
+                                style: BorderStyle.solid,
+                                color: isValidEvaluation
+                                    ? Colors.green
+                                    : primaryColor),
+                          ),
+                          isCollapsed: true,
+                          counterText: '',
+                        ),
+                      ),
+                      Positioned(
+                        top: 8.0,
+                        right: 8.0,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              isExpanded = !isExpanded;
+                            });
+                          },
+                          child: ColorFiltered(
+                            colorFilter: const ColorFilter.mode(
+                              Colors.grey,
+                              BlendMode.srcIn,
+                            ),
+                            child: isExpanded
+                                ? SvgPicture.asset(
+                                    'assets/images/ic-arrow-up.svg')
+                                : SvgPicture.asset(
+                                    'assets/images/ic-arrow-down.svg'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (isExpanded)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${_evaluationController.text.length} karakter',
+                          style: AppTypography.regular12.copyWith(
+                            color: AppColors.grey600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 4),
+                  // Hint text
+                  // Text(
+                  //   'Syarat mendapat 500 Kompoint:\n• Minimal 20 karakter\n• Mengandung huruf (bukan hanya angka/simbol)\n• Tidak spam/karakter berulang',
+                  //   style: AppTypography.regular10.copyWith(
+                  //     color: Colors.grey[600],
+                  //   ),
+                  // ),
+                  // // Validation message
+                  // if (validationMessage.isNotEmpty) ...[
+                  //   const SizedBox(height: 4),
+                  //   Text(
+                  //     validationMessage,
+                  //     style: AppTypography.regular10.copyWith(
+                  //       color: isValidEvaluation ? Colors.green : Colors.orange,
+                  //       fontWeight: isValidEvaluation
+                  //           ? FontWeight.w600
+                  //           : FontWeight.normal,
+                  //     ),
+                  //   ),
+                  // ],
+                ],
+              ),
+            )
+        ],
+      ),
     );
   }
 

@@ -24,7 +24,7 @@ class _CheckboxDeft extends State<CheckboxDeft> {
 
     return Checkbox(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(6),
       ),
       side: const BorderSide(color: e2Gray, width: 1.5),
       checkColor: Colors.white,

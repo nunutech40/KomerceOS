@@ -3,8 +3,10 @@ import 'package:bloc/bloc.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/core/data/models/topup_qris_response.dart';
 import 'package:komtim_partner/core/domain/entities/balance_analytics_model.dart';
+import 'package:komtim_partner/core/domain/entities/check_bill_model.dart';
 import 'package:komtim_partner/core/domain/entities/invoice_detail_model.dart';
 import 'package:komtim_partner/core/domain/entities/profile_model.dart';
+import 'package:komtim_partner/core/domain/usecases/check_bill_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/check_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_balance_analytics_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/get_invoice_detail_use_case.dart';
@@ -24,12 +26,14 @@ class PaymentMethodBloc extends Bloc<PaymentMethodEvent, PaymentMethodState> {
     required this.getInvoiceDetailUseCase,
     required this.getBalanceAnalyticsUseCase,
     required this.topUpCeckTransactionUseCase,
+    required this.checkBillUseCase,
   }) : super(const PaymentMethodState()) {
     on<CheckPinEvent>(_handleCheckPinExist);
     on<InvoiceDetailEvent>(_handleInvoiceDetail);
     on<GetProfileEvent>(_handleGetProfile);
     on<GetBalanceAnalyticsEvent>(_handleGetBalanceAnalitics);
     on<LoadDataCecktransactionTopUpEvent>(_handleToUpLoadCeckTransactionEvent);
+    on<CheckActiveBillEvent>(_handleCheckActiveBill);
   }
 
   final CheckPinUseCase checkPinUseCase;
@@ -37,6 +41,37 @@ class PaymentMethodBloc extends Bloc<PaymentMethodEvent, PaymentMethodState> {
   final GetProfileUseCase getProfileUseCase;
   final GetBalanceAnalyticsUseCase getBalanceAnalyticsUseCase;
   final TopUpCeckUseCase topUpCeckTransactionUseCase;
+  final CheckBillUseCase checkBillUseCase;
+
+  Future<void> _handleCheckActiveBill(
+    CheckActiveBillEvent event,
+    Emitter<PaymentMethodState> emit,
+  ) async {
+    emit(state.copyWith(status: RequestStatus.loading, operation: 'checkActiveBill'));
+    final result = await checkBillUseCase.call();
+    result.fold(
+      (failure) {
+        if (failure is ConnectionFailure || failure is ServerFailure) {
+          emit(state.copyWith(
+              message: failure.message,
+              status: RequestStatus.failure,
+              operation: 'checkActiveBill'));
+        } else {
+          emit(state.copyWith(
+              message: failure.message,
+              status: RequestStatus.empty,
+              operation: 'checkActiveBill'));
+        }
+      },
+      (data) {
+        emit(state.copyWith(
+            message: 'Success',
+            status: RequestStatus.success,
+            operation: 'checkActiveBill',
+            checkBillData: data));
+      },
+    );
+  }
 
  Future<void> _handleToUpLoadCeckTransactionEvent(
     LoadDataCecktransactionTopUpEvent event,

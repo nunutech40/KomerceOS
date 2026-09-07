@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
@@ -53,37 +52,12 @@ class _InvoiceReportSummaryPageState extends State<InvoiceReportSummaryPage>
         Scaffold(
           backgroundColor: const Color(0xFFFDF0F1),
           extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            centerTitle: widget.from == 'payment',
+          appBar: const DsAppBar(
+            title: Strings.label_detail_invoice_payment,
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              Strings.label_detail_invoice_payment,
-              style:
-                  AppTypography.interSemiBold16.copyWith(color: Colors.white),
-            ),
-            leading: widget.from == 'payment'
-                ? Container()
-                : IconButton(
-                    icon: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          'assets/images/ic-arrow-left-white.svg',
-                          width: 20,
-                          height: 20,
-                        ),
-                      ),
-                    ),
-                    onPressed: () {
-                      AppRouter.router.pop();
-                    },
-                  ),
+            containerLeadingColor: AppColors.alwaysWhite,
+            textColor: AppColors.alwaysBlack,
+            iconColor: AppColors.alwaysBlack,
           ),
           body: Stack(
             children: [

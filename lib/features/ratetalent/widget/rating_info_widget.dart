@@ -12,10 +12,10 @@ class RatingInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
       child: Container(
         decoration: BoxDecoration(
-          color: f4Gray,
+          color: greenD6F1,
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Padding(
@@ -76,8 +76,7 @@ class RatingInfoWidget extends StatelessWidget {
                   ),
                   Text(
                     Strings.label_very_good,
-                    style:
-                        AppTypography.regular12.copyWith(color: primaryColor),
+                    style: AppTypography.regular12.copyWith(color: green30A),
                   )
                 ],
               )

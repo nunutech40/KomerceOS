@@ -11,10 +11,14 @@ const Color lightGray = Color(0xFFF8F8F8);
 const Color darkGray = Color(0xFF626262);
 const Color onlyGray = Color(0xFF828282);
 const Color f4Gray = Color(0xFFF4F4F4);
+const Color gray646464 = Color(0xFF646464);
+const Color grayF5F5F5 = Color(0xFFF5F5F5);
+const Color gray737373 = Color(0xFF737373);
 const Color e2Gray = Color(0xFFE2E2E2);
 const Color black77Gray = Color(0xFF777777);
 const Color inActiveGray = Color(0xFFC2C2C2);
 const Color borderGray = Color(0xFFCCCCCC);
+const Color greenD6F1 = Color(0xFFD6F1DF);
 
 const Color errorColor = Color(0xFFE31A1A);
 
@@ -35,6 +39,7 @@ const Color blue42 = Color(0xFF4285F4);
 const Color purple = Color(0xFF6D3CB8);
 const Color lightPurple = Color(0xFFE2D8F1);
 const Color green30A = Color(0xFF30A46C);
+const Color greenLightD6 = Color(0xFFD6F1DF);
 
 class AppTypography {
   // default familly fonts is jakartans plus

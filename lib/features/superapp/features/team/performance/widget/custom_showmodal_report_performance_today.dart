@@ -7,15 +7,19 @@ import 'package:komtim_partner/common/styles.dart';
 
 class CustomShowmodalReportPerformanceToday extends StatefulWidget {
   final BuildContext? context;
-  DateTime? selectedDate;
-  int? value;
-  String? textEditor;
-  CustomShowmodalReportPerformanceToday(
+  final DateTime? selectedDate;
+  final int? value;
+  final String? textEditor;
+  final String? firstDate;
+  final String? lastDate;
+  const CustomShowmodalReportPerformanceToday(
       {super.key,
       this.context,
       this.selectedDate,
       this.value,
-      this.textEditor});
+      this.textEditor,
+      this.firstDate,
+      this.lastDate});
 
   @override
   State<CustomShowmodalReportPerformanceToday> createState() =>
@@ -29,10 +33,21 @@ class _CustomShowmodalReportPerformanceTodayState
   TextEditingController firstDateController = TextEditingController();
   TextEditingController lastDateController = TextEditingController();
 
+  DateTime _initialDateFromController(String dateText) {
+    if (dateText.isEmpty) return DateTime.now();
+    try {
+      return formatter.parse(dateText);
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
   Future<void> _selectDate(BuildContext context, String statusDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: statusDate == 'first'
+          ? _initialDateFromController(firstDateController.text)
+          : _initialDateFromController(lastDateController.text),
       firstDate: DateTime(
         DateTime.now().year,
         DateTime.now().month - 1,
@@ -58,16 +73,13 @@ class _CustomShowmodalReportPerformanceTodayState
       },
     );
     if (picked != null) {
-      var formatter = DateFormat('yyyy-MM-dd');
       statusFilter = "custom";
+      value = 2;
       setState(() {
+        final formattedDate = formatter.format(picked);
         if (statusDate == "first") {
-          widget.selectedDate = picked;
-          String formattedDate = formatter.format(widget.selectedDate!);
           firstDateController.text = formattedDate;
         } else if (statusDate == "last") {
-          widget.selectedDate = picked;
-          String formattedDate = formatter.format(widget.selectedDate!);
           lastDateController.text = formattedDate;
         }
       });
@@ -109,6 +121,21 @@ class _CustomShowmodalReportPerformanceTodayState
   @override
   void initState() {
     super.initState();
+    value = widget.value ?? 0;
+
+    if ((widget.firstDate ?? '').isNotEmpty) {
+      firstDateController.text = widget.firstDate!;
+    }
+
+    if ((widget.lastDate ?? '').isNotEmpty) {
+      lastDateController.text = widget.lastDate!;
+    }
+
+    if (value == 2) {
+      statusFilter = 'custom';
+    } else if (value == 1) {
+      statusFilter = 'today';
+    }
   }
 
   @override

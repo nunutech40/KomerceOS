@@ -122,6 +122,7 @@ class _RateTalentCheckPageState extends State<RateTalentCheckPage>
 
   Widget _buildRatingHeader() {
     return ItemRowSetRating(
+      index: 0,
       isHeader: true,
       isChecked: isCheckAll,
       onCheckboxChanged: (value) => _setAllCheckboxes(value),
@@ -154,7 +155,8 @@ class _RateTalentCheckPageState extends State<RateTalentCheckPage>
             children: [
               const SizedBox(child: RatingInfoWidget()),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14.0, vertical: 6.0),
@@ -187,7 +189,9 @@ class _RateTalentCheckPageState extends State<RateTalentCheckPage>
                   ),
                 ),
               ),
-              SizedBox(child: _buildRatingHeader()),
+              Container(
+                  margin: const EdgeInsets.only(left: 24.0, right: 24.0),
+                  child: _buildRatingHeader()),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: Divider(),

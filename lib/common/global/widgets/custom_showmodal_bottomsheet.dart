@@ -10,15 +10,21 @@ import 'custom_outline_button.dart';
 
 class CustomShowModalBottomSheet extends StatefulWidget {
   final BuildContext? context;
-  DateTime? selectedDate;
-  int? value;
-  String? textEditor;
-  CustomShowModalBottomSheet(
+  final DateTime? selectedDate;
+  final int? value;
+  final String? textEditor;
+  final String? firstDate;
+  final String? lastDate;
+  final String? statusFilterValue;
+  const CustomShowModalBottomSheet(
       {super.key,
       this.context,
       this.selectedDate,
       this.value,
-      this.textEditor});
+      this.textEditor,
+      this.firstDate,
+      this.lastDate,
+      this.statusFilterValue});
 
   @override
   State<CustomShowModalBottomSheet> createState() =>
@@ -32,10 +38,21 @@ class _CustomShowModalBottomSheetState
   TextEditingController firstDateController = TextEditingController();
   TextEditingController lastDateController = TextEditingController();
 
+  DateTime _initialDateFromController(String dateText) {
+    if (dateText.isEmpty) return DateTime.now();
+    try {
+      return formatter.parse(dateText);
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
   Future<void> _selectDate(BuildContext context, String statusDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: statusDate == 'first'
+          ? _initialDateFromController(firstDateController.text)
+          : _initialDateFromController(lastDateController.text),
       firstDate: DateTime(
         DateTime.now().year,
         DateTime.now().month - 1,
@@ -61,16 +78,12 @@ class _CustomShowModalBottomSheetState
       },
     );
     if (picked != null) {
-      var formatter = DateFormat('yyyy-MM-dd');
       statusFilter = "custom";
       setState(() {
+        final formattedDate = formatter.format(picked);
         if (statusDate == "first") {
-          widget.selectedDate = picked;
-          String formattedDate = formatter.format(widget.selectedDate!);
           firstDateController.text = formattedDate;
         } else if (statusDate == "last") {
-          widget.selectedDate = picked;
-          String formattedDate = formatter.format(widget.selectedDate!);
           lastDateController.text = formattedDate;
         }
       });
@@ -111,10 +124,19 @@ class _CustomShowModalBottomSheetState
 
   @override
   void initState() {
+    super.initState();
     height = PlatformDispatcher.instance.views.first.physicalSize.longestSide
         .toInt();
-    value = widget.value;
-    super.initState();
+    value = widget.value ?? 0;
+    statusFilter = widget.statusFilterValue ?? '';
+
+    if ((widget.firstDate ?? '').isNotEmpty) {
+      firstDateController.text = widget.firstDate!;
+    }
+
+    if ((widget.lastDate ?? '').isNotEmpty) {
+      lastDateController.text = widget.lastDate!;
+    }
   }
 
   heightBottomSheet(heightSize, valueStat) {

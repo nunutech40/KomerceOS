@@ -99,19 +99,22 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.alwaysWhite,
-      appBar: AppBar(
-        backgroundColor: AppColors.alwaysWhite,
-        elevation: 0,
-        title: const Text(
-          Strings.label_invoice,
-          style: AppTypography.interSemiBold16,
-        ),
-        leading: IconButton(
-          icon: SvgPicture.asset('assets/images/ic-arrow-left.svg'),
-          onPressed: () {
-            AppRouter.router.pop();
-          },
-        ),
+      appBar: DsAppBar(
+        title: Strings.label_invoice,
+        onBackPressed: () => AppRouter.router.pop(),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 24),
+            child: DsSquareIconButton(
+              customIcon: SvgPicture.asset(
+                'assets/images/team/ic_calender.svg',
+                width: 20,
+                height: 20,
+              ),
+              onTap: () {},
+            ),
+          ),
+        ],
       ),
       body: BlocConsumer<InvoiceListBloc, InvoiceListState>(
         listener: (context, state) {
@@ -153,7 +156,7 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSearchBar(),
+                // _buildSearchBar(),
                 Expanded(
                   child: _buildContent(state),
                 ),
@@ -278,9 +281,10 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
       padding: const EdgeInsets.only(bottom: 24.0),
       children: [
         if (actionRequiredList.isNotEmpty) ...[
-          Padding(
+          Container(
+            margin: const EdgeInsets.only(top: 12.0),
             padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
             child: Text(
               'Perlu Aksi Lebih Lanjut',
               style: AppTypography.interSemiBold14.copyWith(
@@ -289,12 +293,13 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
             ),
           ),
           ...actionRequiredList.map((invoice) => _buildInvoiceCard(invoice)),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
         ],
         if (completedList.isNotEmpty) ...[
-          Padding(
+          Container(
+            margin: const EdgeInsets.only(top: 12.0),
             padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
             child: Text(
               'Transaksi Selesai',
               style: AppTypography.interSemiBold14.copyWith(
@@ -331,12 +336,11 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
         }
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
         decoration: BoxDecoration(
           color: AppColors.alwaysWhite,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.grey200),
+          // border: Border.all(color: AppColors.grey200),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),

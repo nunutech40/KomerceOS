@@ -3,14 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/time_convert.dart';
-import 'package:komtim_partner/core/data/datasources/preferences/shared_pref.dart';
 import 'package:komtim_partner/core/data/models/profile_response.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_model.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
@@ -53,7 +51,9 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
   String firstDate = '';
   String lastDate = '';
+  int todayFilterValue = 0;
   bool hasDateFilter = false; // Replace statusFilter and valueFilter
+  bool hasWeeklyProductFilter = false;
 
   // Pagination variables
   final ScrollController _scrollController = ScrollController();
@@ -127,8 +127,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     'Week 5',
   ];
 
-  @override
-  final pref = di.locator<SharedPref>();
   ProfileResponse? profileResponse;
   @override
   void initState() {
@@ -139,7 +137,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     _setDefaultSelections();
     // Pastikan product list di-fetch di awal
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      profileResponse = await pref.getProfileResponse();
       // Fetch product list once during initialization
       _fetchProductList();
     });
@@ -150,15 +147,28 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
   }
 
 // Add method to fetch product list
-  void _fetchProductList() {
-    if (!_isProductListLoaded && profileResponse != null) {
-      String partnerId = profileResponse?.partnerId.toString() ?? '';
-      _bloc.add(GetReportPerformanceProductEvent(
-        keyword: '',
-        parentId: partnerId,
-      ));
-      _isProductListLoaded = true;
+  Future<String> _resolvePartnerId() async {
+    final partnerIdFromSuperappLogin = await pref.getPartnerIdFromSuperappLogin();
+    if (partnerIdFromSuperappLogin != null) {
+      return partnerIdFromSuperappLogin.toString();
     }
+
+    profileResponse ??= await pref.getProfileResponse();
+
+    return profileResponse?.partnerId.toString() ?? '';
+  }
+
+  Future<void> _fetchProductList({bool forceRefresh = false}) async {
+    if (_isProductListLoaded && !forceRefresh) return;
+
+    final partnerId = await _resolvePartnerId();
+    if (partnerId.isEmpty) return;
+
+    _bloc.add(GetReportPerformanceProductEvent(
+      keyword: '',
+      partnerId: partnerId,
+    ));
+    _isProductListLoaded = true;
   }
 
   _initializeBloc() {
@@ -178,7 +188,10 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
       _hasNextPage = true;
     });
 
-    await _getDate();
+    if (firstDate.isEmpty || lastDate.isEmpty) {
+      await _getDate();
+    }
+
     _bloc.add(GetReportPerformanceEvent(
       search: _textEditingController.text,
       limit: _limit.toString(),
@@ -236,8 +249,8 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
           _offset = 0;
           _hasNextPage = true;
           attemptCount = 0;
-          hasDateFilter = false;
-          _textEditingController.clear();
+          listDataToday.clear();
+          filterListDataToday.clear();
         });
         _loadData();
       } else if (newTab == 1) {
@@ -248,8 +261,10 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
           attemptCount = 0;
           listDataWeek.clear();
           filteredDataWeek.clear();
-          hasDateFilter = false;
         });
+
+        _fetchProductList(forceRefresh: true);
+
         if (_selectedWeek != null) {
           _loadWeeklyData();
         }
@@ -342,6 +357,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
       listDataToday.clear();
       filterListDataToday.clear();
       attemptCount = 0;
+      todayFilterValue = 0;
       hasDateFilter = false;
       _textEditingController.clear();
     });
@@ -669,17 +685,16 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
   // Weekly helper methods
   List<ReportPerformanceWeeklyModel> _getWeeklyDisplayData() {
-    bool hasActiveFilter = hasDateFilter;
-    return hasActiveFilter ? filteredDataWeek : listDataWeek;
+    return hasWeeklyProductFilter ? filteredDataWeek : listDataWeek;
   }
 
   bool _shouldShowWeeklyLoadingIndicator() {
-    return _hasNextPage && !hasDateFilter;
+    return _hasNextPage && !hasWeeklyProductFilter;
   }
 
   String _getWeeklyEmptyStateMessage() {
-    if (hasDateFilter) {
-      return 'Tidak ada data pada minggu yang dipilih';
+    if (hasWeeklyProductFilter) {
+      return 'Tidak ada data pada filter yang dipilih';
     }
     return 'Belum ada data performa talent untuk ditampilkan';
   }
@@ -691,7 +706,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
       listDataWeek.clear();
       filteredDataWeek.clear();
       attemptCount = 0;
-      hasDateFilter = false;
     });
 
     if (_selectedWeek != null) {
@@ -1149,7 +1163,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
             width: 20,
             height: 20,
           ),
-          isActive: hasDateFilter,
+          isActive: hasWeeklyProductFilter,
           onTap: () => _showWeeklyFilter(),
         ),
       ],
@@ -1225,15 +1239,18 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
       builder: (context) => CustomShowmodalReportPerformanceToday(
         context: context,
         selectedDate: selectedDate,
-        value: hasDateFilter ? 1 : 0, // Convert boolean to int for modal
+        value: todayFilterValue,
         textEditor: _textEditingController.text,
+        firstDate: firstDate,
+        lastDate: lastDate,
       ),
     ).then((value) {
       if (value != null) {
         setState(() {
           firstDate = value['firstDate'];
           lastDate = value['lastDate'];
-          hasDateFilter = value['value'] != 0; // Convert back to boolean
+          todayFilterValue = value['value'] ?? 0;
+          hasDateFilter = todayFilterValue != 0;
 
           // Clear search when applying date filter if textEditor is empty
           if (value['textEditor'] == '') {
@@ -1258,27 +1275,21 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
   }
 
   void _showWeeklyFilter() async {
-    // Ambil list produk dari state Bloc
+    // Gunakan list produk yang sudah di-prefetch saat tab mingguan aktif
     final bloc = context.read<ReportPerformanceBloc>();
+
     List<ReportPerformanceProductModel> productList =
         bloc.state.reportPerformanceProduct;
-    // Jika list kosong, fetch dulu pakai partnerId dari profile
-    if (productList.isEmpty && profileResponse != null) {
-      _fetchProductList();
-      // Wait a bit for the data to load, or you can use a FutureBuilder in the modal
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
 
-      productList = bloc.state.reportPerformanceProduct;
-    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (context) => CustomShowmodalReportPerformanceWeek(
         context: context,
         selectedDate: selectedDate,
-        value: hasDateFilter ? 1 : 0, // Convert boolean to int for modal
+        value: hasWeeklyProductFilter ? 1 : 0,
         textEditor: _textEditingController.text,
+        selectedProductId: selectedProductId,
         listProduct: productList,
       ),
     ).then((value) {
@@ -1291,6 +1302,8 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
           if (selectedProductId != newProductId) {
             setState(() {
               selectedProductId = newProductId;
+              hasWeeklyProductFilter =
+                  newProductId.isNotEmpty && newProductId != 'null';
             });
             shouldRefresh = true;
           }
@@ -1308,11 +1321,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     setState(() {
       valueTab = value;
     });
-
-    // Hanya refresh data jika tab "Harian" (index 0)
-    if (value == 0) {
-      _refreshData();
-    }
   }
 
 // SOLUSI 3: Tambahkan state untuk track tab yang sedang aktif
