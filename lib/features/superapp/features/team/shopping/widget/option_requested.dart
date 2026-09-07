@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/global/widgets/custom_button.dart';
+import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/core/domain/entities/detail_shopping_model.dart';
+import 'package:komtim_partner/features/superapp/features/team/listteam/widget/dash_line_team.dart';
 
 class OptionRequested extends StatefulWidget {
   final DetailShoppingDataModel? dataShopping;
@@ -129,16 +132,15 @@ class _OptionRequested extends State<OptionRequested> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      decoration: const ShapeDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        shape: RoundedRectangleBorder(),
-        shadows: [
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x3F000000),
-            blurRadius: 4,
-            offset: Offset(0, 0),
-            spreadRadius: 0,
+            color: Color(0x1A000000),
+            blurRadius: 10,
+            offset: Offset(0, -4),
           )
         ],
       ),
@@ -163,22 +165,17 @@ class _OptionRequested extends State<OptionRequested> {
                             const TextSpan(
                               text: 'Saldo Kompay : ',
                               style: TextStyle(
-                                color: Color(0xFF818181),
+                                color: gray737373,
                                 fontSize: 12,
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontWeight: FontWeight.w400,
-                                height: 0,
                               ),
                             ),
                             TextSpan(
                               text: CurrencyFormat.convertToIdr(
                                   widget.dataShopping?.kmpoin ?? 0, 0),
                               style: const TextStyle(
-                                color: Color(0xFF818181),
+                                color: AppColors.black0A0A,
                                 fontSize: 12,
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontWeight: FontWeight.w600,
-                                height: 0,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -189,12 +186,13 @@ class _OptionRequested extends State<OptionRequested> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: ShapeDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBgFFF7ED,
                   shape: RoundedRectangleBorder(
-                    side: const BorderSide(width: 1, color: Color(0xFFF95E16)),
-                    borderRadius: BorderRadius.circular(4),
+                    side: const BorderSide(color: AppColors.cardBgFFF7ED),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: GestureDetector(
@@ -210,18 +208,17 @@ class _OptionRequested extends State<OptionRequested> {
                         width: 16,
                         height: 16,
                         child: SvgPicture.asset(
-                          'assets/images/ic-card-send.svg',
+                          'assets/images/superapp/ic_money.svg',
                           fit: BoxFit.cover,
                         ),
                       ),
+                      const SizedBox(width: 4),
                       const Text(
                         'Top Up',
                         style: TextStyle(
-                          color: Color(0xFFF95E16),
-                          fontSize: 12,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w600,
-                          height: 0,
+                          color: AppColors.black0A0A,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -231,92 +228,114 @@ class _OptionRequested extends State<OptionRequested> {
             ],
           ),
         ),
+        const Divider(color: Color(0xFFF3F4F6), thickness: 1),
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                'assets/images/ic_kompoin.svg',
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SizedBox(
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        const TextSpan(
-                          text: 'Gunakan Kompoin : ',
-                          style: TextStyle(
-                            color: Color(0xFF818181),
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w400,
-                            height: 0,
-                          ),
-                        ),
-                        TextSpan(
-                          text: CurrencyFormat.convertWithoutSymbol(
-                              widget.dataShopping?.kompoints ?? 0, 0),
-                          style: const TextStyle(
-                            color: Color(0xFF818181),
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w600,
-                            height: 0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 11, horizontal: 9),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBgFFF7ED,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: SvgPicture.asset(
+                  'assets/images/ic_kompoin.svg',
+                  width: 20,
+                  height: 20,
                 ),
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                  height: 24,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (widget.dataShopping?.kompoints != 0) {
-                          switchValue = !switchValue;
-                        } else {}
-                      });
-                    },
-                    child: Container(
-                      width: 48.0,
-                      height: 24.0,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.0),
-                        color: switchValue ? Colors.green : Colors.grey,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Gunakan Kompoint',
+                      style: TextStyle(
+                        color: gray737373,
+                        fontSize: 12,
                       ),
-                      child: Stack(
-                        alignment: switchValue
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
+                    ),
+                    const SizedBox(height: 2),
+                    Text.rich(
+                      TextSpan(
                         children: [
-                          Positioned(
-                            left: switchValue ? 28.0 : 4,
-                            child: Container(
-                              width: 14.0,
-                              height: 14.0,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                              ),
+                          const TextSpan(
+                            text: 'Tersedia ',
+                            style: TextStyle(
+                              color: gray737373,
+                              fontSize: 12,
+                            ),
+                          ),
+                          TextSpan(
+                            text: CurrencyFormat.convertWithoutSymbol(
+                                widget.dataShopping?.kompoints ?? 0, 0),
+                            style: const TextStyle(
+                              color: Color(0xFFF95E16),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: ' poin',
+                            style: TextStyle(
+                              color: gray737373,
+                              fontSize: 12,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ))
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 28,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (widget.dataShopping?.kompoints != 0) {
+                        switchValue = !switchValue;
+                      }
+                    });
+                  },
+                  child: Container(
+                    width: 52.0,
+                    height: 28.0,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14.0),
+                      color: switchValue
+                          ? const Color(0xFF22C55E)
+                          : const Color(0xFFD1D5DB),
+                    ),
+                    child: AnimatedAlign(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: switchValue
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        width: 22.0,
+                        height: 22.0,
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        const Divider(
-          height: 1,
-        ),
+        const SizedBox(height: 10),
+        const DashedLine(),
+        const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
@@ -332,13 +351,11 @@ class _OptionRequested extends State<OptionRequested> {
                   children: [
                     SizedBox(
                       child: Text(
-                        'Total Bayar : ',
+                        'Total Pembayaran',
                         style: TextStyle(
-                          color: Color(0xFF333333),
-                          fontSize: 12,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w600,
-                          height: 0,
+                          color: AppColors.black0A0A,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -358,20 +375,15 @@ class _OptionRequested extends State<OptionRequested> {
                           ? const Color(0xFFF95E16)
                           : const Color(0xFFE31A1A),
                       fontSize: 14,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w600,
-                      height: 0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     '-${CurrencyFormat.convertToIdr(_cutKompoint() ?? 0, 0)}',
                     textAlign: TextAlign.right,
                     style: const TextStyle(
-                      color: Color(0xFF818181),
-                      fontSize: 10,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w400,
-                      height: 0,
+                      color: gray737373,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -379,36 +391,36 @@ class _OptionRequested extends State<OptionRequested> {
             ],
           ),
         ),
+        const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () {
-                  widget.onCancelPressed(widget.dataShopping?.id ?? 0);
-                },
+              Expanded(
                 child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: SvgPicture.asset(
-                            'assets/images/ic_close_square.svg'),
+                  height: 42,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      widget.onCancelPressed(widget.dataShopping?.id ?? 0);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFF95E16),
+                      side: const BorderSide(color: Color(0xFFF95E16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
+                    ),
+                    child: const Text(
+                      'Batalkan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: SizedBox(
                   height: 42,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/common/enum_status.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_bar.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
-import 'package:komtim_partner/common/global/widgets/profile_avatar_custom.dart';
 import 'package:komtim_partner/common/string.dart';
 import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/core/domain/entities/detail_shopping_model.dart';
@@ -122,15 +122,11 @@ class _DetailShoppingPageState extends State<DetailShoppingPage>
         return false;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(Strings.label_detail_shopping,
-              style: AppTypography.interSemiBold16),
-          leading: IconButton(
-            icon: SvgPicture.asset('assets/images/ic-arrow-left.svg'),
-            onPressed: () {
-              AppRouter.router.pop();
-            },
-          ),
+        appBar: DsAppBar(
+          title: 'Belanja',
+          onBackPressed: () {
+            AppRouter.router.pop();
+          },
         ),
         body: BlocConsumer<ShoppingBloc, ShoppingState>(
           listener: (context, state) {
@@ -165,101 +161,63 @@ class _DetailShoppingPageState extends State<DetailShoppingPage>
                                 padding:
                                     const EdgeInsets.fromLTRB(0, 12, 0, 24),
                                 child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        ProfileAvatarCustom(
-                                          backgroundImage: imageUrl,
-                                          w: 72.0,
-                                          h: 72.0,
+                                    Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF3F4F6),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        getInitials(name).toUpperCase(),
+                                        style: const TextStyle(
+                                          color: Color(0xFF9CA3AF),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                    const Divider(height: 12),
+                                    const SizedBox(width: 16),
                                     Expanded(
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 12.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              child: Text(
-                                                detailShopping
-                                                        ?.userRequesterName ??
-                                                    '',
-                                                style: const TextStyle(
-                                                  color: Color(0xFF333333),
-                                                  fontSize: 16,
-                                                  fontFamily:
-                                                      'Plus Jakarta Sans',
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            detailShopping?.userRequesterName ??
+                                                '',
+                                            style: const TextStyle(
+                                              color: AppColors.black0A0A,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
                                             ),
-                                            const SizedBox(height: 7),
-                                            SizedBox(
-                                              width: double.infinity,
-                                              child: Text(
-                                                detailShopping
-                                                        ?.userRequesterPosition ??
-                                                    '',
-                                                style: const TextStyle(
-                                                  color: Color(0xFF818181),
-                                                  fontSize: 12,
-                                                  fontFamily:
-                                                      'Plus Jakarta Sans',
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            detailShopping
+                                                    ?.userRequesterPosition ??
+                                                '',
+                                            style: const TextStyle(
+                                              color: gray737373,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
                                             ),
-                                          ],
-                                        ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 0),
-                                decoration: ShapeDecoration(
-                                  color: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(13),
-                                  ),
-                                  shadows: const [
-                                    BoxShadow(
-                                      color: Color(0x3F000000),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 0),
-                                      spreadRadius: 0,
-                                    )
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 16),
-                                      child: DetailList(
-                                        detailShopping: state.detailShopping,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              DetailList(
+                                detailShopping: state.detailShopping,
                               ),
                             ],
                           ),
