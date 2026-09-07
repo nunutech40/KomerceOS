@@ -83,7 +83,7 @@ class Endpoints {
 
   // PIN & OTP (internal auth API)
   static String get securedVerifyPin =>
-      '$_BaseURLInternal/api/v1/otp/secured/verify-pin';
+      '$_BaseURLInternal/api/v1/user/secured/verify-pin';
   static String get otpRequestEmail =>
       '$_BaseURLInternal/api/v1/otp/request-otp/email';
   static String get otpVerify => '$_BaseURLInternal/api/v1/otp/verify-otp';
@@ -135,7 +135,7 @@ class Endpoints {
 
   //paymentKompay
   static String get paymentKompay =>
-      '$_BaseURL/api/v1/mobile/transaction/kompay';
+      '$_BaseURL/api/v1/partner/invoices/pay';
   static String get transactionBalance =>
       '$_BaseURLInternal/api/v1/kmpoin/balance_analytics';
 

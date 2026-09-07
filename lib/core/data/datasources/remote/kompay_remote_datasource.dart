@@ -6,6 +6,7 @@ import 'package:komtim_partner/core/data/models/ideal_balance_response.dart';
 import '../../apiservice/constat_endpoint.dart';
 import '../../apiservice/dio_client.dart';
 import '../../apiservice/dio_response_parser.dart';
+import '../preferences/shared_pref.dart';
 
 abstract class KompayRemoteDataSource {
   Future<List<BankAccountsResponeData>> getBankList();
@@ -17,9 +18,13 @@ abstract class KompayRemoteDataSource {
 class KompayRemoteDataSourceImpl implements KompayRemoteDataSource {
   final DioClient client;
   final DioResponseParser responseParser;
+  final SharedPref sharedPref;
 
-  KompayRemoteDataSourceImpl(
-      {required this.client, required this.responseParser});
+  KompayRemoteDataSourceImpl({
+    required this.client, 
+    required this.responseParser,
+    required this.sharedPref,
+  });
 
   @override
   Future<List<BankAccountsResponeData>> getBankList() async {
@@ -34,8 +39,12 @@ class KompayRemoteDataSourceImpl implements KompayRemoteDataSource {
 
   @override
   Future<BasicMetaDataResponse> paymentKompay(String id) async {
+    final profile = await sharedPref.getProfileResponse();
+    final partnerId = profile?.partnerId;
+
     final data = {
       'invoice_code': id,
+      'partner_id': partnerId,
     };
 
     final response = await client.post(

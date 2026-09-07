@@ -383,7 +383,12 @@ class _PinPageState extends State<PinPage> with PopUpPin {
                 }
               } else {
                 setState(() {
-                  errorMessage = Strings.label_inputed_pin_incorrect;
+                  final attemptLeft = state.pinData?.attemptLeft ?? 0;
+                  if (attemptLeft > 0) {
+                    errorMessage = "PIN yang kamu masukkan salah.\nTersisa $attemptLeft kali percobaan";
+                  } else {
+                    errorMessage = "menunggu lagi beberapa waktu";
+                  }
                 });
               }
               break;
@@ -471,6 +476,7 @@ class _PinPageState extends State<PinPage> with PopUpPin {
                     Center(
                         child: Text(
                       errorMessage ?? '',
+                      textAlign: TextAlign.center,
                       style:
                           AppTypography.regular12.copyWith(color: errorColor),
                     )),
