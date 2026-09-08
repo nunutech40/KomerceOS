@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
 import 'package:komtim_partner/common/global/widgets/custom_button_small.dart';
 import 'package:komtim_partner/common/global/widgets/custom_outline_button_1_small.dart';
 import 'package:komtim_partner/common/string.dart';
+import 'package:komtim_partner/common/styles.dart';
 
 class ConfirmationPay extends StatelessWidget {
   final void Function()? onYesPressed;
@@ -33,26 +35,38 @@ class ConfirmationPay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(8.0),
                     topRight: Radius.circular(8.0),
                   ),
-                  child: SvgPicture.asset(
-                    'assets/images/ic-alert.svg',
-                    fit: BoxFit.cover,
+                  child: DsAppImage(
+                    source: 'assets/images/superapp/team/ic_danger.png',
+                    width: 80,
+                    height: 80,
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const Padding(
+                padding: EdgeInsets.only(left: 16, right: 16, top: 28),
                 child: Text(
-                  textConfirmation ??
-                      'Anda yakin ingin keluar dari akun anda?', 
-                  style: const TextStyle(fontSize: 12.0),
+                  "Konfirmasi Pembayaran",
+                  style: TextStyle(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.alwaysBlack),
                   textAlign: TextAlign.center,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, bottom: 28, top: 12),
+                child: Text(
+                  textConfirmation ?? 'Anda yakin ingin keluar dari akun anda?',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12.0, color: gray737373),
                 ),
               ),
               Row(

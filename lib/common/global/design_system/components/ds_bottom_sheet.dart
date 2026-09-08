@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../app_colors.dart';
@@ -16,13 +17,13 @@ class DsBottomSheet extends StatelessWidget {
   final DsButtonState primaryButtonState;
   final String? secondaryButtonText;
   final VoidCallback? onSecondaryPressed;
-  
+
   // 1. Tambahkan parameter opsi warna untuk tombol sekunder (default ke warna netral)
   final Color? secondaryButtonColor;
-  
+
   // 2. Tambahkan callback eksplisit untuk tombol close
   final VoidCallback? onClosePressed;
-  
+
   final bool isDismissible;
 
   const DsBottomSheet({
@@ -76,7 +77,7 @@ class DsBottomSheet extends StatelessWidget {
         onSecondaryPressed: onSecondaryPressed,
         secondaryButtonColor: secondaryButtonColor,
         // Default behavior jika tidak ada custom logic dari parent
-        onClosePressed: onClosePressed ?? () => Navigator.pop(context), 
+        onClosePressed: onClosePressed ?? () => Navigator.pop(context),
         isDismissible: isDismissible,
       ),
     );
@@ -133,7 +134,7 @@ class DsBottomSheet extends StatelessWidget {
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
                           // Gunakan callback yang di-inject
-                          onTap: onClosePressed, 
+                          onTap: onClosePressed,
                           child: Container(
                             padding: const EdgeInsets.all(AppSpacing.xs),
                             decoration: const BoxDecoration(
@@ -148,7 +149,6 @@ class DsBottomSheet extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
-
                 Text(
                   description,
                   textAlign: TextAlign.center,
@@ -156,28 +156,26 @@ class DsBottomSheet extends StatelessWidget {
                     color: AppColors.grey700,
                   ),
                 ),
-
                 if (image != null) ...[
                   const SizedBox(height: AppSpacing.lg),
                   image!,
                 ],
-
                 const SizedBox(height: AppSpacing.xl),
-
                 if (secondaryButtonText != null) ...[
                   TextButton(
                     onPressed: onSecondaryPressed,
                     style: TextButton.styleFrom(
                       // Gunakan warna custom, default ke grey/primary jika null
-                      foregroundColor: secondaryButtonColor ?? AppColors.grey600, 
+                      foregroundColor:
+                          secondaryButtonColor ?? AppColors.grey600,
                       textStyle: AppTypography.bodyMdMedium,
-                      minimumSize: const Size(double.infinity, AppSpacing.touchSm),
+                      minimumSize:
+                          const Size(double.infinity, AppSpacing.touchSm),
                     ),
                     child: Text(secondaryButtonText!),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                 ],
-
                 DsButton(
                   text: primaryButtonText,
                   onPressed: onPrimaryPressed,

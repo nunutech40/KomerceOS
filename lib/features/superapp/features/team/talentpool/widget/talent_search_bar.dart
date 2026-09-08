@@ -23,46 +23,47 @@ class TalentSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Expanded(
-          child: SizedBox(
-            height: 44,
-            child: TextField(
-              controller: controller,
-              onChanged: onChanged,
-              style: AppTypography.bodyMdRegular.copyWith(
-                color: AppColors.grey800,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: AppColors.alwaysWhite,
-                hintText: 'Cari talent',
-                hintStyle: AppTypography.bodyMdRegular.copyWith(
-                  color: AppColors.grey400,
-                ),
-                suffixIcon: const Icon(
-                  Icons.search_rounded,
-                  color: AppColors.grey400,
-                  size: AppSpacing.iconLg,
-                ),
-                contentPadding: const EdgeInsets.only(
-                  top: AppSpacing.md3,
-                  bottom: AppSpacing.md3,
-                  left: AppSpacing.md3,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  borderSide: const BorderSide(color: AppColors.grey200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  borderSide: const BorderSide(color: AppColors.primaryBase),
-                ),
-              ),
-            ),
-          ),
-        ),
+        // Expanded(
+        //   child: SizedBox(
+        //     height: 44,
+        //     child: TextField(
+        //       controller: controller,
+        //       onChanged: onChanged,
+        //       style: AppTypography.bodyMdRegular.copyWith(
+        //         color: AppColors.grey800,
+        //       ),
+        //       decoration: InputDecoration(
+        //         isDense: true,
+        //         filled: true,
+        //         fillColor: AppColors.alwaysWhite,
+        //         hintText: 'Cari talent',
+        //         hintStyle: AppTypography.bodyMdRegular.copyWith(
+        //           color: AppColors.grey400,
+        //         ),
+        //         suffixIcon: const Icon(
+        //           Icons.search_rounded,
+        //           color: AppColors.grey400,
+        //           size: AppSpacing.iconLg,
+        //         ),
+        //         contentPadding: const EdgeInsets.only(
+        //           top: AppSpacing.md3,
+        //           bottom: AppSpacing.md3,
+        //           left: AppSpacing.md3,
+        //         ),
+        //         enabledBorder: OutlineInputBorder(
+        //           borderRadius: BorderRadius.circular(AppRadius.md),
+        //           borderSide: const BorderSide(color: AppColors.grey200),
+        //         ),
+        //         focusedBorder: OutlineInputBorder(
+        //           borderRadius: BorderRadius.circular(AppRadius.md),
+        //           borderSide: const BorderSide(color: AppColors.primaryBase),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
         const SizedBox(width: AppSpacing.sm),
         _SquareIconButton(
           onTap: onFilterTap,

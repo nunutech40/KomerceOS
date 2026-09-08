@@ -151,41 +151,24 @@ class InvoiceDetailResponse extends Equatable {
 }
 
 class CheckEvaluationResponse extends Equatable {
-  final int? invoiceId;
-  final String? invoiceCode;
-  final String? xenditPaymentUrl;
+  final bool isEvaluated;
 
-  const CheckEvaluationResponse(
-      {required this.invoiceId,
-      required this.invoiceCode,
-      required this.xenditPaymentUrl});
+  const CheckEvaluationResponse({required this.isEvaluated});
 
   Map<String, dynamic> toJson() => {
-        "invoice_id": invoiceId,
-        "invoice_code": invoiceCode,
-        "xendit_payment_link": xenditPaymentUrl,
+        "is_evaluated": isEvaluated,
       };
 
   factory CheckEvaluationResponse.fromJson(Map<String, dynamic> json) {
     return CheckEvaluationResponse(
-      invoiceId: json['invoice_id'],
-      invoiceCode: json['invoice_code'],
-      xenditPaymentUrl: json['xendit_payment_link'],
+      isEvaluated: json['is_evaluated'] ?? false,
     );
   }
 
   CheckEvaluationResponse toEntity() {
-    return CheckEvaluationResponse(
-      invoiceId: invoiceId,
-      invoiceCode: invoiceCode,
-      xenditPaymentUrl: xenditPaymentUrl,
-    );
+    return CheckEvaluationResponse(isEvaluated: isEvaluated);
   }
 
   @override
-  List<Object?> get props => [
-        invoiceId,
-        invoiceCode,
-        xenditPaymentUrl,
-      ];
+  List<Object?> get props => [isEvaluated];
 }

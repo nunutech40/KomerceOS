@@ -132,6 +132,8 @@ abstract final class AppColors {
 
   static const Color grayF5F5 = Color(0xFFF5F5F5);
 
+  static const Color cardBorderFEF0DA = Color(0xFFFEF0DA);
+
   // ---------------------------------------------------------------------------
   // ALWAYS — Absolute values independent of theme
   // ---------------------------------------------------------------------------
@@ -143,4 +145,18 @@ abstract final class AppColors {
   static const Color black0A0A = Color(0xFF0A0A0A);
 
   static const Color greenLightD6 = Color(0xFFD6F1DF);
+
+  static const Color borderColor = Color(0xFF737373);
+
+  static const Color borderColorEAEA = Color(0xFFEAEAEA);
+
+  /// Focus ring shadow — #A1A1A1 at 50% opacity
+  /// (CSS equivalent: box-shadow: 0px 0px 0px 3px #A1A1A180)
+  static const Color focusRingShadow = Color(0x80A1A1A1);
+
+  static const Color cardColorFEFCF8 = Color(0xFFFEFCF8);
+
+  static const Color cardColorFEF9F2 = Color(0xFFFEF9F2);
+
+  static const Color cardBgFFF7ED = Color(0xFFFFE8D9);
 }

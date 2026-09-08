@@ -117,6 +117,16 @@ class Strings {
   static const label_input_new_pin = "Masukan PIN Baru";
   static const label_set_pin = "Atur Pin";
   static const label_input_same_pin = "Masukan PIN Yang Sama Dengan Sebelumnya";
+  // Judul & deskripsi halaman PIN (sesuai desain)
+  static const label_input_6_digit_new_pin = "Masukkan 6 Digit PIN Baru";
+  static const label_masukan_ulangi_pin_baru = "Masukan Ulangi PIN Baru";
+  static const label_masukan_ulangi_pin_baru_desc =
+      "Masukkan kembali 6 digit PIN yang telah kamu buat untuk mengonfirmasi PIN akunmu.";
+  static const label_input_6_digit_new_pin_desc =
+      "Buat PIN 6 digit yang mudah kamu ingat dan jangan bagikan kepada siapapun.";
+  static const label_reinput_new_pin = "Masukkan Ulang PIN Baru";
+  static const label_reinput_new_pin_desc =
+      "Masukkan kembali 6 digit PIN yang telah kamu buat untuk mengonfirmasi PIN akunmu.";
   static const label_verif_pin = "Verifikasi PIN";
   static const label_pin = "PIN";
   static const label_inputed_pin_incorrect =
@@ -125,6 +135,20 @@ class Strings {
   static const label_otp_code_incorrect = "Kode OTP Belum Sesuai";
   static const label_confirm = "Konfirmasi";
   static const label_resend = "Kirim Ulang";
+  // Forgot PIN (internal auth API)
+  static const label_forgot_pin = "Lupa PIN";
+  static const label_choose_otp_method = "Pilih Metode Verifikasi";
+  static const label_otp_sent_to =
+      "Pilih metode OTP untuk memverifikasi akunmu. Pastikan data kontak yang kamu pilih sudah benar";
+  static const label_via_email = "Email";
+  static const label_otp_via_email_desc = "Kode OTP akan dikirim via email ke";
+  static const label_via_whatsapp = "WhatsApp";
+  static const label_otp_via_wa_desc = "Segera hadir";
+  static const label_send_code = "Kirim Kode";
+  static const label_pin_success_title = "PIN Kamu Berhasil Diubah";
+  static const label_pin_success_redirect =
+      "Kamu akan diarahkan ke halaman pembayaran dalam";
+  static const label_seconds = "detik";
   static const label_profile_info = "Informasi Profile";
   static const label_no_telp = "No. Telepon";
   static const label_address = "Alamat";

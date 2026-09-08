@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/core/data/models/detail_shopping_response.dart';
 
 class ItemProduct extends StatelessWidget {
   final ShoppingItem? shoppingItem;
 
-  const ItemProduct({super.key,  this.shoppingItem});
+  const ItemProduct({super.key, this.shoppingItem});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,10 +21,9 @@ class ItemProduct extends StatelessWidget {
               child: Text(
                 shoppingItem?.itemName ?? '',
                 style: const TextStyle(
-                  color: Color(0xFF333333),
-                  fontSize: 12,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.black0A0A,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -35,10 +35,9 @@ class ItemProduct extends StatelessWidget {
                 CurrencyFormat.convertToIdr(shoppingItem?.itemTotal ?? 0, 0),
                 textAlign: TextAlign.right,
                 style: const TextStyle(
-                  color: Color(0xFF333333),
-                  fontSize: 12,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.black0A0A,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

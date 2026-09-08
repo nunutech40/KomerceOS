@@ -18,6 +18,7 @@ class TalentsModel extends Equatable {
 }
 
 class TalentLeaderModel extends Equatable {
+  int? jobAssigneeId;
   int? staffId;
   String? staffName;
   String? phoneNumber;
@@ -27,6 +28,7 @@ class TalentLeaderModel extends Equatable {
   bool? isValidEvaluation;
 
   TalentLeaderModel({
+    this.jobAssigneeId,
     this.staffId,
     this.staffName,
     this.phoneNumber,
@@ -38,6 +40,7 @@ class TalentLeaderModel extends Equatable {
 
   @override
   List<Object?> get props => [
+        jobAssigneeId,
         staffId,
         staffName,
         phoneNumber,

@@ -9,12 +9,11 @@ import 'package:komtim_partner/core/domain/entities/auth_state.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
 import 'package:komtim_partner/core/domain/usecases/reset_password_use_case.dart';
+import 'package:komtim_partner/features/pin/view/choose_otp_method_page.dart';
 import 'package:komtim_partner/features/pin/view/pin_page.dart';
+import 'package:komtim_partner/features/pin/view/pin_success_page.dart';
 import 'package:komtim_partner/features/pin/view/verification_email_page.dart';
 import 'package:komtim_partner/features/profile/view/profile_info_update_page.dart';
-import 'package:komtim_partner/features/ratetalent/view/evaluation_kompoint_page.dart';
-import 'package:komtim_partner/features/ratetalent/view/rate_talent_check_page.dart';
-import 'package:komtim_partner/features/ratetalent/view/rate_talent_notif_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/email_check_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/forgot_password.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/login_page.dart';
@@ -23,6 +22,7 @@ import 'package:komtim_partner/features/superapp/features/authentication/views/o
 import 'package:komtim_partner/features/superapp/features/authentication/views/success_new_password.dart';
 import 'package:komtim_partner/features/superapp/features/home/view/main_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/view/attendance_pages.dart';
+import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_detail_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/home/bloc/home_team_cubit.dart';
@@ -31,16 +31,20 @@ import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invo
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_list_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_new_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_report_summary_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/payment_method_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/payment_method_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/success_payment_kompay_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/listteam/view/list_of_team_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/view/detail_report_performance_month_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/view/report_performance_pages.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/view/evaluation_kompoint_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/view/rate_talent_check_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/ratetalent/view/rate_talent_notif_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/detail_shopping_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/shopping_list_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/view/talent_pool_page.dart';
-import 'package:komtim_partner/features/superapp/features/team/listteam/view/list_of_team_page.dart';
-import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
 import 'package:komtim_partner/features/superapp/splash_screen_page.dart';
 import 'package:komtim_partner/features/unhire/view/dialog_unhire_finish.dart';
 import 'package:komtim_partner/features/unhire/view/reason_unhire_page.dart';
@@ -338,6 +342,8 @@ class AppRouter {
               extra['invoiceId'] ?? state.queryParameters['invoiceId'];
           final String? statusA =
               extra['statusA'] ?? state.queryParameters['statusA'];
+          final String? xenditUrl =
+              extra['xenditUrl'] ?? state.queryParameters['xenditUrl'];
 
           return PinPage(
             pinType: pinType,
@@ -345,6 +351,7 @@ class AppRouter {
             doJobfor: doJobFor,
             invoiceId: invoiceId,
             statusA: statusA,
+            xenditUrl: xenditUrl,
           );
         },
       ),
@@ -354,7 +361,37 @@ class AppRouter {
         builder: (context, state) {
           final String? email = state.queryParameters['email'];
           final String? time = state.queryParameters['time'];
-          return VerificationEmailPage(email: email, time: time);
+          final String? invoiceId = state.queryParameters['invoiceId'];
+          final String? xenditUrl = state.queryParameters['xenditUrl'];
+          return VerificationEmailPage(
+            email: email,
+            time: time,
+            invoiceId: invoiceId,
+            xenditUrl: xenditUrl,
+          );
+        },
+      ),
+      GoRoute(
+        path: PAGES.chooseOtpMethod.screenPath,
+        name: PAGES.chooseOtpMethod.screenName,
+        builder: (context, state) {
+          final String? email = state.queryParameters['email'];
+          final String? invoiceId = state.queryParameters['invoiceId'];
+          final String? xenditUrl = state.queryParameters['xenditUrl'];
+          return ChooseOtpMethodPage(
+            email: email,
+            invoiceId: invoiceId,
+            xenditUrl: xenditUrl,
+          );
+        },
+      ),
+      GoRoute(
+        path: PAGES.pinSuccess.screenPath,
+        name: PAGES.pinSuccess.screenName,
+        builder: (context, state) {
+          final String? xenditUrl = state.queryParameters['xenditUrl'];
+          final String? invoiceId = state.queryParameters['id'];
+          return PinSuccessPage(xenditUrl: xenditUrl, invoiceId: invoiceId);
         },
       ),
 
@@ -374,7 +411,8 @@ class AppRouter {
               int.tryParse(state.queryParameters['index'] ?? '0') ?? 0;
           final allCount =
               int.tryParse(state.queryParameters['allCount'] ?? '0') ?? 0;
-          return UnhireReasonPage(count: count, index: index, allCount: allCount);
+          return UnhireReasonPage(
+              count: count, index: index, allCount: allCount);
         },
       ),
       GoRoute(
@@ -394,7 +432,27 @@ class AppRouter {
         name: PAGES.detailShoppingPage.screenName,
         builder: (context, state) {
           final id = int.tryParse(state.queryParameters['id'] ?? '0') ?? 0;
-          return DetailShoppingPage(id: id);
+          // PaymentMethodBloc diinject di sini karena DetailShoppingPage
+          // butuh cek saldo (idealBalance, onWithdrawl) sebelum konfirmasi bayar.
+          return BlocProvider(
+            create: (_) => di.locator<PaymentMethodBloc>(),
+            child: DetailShoppingPage(id: id),
+          );
+        },
+      ),
+
+      // ── Topup (Kompay) ────────────────────────────────────────────────────────
+      // Didaftarkan agar bisa di-push dari detail shopping.
+      // Caller bisa pass VoidCallback via extra untuk dieksekusi setelah topup
+      // berhasil — misal dari DetailShoppingPage agar kembali ke halaman belanja.
+      GoRoute(
+        path: PAGES.topuppages.screenPath,
+        name: PAGES.topuppages.screenName,
+        builder: (context, state) {
+          final onSuccess = state.extra is VoidCallback
+              ? state.extra as VoidCallback
+              : null;
+          return TopupPage(onTopupSuccess: onSuccess);
         },
       ),
 

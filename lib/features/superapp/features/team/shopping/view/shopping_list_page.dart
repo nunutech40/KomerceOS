@@ -3,16 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:komtim_partner/common/enum_status.dart';
+import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/loading/shimmer_placeholder_invoice_list.dart';
 import 'package:komtim_partner/core/domain/entities/shopping_list_model.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/widget/bottom_sheet_filter.dart';
-import 'package:komtim_partner/features/superapp/features/team/shopping/widget/empty_data.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/widget/item_shopping.dart';
 
 class ShoppingListPage extends StatefulWidget {
@@ -214,15 +213,12 @@ class _ShoppingListPageState extends State<ShoppingListPage>
         return false;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(Strings.label_data_shopping,
-              style: AppTypography.interSemiBold16),
-          leading: IconButton(
-            icon: SvgPicture.asset('assets/images/ic-arrow-left.svg'),
-            onPressed: () {
-              AppRouter.router.go(PAGES.main.screenPath);
-            },
-          ),
+        backgroundColor: Colors.white,
+        appBar: DsAppBar(
+          title: Strings.label_data_shopping,
+          onBackPressed: () {
+            AppRouter.router.go(PAGES.main.screenPath);
+          },
         ),
         body: BlocConsumer<ShoppingBloc, ShoppingState>(
             listener: (context, state) {
@@ -248,87 +244,54 @@ class _ShoppingListPageState extends State<ShoppingListPage>
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 26.0),
+                padding: const EdgeInsets.only(top: 16.0),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24.0, 0, 16.0, 0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
                     children: [
                       Expanded(
-                        child: SizedBox(
-                          height: 40,
-                          child: TextField(
-                            controller: _controller,
-                            maxLines: 1,
-                            onChanged: (value) {
-                              setState(() {
-                                _searchQuery = value;
-                                shoppingListData.clear();
-                                if (value == "") {
-                                  _bloc.add(GetShoppingListEvent(
-                                      offset: _offset,
-                                      limit: _limit,
-                                      status: _type(filterStatus),
-                                      startDate: _checkDateToday(filterDate),
-                                      endDate: _checkDate(filterDate),
-                                      keyword: _searchQuery));
-                                  _hasMoreData = true;
-                                } else {
-                                  Future.delayed(
-                                      const Duration(seconds: 2),
-                                      _bloc.add(GetShoppingListEvent(
-                                          offset: _offset,
-                                          limit: _limit,
-                                          status: _type(filterStatus),
-                                          startDate:
-                                              _checkDateToday(filterDate),
-                                          endDate: _checkDate(filterDate),
-                                          keyword: _searchQuery)));
-                                  _hasMoreData = true;
-                                }
-                              });
-                            },
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w400),
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 8.0, horizontal: 16.0),
-                              hintText: Strings.label_search_lead_name,
-                              hintStyle:
-                                  const TextStyle(color: Color(0xFFC2C2C2)),
-                              suffixIcon: _searchQuery.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(
-                                        Icons.close_outlined,
-                                        color: Colors.grey,
-                                      ),
-                                      onPressed: () {
-                                        _searchQuery = '';
-                                        shoppingListData.clear();
-                                        _handleRefresh();
-                                      },
-                                    )
-                                  : IconButton(
-                                      icon: SvgPicture.asset(
-                                          'assets/images/ic_search.svg'),
-                                      onPressed: () {},
-                                    ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFE2E2E2)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFE2E2E2)),
-                              ),
-                            ),
-                          ),
+                        child: DsSearchField(
+                          controller: _controller,
+                          hintText: Strings.label_search_lead_name,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                              shoppingListData.clear();
+                              if (value == "") {
+                                _bloc.add(GetShoppingListEvent(
+                                    offset: _offset,
+                                    limit: _limit,
+                                    status: _type(filterStatus),
+                                    startDate: _checkDateToday(filterDate),
+                                    endDate: _checkDate(filterDate),
+                                    keyword: _searchQuery));
+                                _hasMoreData = true;
+                              } else {
+                                Future.delayed(
+                                    const Duration(seconds: 2),
+                                    () => _bloc.add(GetShoppingListEvent(
+                                        offset: _offset,
+                                        limit: _limit,
+                                        status: _type(filterStatus),
+                                        startDate: _checkDateToday(filterDate),
+                                        endDate: _checkDate(filterDate),
+                                        keyword: _searchQuery)));
+                                _hasMoreData = true;
+                              }
+                            });
+                          },
                         ),
                       ),
-                      IconButton(
-                        icon: SvgPicture.asset('assets/images/ic_filter.svg'),
-                        onPressed: () {
+                      const SizedBox(width: AppSpacing.xs),
+                      DsSquareIconButton(
+                        customIcon: SvgPicture.asset(
+                          'assets/images/superapp/ic_filter.svg',
+                          width: 20,
+                          height: 20,
+                        ),
+                        isActive:
+                            filterStatus != 'Semua' || filterDate != 'Semua',
+                        onTap: () {
                           bottomSheetFilter(context, filterStatus, filterDate,
                               onStatusClicked: _statusClicked,
                               onDateClicked: _dateClicked,
@@ -343,8 +306,20 @@ class _ShoppingListPageState extends State<ShoppingListPage>
                   child: shoppingListData.isEmpty &&
                           state.status != RequestStatus.loading
                       ? _searchQuery.isEmpty
-                          ? const EmptyData()
-                          : const EmptySearch()
+                          ? const DsEmptyState(
+                              imagePath:
+                                  'assets/images/team/empty_state_feed.svg',
+                              title: 'Tidak Ada Data Ditemukan',
+                              description:
+                                  'Data belanja akan muncul di halaman ini',
+                            )
+                          : const DsEmptyState(
+                              imagePath:
+                                  'assets/images/team/empty_state_feed.svg',
+                              title: 'Tidak Ada Data Ditemukan',
+                              description:
+                                  'Data belanja akan muncul di halaman ini',
+                            )
                       : state.status == RequestStatus.loading &&
                               shoppingListData.isEmpty
                           ? const ShimmerPlaceholderInvoiceList()

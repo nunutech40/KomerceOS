@@ -18,6 +18,9 @@ class BarcodeQrisPage extends StatefulWidget {
   final String expiresAt;
   final String qrId;
   final bool returnToPaymentMethod;
+  /// Callback dipanggil setelah pembayaran QRIS berhasil.
+  /// Diisi hanya dari flow shopping (via TopupPage yang dibuka dari DetailShoppingPage).
+  final VoidCallback? onTopupSuccess;
 
   const BarcodeQrisPage({
     super.key,
@@ -26,6 +29,7 @@ class BarcodeQrisPage extends StatefulWidget {
     required this.expiresAt,
     this.qrId = '',
     this.returnToPaymentMethod = false,
+    this.onTopupSuccess,
   });
 
   @override
@@ -246,6 +250,11 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                         // Kembali ke PaymentMethodPage, tidak perlu tampilkan success page
                         Navigator.of(context).pop(); // pop BarcodeQrisPage
                         // Optional: bisa trigger refresh di PaymentMethodPage via callback
+                      } else if (widget.onTopupSuccess != null) {
+                        // Flow dari shopping: panggil callback lalu pop sub-page.
+                        // TopupPage sudah ada di bawah, selanjutnya detail_shopping_page
+                        // yang akan me-refresh data setelah topup berhasil.
+                        widget.onTopupSuccess!();
                       } else {
                         Navigator.pushReplacement(
                           context,

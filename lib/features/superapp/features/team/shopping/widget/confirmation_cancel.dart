@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
+import 'package:komtim_partner/common/styles.dart';
 
 class ConfirmationCancel extends StatelessWidget {
   final void Function()? onYesPressed;
@@ -30,30 +32,67 @@ class ConfirmationCancel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(8.0),
                     topRight: Radius.circular(8.0),
                   ),
-                  child: SvgPicture.asset(
-                    'assets/images/ic-alert.svg',
-                    fit: BoxFit.cover,
+                  child: DsAppImage(
+                    source: 'assets/images/superapp/team/ic_danger.png',
+                    width: 80,
+                    height: 80,
                   ),
                 ),
               ),
+              const Padding(
+                padding: EdgeInsets.only(left: 16, right: 16, top: 28),
+                child: Text(
+                  "Konfirmasi Pembayaran",
+                  style: TextStyle(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.alwaysBlack),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, bottom: 28, top: 12),
                 child: Text(
                   textConfirmation ?? 'Anda yakin ingin keluar dari akun anda?',
-                  style: const TextStyle(fontSize: 12.0),
                   textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12.0, color: gray737373),
                 ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: ElevatedButton(
+                        onPressed:
+                            onNoPressed ?? () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: gray737373,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            side: const BorderSide(
+                                color: Color(0xFF828282), width: 1.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 11.0,
+                            horizontal: 24.0,
+                          ),
+                        ),
+                        child: const Text('Tidak'),
+                      ),
+                    ),
+                  ),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
@@ -72,31 +111,7 @@ class ConfirmationCancel extends StatelessWidget {
                             horizontal: 24.0,
                           ),
                         ),
-                        child: const Text('Iya'),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4.0),
-                      child: ElevatedButton(
-                        onPressed:
-                            onNoPressed ?? () => Navigator.of(context).pop(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF828282),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            side: const BorderSide(
-                                color: Color(0xFF828282), width: 1.0),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 11.0,
-                            horizontal: 24.0,
-                          ),
-                        ),
-                        child: const Text('Tidak'),
+                        child: const Text('Ya, Tolak'),
                       ),
                     ),
                   ),

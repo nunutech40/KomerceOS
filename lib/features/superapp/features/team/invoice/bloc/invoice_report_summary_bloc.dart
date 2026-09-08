@@ -158,11 +158,21 @@ class InvoiceDetailBloc extends Bloc<InvoiceDetailEvent, InvoiceDetailState> {
         }
       },
       (invoiceCheckEvaluation) {
-        emit(state.copyWith(
-            message: 'Success',
-            operation: 'evaluation',
-            statusEvaluation: RequestStatus.success,
-            invoiceCheckEvaluation: invoiceCheckEvaluation));
+        if (invoiceCheckEvaluation.isEvaluated) {
+          // Sudah pernah dievaluasi, navigasi ke payment (sukses)
+          emit(state.copyWith(
+              message: 'Success',
+              operation: 'evaluation',
+              statusEvaluation: RequestStatus.success,
+              invoiceCheckEvaluation: invoiceCheckEvaluation));
+        } else {
+          // Belum dievaluasi, butuh navigasi ke rate talent (empty)
+          emit(state.copyWith(
+              message: 'Needs Evaluation',
+              operation: 'evaluation',
+              statusEvaluation: RequestStatus.empty,
+              invoiceCheckEvaluation: invoiceCheckEvaluation));
+        }
       },
     );
   }

@@ -35,6 +35,9 @@ class DioResponseParser {
             if (data.containsKey('lock')) {
               errorMessage += ' lock: ${data['lock']}';
             }
+            if (data.containsKey('attempt_left')) {
+              errorMessage += ' Sisa percobaan: ${data['attempt_left']}';
+            }
           }
           
           throw Exception(errorMessage);

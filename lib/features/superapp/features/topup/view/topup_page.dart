@@ -16,7 +16,11 @@ import 'package:komtim_partner/features/superapp/features/topup/view/web_view_pa
 import 'package:lottie/lottie.dart';
 
 class TopupPage extends StatelessWidget {
-  const TopupPage({super.key});
+  /// Callback dipanggil setelah topup berhasil.
+  /// Hanya diisi ketika TopupPage dibuka dari flow shopping.
+  final VoidCallback? onTopupSuccess;
+
+  const TopupPage({super.key, this.onTopupSuccess});
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +33,16 @@ class TopupPage extends StatelessWidget {
           create: (context) => locator<CreateQrcodeBloc>(),
         ),
       ],
-      child: const TopupView(),
+      child: TopupView(onTopupSuccess: onTopupSuccess),
     );
   }
 }
 
 class TopupView extends StatefulWidget {
-  const TopupView({super.key});
+  /// Callback dipanggil setelah topup berhasil.
+  final VoidCallback? onTopupSuccess;
+
+  const TopupView({super.key, this.onTopupSuccess});
 
   @override
   State<TopupView> createState() => _TopupViewState();
@@ -296,7 +303,12 @@ class _TopupViewState extends State<TopupView> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => WebViewPage(url: url),
+                    // Teruskan callback ke WebViewPage agar bisa balik ke
+                    // halaman belanja setelah topup berhasil (flow shopping).
+                    builder: (context) => WebViewPage(
+                      url: url,
+                      onTopupSuccess: widget.onTopupSuccess,
+                    ),
                   ),
                 );
               }
@@ -330,11 +342,14 @@ class _TopupViewState extends State<TopupView> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
+                  // Teruskan callback ke BarcodeQrisPage agar bisa balik ke
+                  // halaman belanja setelah topup berhasil (flow shopping).
                   builder: (context) => BarcodeQrisPage(
                     amount: amountStr,
                     qrString: qrString,
                     expiresAt: expiresAt,
                     qrId: qrId,
+                    onTopupSuccess: widget.onTopupSuccess,
                   ),
                 ),
               );
