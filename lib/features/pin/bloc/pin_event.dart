@@ -99,3 +99,8 @@ class GetTimeEvent extends PinEvent {
   @override
   List<Object?> get props => [];
 }
+
+class CheckPinSettingEvent extends PinEvent {
+  @override
+  List<Object?> get props => [];
+}

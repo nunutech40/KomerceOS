@@ -11,6 +11,7 @@ import '../preferences/shared_pref.dart';
 
 abstract class PinRemoteDataSource {
   Future<CheckPinResponse> checkPin();
+  Future<CheckPinResponse> checkPinSetting();
   Future<VerifyPinResponse> verifyPin(String pin);
   Future<bool> savePin(String pin);
   Future<ForgetPinResponse> forgetPin({String? purpose});
@@ -39,6 +40,13 @@ class PinRemoteDataSourceImpl implements PinRemoteDataSource {
   }
 
   @override
+  Future<CheckPinResponse> checkPinSetting() async {
+    final response = await client.get(Endpoints.checkPinSetting);
+    return responseParser.parseResponse<CheckPinResponse>(
+        response, (json) => CheckPinResponse.fromJson(json));
+  }
+
+  @override
   Future<VerifyPinResponse> verifyPin(String pin) async {
     final data = {
       'pin': pin,
@@ -59,7 +67,7 @@ class PinRemoteDataSourceImpl implements PinRemoteDataSource {
     };
 
     final response = await client.post(
-      Endpoints.savePin,
+      Endpoints.storePinSetting,
       data: data,
     );
 

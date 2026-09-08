@@ -202,6 +202,79 @@ class _PinPageState extends State<PinPage> with PopUpPin {
     );
   }
 
+  Future<void> _showCreatePinSuccessModal() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return PopScope(
+          canPop: false,
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              24 + MediaQuery.of(sheetContext).padding.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/images/superapp/auth/success_reset_password.svg',
+                  height: 250,
+                  width: 250,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'PIN Kamu Berhasil Dibuat',
+                  style: AppTypography.semiBold20,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'PIN dibuat untuk mengamankan transaksi kamu.',
+                  style: AppTypography.regular14grey73,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 100),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      _goToPaymentMethod();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Selesai',
+                      style: AppTypography.semiBold14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -220,6 +293,7 @@ class _PinPageState extends State<PinPage> with PopUpPin {
       case PinPageType.setPin:
         appBarTitle = Strings.label_create_pin;
         title = Strings.label_input_6_digit_pin;
+        subtitle = Strings.label_input_6_digit_new_pin_desc;
         break;
       case PinPageType.updatePin:
         if (widget.doJobfor == 'updateNewPin') {
@@ -243,8 +317,8 @@ class _PinPageState extends State<PinPage> with PopUpPin {
           subtitle = Strings.label_reinput_new_pin_desc;
         } else {
           appBarTitle = Strings.label_create_pin;
-          title = Strings.label_input_same_pin;
-          subtitle = null;
+          title = Strings.label_masukan_ulangi_pin_baru;
+          subtitle = Strings.label_masukan_ulangi_pin_baru_desc;
         }
 
         break;
@@ -270,7 +344,10 @@ class _PinPageState extends State<PinPage> with PopUpPin {
         AppRouter.router.push(PAGES.pinPage.screenPath, extra: {
           'pinType': 'confirmPin',
           'firstPin': pin,
-          'doJobFor': 'savePin'
+          'doJobFor':
+              widget.doJobfor == 'setPinPayment' ? 'setPinPayment' : 'savePin',
+          'invoiceId': widget.invoiceId,
+          'xenditUrl': widget.xenditUrl,
         });
         break;
       case PinPageType.updatePin:
@@ -296,7 +373,8 @@ class _PinPageState extends State<PinPage> with PopUpPin {
       case PinPageType.confirmPin:
         String? storedFirstPin = await storage.read(key: 'tempFirstPin');
         if (storedFirstPin == pin) {
-          if (widget.doJobfor == "savePin") {
+          if (widget.doJobfor == "savePin" ||
+              widget.doJobfor == "setPinPayment") {
             pinBloc.add(SavePinFullEvent(pin: pin));
           } else if (widget.doJobfor == "updatePin") {
             pinBloc.add(UpdatePinFullEvent(pin: pin));
@@ -352,8 +430,13 @@ class _PinPageState extends State<PinPage> with PopUpPin {
         if (state.status == RequestStatus.success) {
           switch (state.operation) {
             case 'savePin':
-              AppRouter.router.go(PAGES.main.screenPath);
-              showToast(context, 'PIN Berhasil Dibuat');
+              if (widget.doJobfor == 'setPinPayment') {
+                // Tampilkan success modal lalu redirect ke payment method
+                _showCreatePinSuccessModal();
+              } else {
+                AppRouter.router.go(PAGES.main.screenPath);
+                showToast(context, 'PIN Berhasil Dibuat');
+              }
               break;
 
             case 'updatePin':
@@ -385,7 +468,8 @@ class _PinPageState extends State<PinPage> with PopUpPin {
                 setState(() {
                   final attemptLeft = state.pinData?.attemptLeft ?? 0;
                   if (attemptLeft > 0) {
-                    errorMessage = "PIN yang kamu masukkan salah.\nTersisa $attemptLeft kali percobaan";
+                    errorMessage =
+                        "PIN yang kamu masukkan salah.\nTersisa $attemptLeft kali percobaan";
                   } else {
                     errorMessage = "menunggu lagi beberapa waktu";
                   }

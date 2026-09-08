@@ -28,6 +28,15 @@ class PinRepositoryImpl extends BaseRepository implements PinRepository {
   }
 
   @override
+  Future<Either<Failure, ChekPinModel>> checkPinSetting() async {
+    return executeEither(() async {
+      final result = await remoteDataSource.checkPinSetting();
+      final pinModel = result.toEntity();
+      return pinModel;
+    });
+  }
+
+  @override
   Future<Either<Failure, bool>> savePin(String pin) async {
     return executeEither(() async {
       final result = await remoteDataSource.savePin(pin);

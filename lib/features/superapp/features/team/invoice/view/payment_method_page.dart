@@ -5,6 +5,7 @@ import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_app_bar.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_app_result_page.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_bottom_sheet.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_button.dart';
 import 'package:komtim_partner/common/global/mixin/handling_error_page.dart';
 import 'package:komtim_partner/common/global/mixin/pop_up_pin_page.dart';
@@ -71,10 +72,24 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
 
   void handlePaymentButtonLogic() {
     if (selectedMethod != '' && selectedMethod == 'kompoint') {
-      if (isTopUp()) {
-        _checkActiveBillAndNavigate();
+      if (!isSetPin) {
+        CustomDropDown.myWidgetKey.currentState?.closeOverlay();
+        DsBottomSheet.show(
+          context: context,
+          title: Strings.label_not_create_pin_yet,
+          description: Strings.dialog_use_pin_to_protect,
+          image: SvgPicture.asset(
+              'assets/images/superapp/auth/attempt_count_login.svg'),
+          primaryButtonText: Strings.label_create_pin,
+          onPrimaryPressed: showPopUp,
+          secondaryButtonText: "Kembali",
+          onSecondaryPressed: () => Navigator.of(context).pop(),
+          secondaryButtonColor: AppColors.errorBase,
+        );
       } else {
-        if (isSetPin) {
+        if (isTopUp()) {
+          _checkActiveBillAndNavigate();
+        } else {
           if ((detail?.amountTotal ?? 0) >
               (profileData?.kmPoin ?? 0) - (balanceData?.idealBalance ?? 0)) {
             showCustomBottomSheet(context: context, type: 1, data: balanceData);
@@ -95,16 +110,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
               'xenditUrl': widget.xenditUrl
             });
           }
-        } else {
-          CustomDropDown.myWidgetKey.currentState?.closeOverlay();
-          showPopUpNotYetSetPin(
-            context,
-            Strings.label_not_create_pin_yet,
-            Strings.dialog_use_pin_to_protect,
-            'assets/images/ilustrated-setpin.svg',
-            Strings.label_create_pin,
-            onButtonPressed: showPopUp,
-          );
         }
       }
     } else if (selectedMethod != '' && selectedMethod == 'bank') {
@@ -114,8 +119,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
   }
 
   void showPopUp() {
-    AppRouter.router
-        .push(PAGES.pinPage.screenPath, extra: {'pinType': 'setPin'});
+    AppRouter.router.push(PAGES.pinPage.screenPath, extra: {
+      'pinType': 'setPin',
+      'doJobFor': 'setPinPayment',
+      'invoiceId': widget.id,
+      'xenditUrl': widget.xenditUrl,
+    });
     Navigator.of(context).pop();
   }
 

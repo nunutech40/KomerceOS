@@ -5,6 +5,7 @@ import '../../../common/failure.dart';
 
 abstract class PinRepository {
   Future<Either<Failure, ChekPinModel>> checkPin();
+  Future<Either<Failure, ChekPinModel>> checkPinSetting();
   Future<Either<Failure, VerifyPinModel>> verifyPin(String pin);
   Future<Either<Failure, bool>> savePin(String pin);
   Future<Either<Failure, DataOtpModel>> forgetPin({String? purpose});

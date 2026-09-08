@@ -81,6 +81,12 @@ class Endpoints {
       '$_BaseURL/api/v1/mobile/pin/send_forgot_confirmation';
   static String get verifyOtp => '$_BaseURL/api/v1/mobile/otp/verify';
 
+  // PIN Setting (internal auth API — new)
+  static String get checkPinSetting =>
+      '$_BaseURLInternal/api/v1/user/setting/pin';
+  static String get storePinSetting =>
+      '$_BaseURLInternal/api/v1/user/setting/pin/store';
+
   // PIN & OTP (internal auth API)
   static String get securedVerifyPin =>
       '$_BaseURLInternal/api/v1/user/secured/verify-pin';

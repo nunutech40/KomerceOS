@@ -91,7 +91,6 @@ class _DetailShoppingPageState extends State<DetailShoppingPage>
     } else if (amountTotal > kmPoin - idealBalance - onWithdrawl) {
       _showBalanceBottomSheet(type: 3);
     } else {
-      // Saldo mencukupi → tampilkan dialog konfirmasi bayar.
       showPayConfirmation(id, poin);
     }
   }
