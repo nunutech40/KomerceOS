@@ -31,6 +31,7 @@ import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invo
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_list_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_new_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_report_summary_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/payment_method_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/payment_method_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/success_payment_kompay_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/listteam/view/list_of_team_page.dart';
@@ -43,6 +44,7 @@ import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/sho
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/detail_shopping_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/view/shopping_list_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/talentpool/view/talent_pool_page.dart';
+import 'package:komtim_partner/features/superapp/features/topup/view/topup_page.dart';
 import 'package:komtim_partner/features/superapp/splash_screen_page.dart';
 import 'package:komtim_partner/features/unhire/view/dialog_unhire_finish.dart';
 import 'package:komtim_partner/features/unhire/view/reason_unhire_page.dart';
@@ -430,7 +432,27 @@ class AppRouter {
         name: PAGES.detailShoppingPage.screenName,
         builder: (context, state) {
           final id = int.tryParse(state.queryParameters['id'] ?? '0') ?? 0;
-          return DetailShoppingPage(id: id);
+          // PaymentMethodBloc diinject di sini karena DetailShoppingPage
+          // butuh cek saldo (idealBalance, onWithdrawl) sebelum konfirmasi bayar.
+          return BlocProvider(
+            create: (_) => di.locator<PaymentMethodBloc>(),
+            child: DetailShoppingPage(id: id),
+          );
+        },
+      ),
+
+      // ── Topup (Kompay) ────────────────────────────────────────────────────────
+      // Didaftarkan agar bisa di-push dari detail shopping.
+      // Caller bisa pass VoidCallback via extra untuk dieksekusi setelah topup
+      // berhasil — misal dari DetailShoppingPage agar kembali ke halaman belanja.
+      GoRoute(
+        path: PAGES.topuppages.screenPath,
+        name: PAGES.topuppages.screenName,
+        builder: (context, state) {
+          final onSuccess = state.extra is VoidCallback
+              ? state.extra as VoidCallback
+              : null;
+          return TopupPage(onTopupSuccess: onSuccess);
         },
       ),
 

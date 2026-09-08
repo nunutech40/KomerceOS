@@ -12,12 +12,14 @@ class OptionRequested extends StatefulWidget {
   final void Function(int) onCancelPressed;
   final void Function(int, bool) onPayPressed;
   final void Function() onTopupPressed;
+  final bool isLoadingPay;
   const OptionRequested(
       {super.key,
       required this.dataShopping,
       required this.onCancelPressed,
       required this.onPayPressed,
-      required this.onTopupPressed});
+      required this.onTopupPressed,
+      this.isLoadingPay = false});
 
   @override
   State<OptionRequested> createState() => _OptionRequested();
@@ -425,7 +427,8 @@ class _OptionRequested extends State<OptionRequested> {
                 child: SizedBox(
                   height: 42,
                   child: CustomButton(
-                    isActive: _isActive(),
+                    isActive: _isActive() && !widget.isLoadingPay,
+                    isLoading: widget.isLoadingPay,
                     text: 'Bayar',
                     onPressed: () {
                       widget.onPayPressed(

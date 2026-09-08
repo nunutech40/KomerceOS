@@ -464,7 +464,8 @@ class _MenuContentSectionState extends State<MenuContentSection> {
         // Menu items
         final menuItems = <Widget>[];
 
-        if (hasKomtim) {
+        //di tampilkan dulu demi kebutuhan developing
+        if (true || hasKomtim) {
           menuItems.add(
             DsMenuIcon(
               icon: Image.asset('assets/images/superapp/home/ic_team.png'),
