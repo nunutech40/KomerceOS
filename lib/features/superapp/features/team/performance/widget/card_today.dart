@@ -245,11 +245,13 @@ class CardToday extends StatelessWidget {
             child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              name ?? "",
-              style: AppTypography.bodySmSemiBold,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+            Flexible(
+              child: Text(
+                name ?? "",
+                style: AppTypography.bodySmSemiBold,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
             ),
             const SizedBox(
               width: 6,
@@ -262,7 +264,7 @@ class CardToday extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.circular),
               ),
               child: Text(
-                role ?? "",
+                (role ?? "").replaceAll("Customer Service", "CS"),
                 style: AppTypography.bodySmRegular
                     .copyWith(color: AppColors.primaryBase),
               ),
