@@ -92,7 +92,10 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
   }
 
   @override
-  Future<Uint8List> downloadAttendance(String startDate, String endDate) async {
+  Future<Uint8List> downloadAttendance(
+    String startDate,
+    String endDate,
+  ) async {
     final queryParams = {
       'start_date': startDate,
       'end_date': endDate,
@@ -101,10 +104,31 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
     final response = await client.get(
       Endpoints.attendanceDownload,
       queryParameters: queryParams,
-      options: Options(responseType: ResponseType.bytes),
+      options: Options(
+        responseType: ResponseType.bytes,
+        headers: {
+          'Accept': 'application/pdf',
+        },
+      ),
     );
 
-    // Dio returns the bytes directly in data for ResponseType.bytes
-    return response.data;
+    if (response.data == null) {
+      throw Exception('File attendance kosong');
+    }
+
+    if (response.data is Uint8List) {
+      return response.data as Uint8List;
+    }
+
+    if (response.data is List<int>) {
+      return Uint8List.fromList(
+        response.data as List<int>,
+      );
+    }
+
+    throw Exception(
+      'Response bukan binary yang valid: '
+      '${response.data.runtimeType}',
+    );
   }
 }

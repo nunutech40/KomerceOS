@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:komtim_partner/core/domain/entities/attendance_model.dart';
@@ -10,7 +9,6 @@ import 'package:komtim_partner/core/domain/usecases/get_attendance_fail_use_case
 import 'package:komtim_partner/core/domain/usecases/get_attendance_use_case.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../../../common/enum_status.dart';
 import '../../../../../../common/failure.dart';
@@ -143,15 +141,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         Directory? directory;
 
         if (Platform.isAndroid) {
-          // Request appropriate permissions for Android based on version
-          bool permissionGranted = await _getStoragePermission();
-          if (!permissionGranted) {
-            emit(state.copyWith(
-                messageDownloadAttendance: "Storage permission denied",
-                statusDownloadAttendance: RequestStatus.failure,
-                isDownloading: false));
-            return;
-          }
+          // App-specific external storage does not require storage permission.
           directory = await getExternalStorageDirectory();
         } else if (Platform.isIOS) {
           directory = await getApplicationDocumentsDirectory();
@@ -163,7 +153,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
         // Create a file path with timestamp
         final filePath =
-            '${directory.path}/presensi_${event.startDate}_${event.endDate}.xlsx';
+            '${directory.path}/presensi_${event.startDate}_${event.endDate}.pdf';
 
         // Write the file
         final file = File(filePath);
@@ -172,7 +162,11 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
             statusDownloadAttendance: RequestStatus.success,
             isDownloading: false));
         // Open the file
-        await OpenFile.open(filePath);
+        final openResult =
+            await OpenFile.open(filePath, type: 'application/pdf');
+        if (openResult.type != ResultType.done) {
+          throw Exception(openResult.message);
+        }
       } catch (e) {
         emit(state.copyWith(
             messageDownloadAttendance:
@@ -185,18 +179,6 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
           messageDownloadAttendance: result.fold((l) => l.message, (r) => ''),
           statusDownloadAttendance: RequestStatus.failure,
           isDownloading: false));
-    }
-  }
-
-// Updated function to handle storage permission for Android 13 and below
-  Future<bool> _getStoragePermission() async {
-    DeviceInfoPlugin plugin = DeviceInfoPlugin();
-    AndroidDeviceInfo android = await plugin.androidInfo;
-    if (android.version.sdkInt < 33) {
-      return await Permission.storage.request().isGranted;
-    } else {
-      // Android 13+ doesn't need permission for app-specific storage
-      return true;
     }
   }
 
