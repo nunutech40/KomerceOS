@@ -8,6 +8,7 @@ class CustomOutlineButton extends StatefulWidget {
   final Widget? icon;
   final Color? color;
   final Color? backGroundColor;
+  final Color? textColor;
 
   const CustomOutlineButton({
     Key? key,
@@ -17,6 +18,7 @@ class CustomOutlineButton extends StatefulWidget {
     this.isLoading = false,
     this.color = errorColor,
     this.backGroundColor = Colors.white,
+    this.textColor,
   }) : super(key: key);
 
   @override
@@ -60,7 +62,7 @@ class _CustomOutlineButtonState extends State<CustomOutlineButton> {
               Text(
                 widget.text,
                 style: TextStyle(
-                  color: widget.color,
+                  color: widget.textColor,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),

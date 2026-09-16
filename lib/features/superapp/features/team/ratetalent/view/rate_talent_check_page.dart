@@ -434,7 +434,8 @@ class _RateTalentCheckPageState extends State<RateTalentCheckPage>
     //     'Submitting ratings: talents: ${submitTalents.length}, leaders: ${submitLeaders.length} dan total amount: $totalAmount');
     setState(() {
       // isSubmitting = true;
-      AppRouter.router.push(PAGES.evaluationKompointPage.screenPath, extra: {
+      AppRouter.router
+          .pushReplacement(PAGES.evaluationKompointPage.screenPath, extra: {
         "xenditUrl": widget.xenditUrl,
         "invoiceCode": widget.invoiceCode,
         "invoiceId": widget.invoiceId,

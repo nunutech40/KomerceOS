@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/global/widgets/custom_button.dart';
@@ -30,45 +31,54 @@ class _SuccessPaymentKompyPageState extends State<SuccessPaymentKompayPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        return true;
+        // Pop sampai halaman utama (home)
+        Navigator.popUntil(
+            context,
+            (route) =>
+                route.settings.name == PAGES.main.screenName || route.isFirst);
+        return false;
       },
       child: Scaffold(
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: const TextSpan(
-                      style: TextStyle(color: Colors.black),
-                      children: [
-                        TextSpan(
-                            text: 'Pembayaran Berhasil',
-                            style: AppTypography.semiBold20),
-                      ],
-                    ),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: const TextSpan(
+                          style: TextStyle(color: Colors.black),
+                          children: [
+                            TextSpan(
+                                text: 'Pembayaran Berhasil',
+                                style: AppTypography.semiBold20),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      SvgPicture.asset(
+                        'assets/images/team/success_payment.svg',
+                      ),
+                      const SizedBox(height: 32),
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: const TextSpan(
+                          style: TextStyle(color: Colors.black),
+                          children: [],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                  SvgPicture.asset(
-                    'assets/images/team/success_payment.svg',
-                  ),
-                  const SizedBox(height: 32),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: const TextSpan(
-                      style: TextStyle(color: Colors.black),
-                      children: [],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          }),
         ),
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.only(top: 16.0, left: 24.0, right: 24.0),
@@ -77,34 +87,39 @@ class _SuccessPaymentKompyPageState extends State<SuccessPaymentKompayPage> {
             children: <Widget>[
               SizedBox(
                 width: double.infinity,
-                child: CustomButton(
-                  text: 'Ringkasan Pembayaran',
+                child: CustomOutlineButton(
+                  text: 'Lihat Riwayat Pembayaran',
                   onPressed: () {
-                    AppRouter.router.pushNamed(
-                      PAGES.invoiceReportSummary.screenName,
-                      queryParameters: {
-                        'invoiceCode': widget.invoiceId,
-                        'statusAccount': widget.status,
-                        'from': 'payment'
-                      },
-                    );
+                    // Pop sampai halaman invoice new (list invoice).
+                    Navigator.popUntil(
+                        context,
+                        (route) =>
+                            route.settings.name ==
+                                PAGES.invoiceNew.screenName ||
+                            route.isFirst);
                   },
-                  isActive: true,
+                  color: inActiveGray,
+                  textColor: AppColors.alwaysBlack,
                 ),
               ),
               const SizedBox(height: 11.0),
               SizedBox(
                 width: double.infinity,
-                child: CustomOutlineButton(
-                  text: 'Lihat Riwayat Pembayaran',
+                child: CustomButton(
+                  text: 'Ringkasan Pembayaran',
                   onPressed: () {
-                    AppRouter.router
-                        .push('${PAGES.main.screenPath}?withdrawal=${1}');
+                    // Pop sampai halaman detail invoice.
+                    Navigator.popUntil(
+                        context,
+                        (route) =>
+                            route.settings.name ==
+                                PAGES.invoiceReportSummary.screenName ||
+                            route.isFirst);
                   },
-                  color: primaryColor,
+                  isActive: true,
                 ),
               ),
-              const SizedBox(height: 69.0),
+              const SizedBox(height: 20.0),
             ],
           ),
         ),

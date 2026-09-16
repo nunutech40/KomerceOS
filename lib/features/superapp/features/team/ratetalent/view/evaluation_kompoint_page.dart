@@ -47,11 +47,22 @@ class _EvaluationKompointPageState extends State<EvaluationKompointPage> {
         listener: (context, state) {
       if (state.status == RequestStatus.success &&
           state.operation == 'submittingRatings') {
-        AppRouter.router
-            .pushNamed(PAGES.paymentmethod.screenName, queryParameters: {
-          'id': [widget.invoiceCode],
-          'xenditUrl': [widget.xenditUrl]
-        });
+        // Pop semua halaman evaluasi secara deklaratif sampai kembali ke Detail Invoice
+        Navigator.popUntil(
+          context,
+          (route) =>
+              route.settings.name == PAGES.invoiceReportSummary.screenName ||
+              route.isFirst, // Fallback safety
+        );
+
+        // Langsung push PaymentMethod di atas Detail Invoice
+        AppRouter.router.pushNamed(
+          PAGES.paymentmethod.screenName,
+          queryParameters: {
+            'id': [widget.invoiceCode],
+            'xenditUrl': [widget.xenditUrl]
+          },
+        );
       }
     }, builder: (context, state) {
       return Scaffold(
