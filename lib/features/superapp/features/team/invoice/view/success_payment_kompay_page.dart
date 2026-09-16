@@ -9,7 +9,8 @@ import 'package:komtim_partner/common/styles.dart';
 class SuccessPaymentKompayPage extends StatefulWidget {
   final String? invoiceId;
   final String? status;
-  const SuccessPaymentKompayPage({super.key, required this.invoiceId, required this.status});
+  const SuccessPaymentKompayPage(
+      {super.key, required this.invoiceId, required this.status});
 
   @override
   State<SuccessPaymentKompayPage> createState() =>
@@ -53,7 +54,9 @@ class _SuccessPaymentKompyPageState extends State<SuccessPaymentKompayPage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  SvgPicture.asset('assets/images/ilustrated-success.svg'),
+                  SvgPicture.asset(
+                    'assets/images/team/success_payment.svg',
+                  ),
                   const SizedBox(height: 32),
                   RichText(
                     textAlign: TextAlign.center,
