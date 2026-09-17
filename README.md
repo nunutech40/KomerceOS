@@ -223,6 +223,12 @@ lib/
    # Development
    flutter run --flavor dev --dart-define=FLAVOR=dev
 
+   # Development on Android device (Wireless Debugging)
+   fvm flutter run \
+     -d adb-1468240586001999-5wEPWu._adb-tls-connect._tcp \
+     --flavor dev \
+     --dart-define=FLAVOR=dev
+
    # Staging
    flutter run --flavor staging --dart-define=FLAVOR=staging
 
@@ -245,6 +251,18 @@ flutter build apk --flavor production --dart-define=FLAVOR=production
 # App Bundle (Production)
 flutter build appbundle --flavor production --dart-define=FLAVOR=production
 ```
+
+---
+
+## 🧪 Data Testing
+
+Gunakan akun berikut untuk pengujian pada masing-masing environment:
+
+| Environment | Email / Username | Password |
+|-------------|------------------|----------|
+| Development | `rilastest22yopmail.com` | `ApaAja0?` |
+| Staging | `testsuperstg3@yopmail.com` | `12345678Aa.` |
+| Production | `welosnemas@gmail.com` | `12345678Aa.` |
 
 ---
 
@@ -365,6 +383,7 @@ fvm flutter test test/features/auth/
 
 Untuk dokumentasi teknis lebih lengkap, silakan lihat:
 
+- [Super App Feature](./docs/super_app_feature.md)
 - [Technical Requirements Document (TRD)](./docs/TRD.md)
 - [Authentication Flow](./docs/flows/auth_flow.md)
 - [Home Flow](./docs/flows/home_flow.md)

@@ -10,6 +10,7 @@ abstract class Config {
   String get baseUrlWebUrlTalentPool;
   String get baseUrlSuperApp;
   String get baseUrlKomship;
+  String get baseUrlKomshipHiring;
 
   static Config? _instance;
 

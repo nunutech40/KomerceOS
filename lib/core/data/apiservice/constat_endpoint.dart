@@ -7,6 +7,8 @@ class Endpoints {
   static String get _BaseURLInternal => Config.instance.baseUrlInternal;
   static String get _BaseURLSuperApp => Config.instance.baseUrlSuperApp;
   static String get _BaseURLKomship => Config.instance.baseUrlKomship;
+  static String get _BaseURLKomshipHiring =>
+      Config.instance.baseUrlKomshipHiring;
   static String get _BaseURLTalentPool => Config.instance.baseUrlTalentPool;
 
   // These are the endpoints
@@ -32,6 +34,22 @@ class Endpoints {
   static String get getProfile => '$_BaseURL/api/v1/auth/profile';
   static String get superappGetProfile =>
       '$_BaseURLSuperApp/auth/api/v1/user/partner/get-profile-mobile';
+
+  // Legacy Komship profile APIs. These intentionally use the Komship host,
+  // which is different from the Super App auth/profile host.
+  static String get komshipProfile => '$_BaseURLKomship/api/v1/my-profile';
+  static String get komshipUpdateAccountProfile =>
+      '$_BaseURLKomshipHiring/api/user/v2/partner/update-profile-komship';
+  static String get komshipUpdateEmail =>
+      '$_BaseURLKomshipHiring/api/user/partner/update-profile/email';
+  static String get komshipUpdateBusinessProfile =>
+      '$_BaseURLKomshipHiring/api/user/v2/partner/update-profile-komship';
+  static String get komshipBusinessTypes =>
+      '$_BaseURLKomshipHiring/api/v2/business-type';
+  static String get komshipBusinessSectors =>
+      '$_BaseURLKomshipHiring/api/v2/partner-category';
+  static String get komshipLocations =>
+      '$_BaseURLKomshipHiring/api/v1/partner/province-city';
 
   // Talents Endpoint
   static String get talents => '$_BaseURL/api/v1/mobile/talents';

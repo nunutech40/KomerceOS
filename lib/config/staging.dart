@@ -21,4 +21,7 @@ class StagingConfig implements Config {
 
   @override
   String get baseUrlKomship => 'https://staging.komship.komerce.my.id';
+
+  @override
+  String get baseUrlKomshipHiring => 'https://staging.komtim.komerce.my.id';
 }

@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../myapp/view/my_app_page.dart';
 import '../widget/setting_menu_item.dart';
+import 'setting_profile_page.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
@@ -59,7 +60,9 @@ class SettingPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: (profile?.photoProfileUrl != null &&
-                                    profile!.photoProfileUrl!.trim().isNotEmpty &&
+                                    profile!.photoProfileUrl!
+                                        .trim()
+                                        .isNotEmpty &&
                                     profile.photoProfileUrl != 'null' &&
                                     profile.photoProfileUrl != '-')
                                 ? const Color(0xFFFFF0E6)
@@ -68,7 +71,9 @@ class SettingPage extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(45),
                             child: (profile?.photoProfileUrl != null &&
-                                    profile!.photoProfileUrl!.trim().isNotEmpty &&
+                                    profile!.photoProfileUrl!
+                                        .trim()
+                                        .isNotEmpty &&
                                     profile.photoProfileUrl != 'null' &&
                                     profile.photoProfileUrl != '-')
                                 ? Image.network(
@@ -147,7 +152,12 @@ class SettingPage extends StatelessWidget {
                           topLeft: Radius.circular(16),
                           topRight: Radius.circular(16),
                         ),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SettingProfilePage()));
+                        },
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -263,7 +273,7 @@ class SettingPage extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFE5E5E5)),
                   ),
                   child: SettingMenuItem(
-                     leadingIcon: SvgPicture.asset(
+                    leadingIcon: SvgPicture.asset(
                       'assets/images/superapp/setting/ic_logout.svg',
                     ),
                     leadingBackgroundColor: const Color(0xFFFEEBEC),
