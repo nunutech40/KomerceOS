@@ -33,6 +33,7 @@ import 'package:komtim_partner/features/superapp/features/team/invoice/view/invo
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/invoice_report_summary_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/payment_method_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/view/success_payment_kompay_page.dart';
+import 'package:komtim_partner/features/superapp/features/team/managetalent/view/manage_talent_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/view/detail_report_performance_month_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/performance/view/report_performance_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/bloc/shopping_bloc.dart';
@@ -478,6 +479,14 @@ class AppRouter {
         path: PAGES.forceUpdatePage.screenPath,
         name: PAGES.forceUpdatePage.screenName,
         builder: (context, state) => const ForceUpdatePage(),
+      ),
+      // -----------------------------------------------------------------------
+      // MANAGE TALENT
+      // -----------------------------------------------------------------------
+      GoRoute(
+        path: PAGES.manageTalent.screenPath,
+        name: PAGES.manageTalent.screenName,
+        builder: (context, state) => const ManageTalentPage(),
       ),
     ],
     errorBuilder: (context, state) => const NotFoundPage(),

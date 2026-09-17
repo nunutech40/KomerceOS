@@ -70,6 +70,9 @@ enum PAGES {
   //list of team
   listOfTeam,
 
+  //manage talent
+  manageTalent,
+
 }
 
 extension AppPageExtension on PAGES {
@@ -159,6 +162,8 @@ extension AppPageExtension on PAGES {
         return "/talent_pool";
       case PAGES.listOfTeam:
         return "/list_of_team";
+      case PAGES.manageTalent:
+        return "/manage_talent";  
     }
   }
 
@@ -246,6 +251,8 @@ extension AppPageExtension on PAGES {
         return "TALENT POOL PAGE";
       case PAGES.listOfTeam:
         return "LIST OF TEAM PAGE";
+      case PAGES.manageTalent:
+        return "MANAGE TALENT PAGE";  
     }
   }
 
@@ -325,6 +332,8 @@ extension AppPageExtension on PAGES {
         return "Talent Pool";
       case PAGES.listOfTeam:
         return "Daftar Tim";
+      case PAGES.manageTalent:
+        return "Kelola Talent";  
       default:
         return "Home";
     }

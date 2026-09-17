@@ -326,6 +326,7 @@ class _TopupViewState extends State<TopupView> {
               final qrString = state.data.qrString ?? '';
               final expiresAt = state.data.expiresAt ?? '';
               final qrId = state.data.id ?? '';
+              debugPrint('QRIS Data: amount=$amountStr, qrString=$qrString, expiresAt=$expiresAt, qrId=$qrId');
 
               Navigator.push(
                 context,

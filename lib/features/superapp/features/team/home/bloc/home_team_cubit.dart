@@ -79,4 +79,8 @@ class HomeTeamCubit extends Cubit<HomeTeamState> {
       extra: feedId,
     );
   }
+
+  void navigateToManageTalent() {
+    AppRouter.router.push(PAGES.manageTalent.screenPath);
+  }
 }

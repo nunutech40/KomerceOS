@@ -10,6 +10,7 @@ class TeamMenuSection extends StatelessWidget {
   final VoidCallback? onAttendanceTap;
   final VoidCallback? onPerformanceTap;
   final VoidCallback? onTalentPoolTap;
+  final VoidCallback? onManageTalentTap;
   final String? accountStatus;
 
   const TeamMenuSection({
@@ -21,6 +22,7 @@ class TeamMenuSection extends StatelessWidget {
     this.onAttendanceTap,
     this.onPerformanceTap,
     this.onTalentPoolTap,
+    this.onManageTalentTap,
     this.accountStatus,
   }) : super(key: key);
 
@@ -93,8 +95,8 @@ class TeamMenuSection extends StatelessWidget {
           ),
           _buildBadgedMenuIcon(
             title: 'Belanja',
-            iconAsset: isAccountOff 
-                ? 'assets/images/team/ic_shopping_disable.png' 
+            iconAsset: isAccountOff
+                ? 'assets/images/team/ic_shopping_disable.png'
                 : 'assets/images/team/ic_shopping.png',
             badgeCount: shoppingBadgeCount,
             onTap: onShoppingTap,
@@ -102,8 +104,8 @@ class TeamMenuSection extends StatelessWidget {
           ),
           _buildBadgedMenuIcon(
             title: 'Presensi',
-            iconAsset: isAccountOff 
-                ? 'assets/images/team/ic_presence_disable.png' 
+            iconAsset: isAccountOff
+                ? 'assets/images/team/ic_presence_disable.png'
                 : 'assets/images/team/ic_presence.png',
             badgeCount: 0,
             onTap: onAttendanceTap,
@@ -111,8 +113,8 @@ class TeamMenuSection extends StatelessWidget {
           ),
           _buildBadgedMenuIcon(
             title: 'Report\nPerforma', // Two lines based on slicing width
-            iconAsset: isAccountOff 
-                ? 'assets/images/team/ic_report_disable.png' 
+            iconAsset: isAccountOff
+                ? 'assets/images/team/ic_report_disable.png'
                 : 'assets/images/team/ic_report.png',
             badgeCount: 0,
             onTap: onPerformanceTap,
@@ -120,13 +122,19 @@ class TeamMenuSection extends StatelessWidget {
           ),
           _buildBadgedMenuIcon(
             title: 'Talent Pool',
-            iconAsset: isAccountOff 
-                ? 'assets/images/team/ic_talent_pool_disable.png' 
+            iconAsset: isAccountOff
+                ? 'assets/images/team/ic_talent_pool_disable.png'
                 : 'assets/images/team/ic_talent_pool.png',
             badgeCount: 0,
             onTap: onTalentPoolTap,
             isDisabled: isAccountOff,
           ),
+          _buildBadgedMenuIcon(
+            title: 'Kelola Talent',
+            iconAsset: "assets/images/superapp/team/ic_manage_talent.png",
+            badgeCount: 0,
+            onTap: onManageTalentTap,
+          )
         ],
       ),
     );
