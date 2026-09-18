@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
-import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
 import 'package:komtim_partner/common/global/widgets/custom_button_small.dart';
 import 'package:komtim_partner/common/global/widgets/custom_outline_button_1_small.dart';
 import 'package:komtim_partner/common/string.dart';
@@ -35,19 +35,10 @@ class ConfirmationPay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(8.0),
-                    topRight: Radius.circular(8.0),
-                  ),
-                  child: DsAppImage(
-                    source: 'assets/images/superapp/team/ic_danger.png',
-                    width: 80,
-                    height: 80,
-                  ),
-                ),
+              SvgPicture.asset(
+                'assets/images/superapp/team/ilustration_confirmation_shoppe.svg',
+                width: 120,
+                height: 120,
               ),
               const Padding(
                 padding: EdgeInsets.only(left: 16, right: 16, top: 28),
