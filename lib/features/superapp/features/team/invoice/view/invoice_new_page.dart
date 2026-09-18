@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart'
     hide AppTypography;
@@ -102,19 +101,20 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
       appBar: DsAppBar(
         title: Strings.label_invoice,
         onBackPressed: () => AppRouter.router.pop(),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 24),
-            child: DsSquareIconButton(
-              customIcon: SvgPicture.asset(
-                'assets/images/team/ic_calender.svg',
-                width: 20,
-                height: 20,
-              ),
-              onTap: () {},
-            ),
-          ),
-        ],
+        //! TODO: implement filter and sort feature hide for reason
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 24),
+        //     child: DsSquareIconButton(
+        //       customIcon: SvgPicture.asset(
+        //         'assets/images/team/ic_calender.svg',
+        //         width: 20,
+        //         height: 20,
+        //       ),
+        //       onTap: () {},
+        //     ),
+        //   ),
+        // ],
       ),
       body: BlocConsumer<InvoiceListBloc, InvoiceListState>(
         listener: (context, state) {

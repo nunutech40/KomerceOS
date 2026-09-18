@@ -84,7 +84,7 @@ class _RateTalentNotifPageState extends State<RateTalentNotifPage> {
           child: CustomButton(
             text: Strings.label_continue,
             onPressed: () {
-              AppRouter.router.pushNamed(
+              AppRouter.router.pushReplacementNamed(
                 PAGES.rateTalentCheckPage.screenName,
                 queryParameters: {
                   'xenditUrl': widget.xenditUrl,

@@ -222,13 +222,19 @@ class _ShoppingListPageState extends State<ShoppingListPage>
         ),
         body: BlocConsumer<ShoppingBloc, ShoppingState>(
             listener: (context, state) {
-          if (state.status == RequestStatus.success &&
+          if (state.operation == 'getShoppingList' &&
+              state.status == RequestStatus.success &&
               state.shoppingList.isNotEmpty) {
             setState(() {
+              if (_offset == 0) {
+                shoppingListData.clear();
+              }
               shoppingListData.addAll(state.shoppingList);
               _failedAttempts = 0;
             });
-          } else if (state.shoppingList.isEmpty) {
+          } else if (state.operation == 'getShoppingList' &&
+              state.status == RequestStatus.success &&
+              state.shoppingList.isEmpty) {
             _failedAttempts++;
             if (_failedAttempts >= 3) {
               setState(() {
