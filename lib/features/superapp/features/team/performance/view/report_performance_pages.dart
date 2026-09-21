@@ -255,6 +255,12 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
         });
         _loadData();
       } else if (newTab == 1) {
+        final products = _bloc.state.reportPerformanceProduct;
+        if (selectedProductId == null && products.isNotEmpty) {
+          selectedProductId = products.first.id?.toString();
+          hasWeeklyProductFilter = selectedProductId != null;
+        }
+
         setState(() {
           // Reset weekly data and pagination
           _offset = 0;
@@ -266,7 +272,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
         _fetchProductList(forceRefresh: true);
 
-        if (_selectedWeek != null) {
+        if (_selectedWeek != null && selectedProductId != null) {
           _loadWeeklyData();
         }
       } else if (newTab == 2) {
@@ -306,7 +312,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     });
     final range = _getSelectedWeekDateRange();
     _bloc.add(GetReportPerformanceEvent(
-      search: '',
+      search: _getSelectedProductSearch(),
       limit: _limit.toString(),
       offset: (_offset + _limit).toString(),
       startDate: range['start']!,
@@ -410,6 +416,15 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  Map<String, String> _getSelectedMonthDateRange() {
+    final month = _listMonths.indexOf(_selectedMonth ?? '') + 1;
+    final year = DateTime.now().year;
+    return {
+      'start': _formatReportDate(DateTime(year, month, 1)),
+      'end': _formatReportDate(DateTime(year, month + 1, 0)),
+    };
+  }
+
   Map<String, String> _getSelectedWeekDateRange() {
     final month = _listMonths.indexOf(_selectedMonth ?? '') + 1;
     final year = DateTime.now().year;
@@ -430,28 +445,34 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     };
   }
 
+  String _getSelectedProductSearch() {
+    if (selectedProductId == null || selectedProductId!.isEmpty) {
+      return '';
+    }
+
+    for (final product in _bloc.state.reportPerformanceProduct) {
+      if (product.id?.toString() == selectedProductId) {
+        return product.name ?? '';
+      }
+    }
+    return '';
+  }
+
   List<ReportPerformanceWeeklyModel> _aggregateWeeklyData(
     List<ReportPerformanceModel> data,
   ) {
-    final grouped = <String, ReportPerformanceWeeklyModel>{};
-    for (final item in data) {
-      final key = '${item.productId}|${item.talentName}|${item.division}';
-      final existing = grouped[key];
-      final leads = (existing?.totalLeads ?? 0) + (item.leads ?? 0);
-      final transactions =
-          (existing?.totalTransaction ?? 0) + (item.transaction ?? 0);
-      grouped[key] = ReportPerformanceWeeklyModel(
+    return data.map((item) {
+      return ReportPerformanceWeeklyModel(
         producId: item.productId,
         talentName: item.talentName,
-        totalLeads: leads,
-        totalTransaction: transactions,
-        cr: leads == 0 ? 0 : transactions / leads * 100,
-        totalCbt: (existing?.totalCbt ?? 0) + (item.cb ?? 0),
+        totalLeads: item.leads,
+        totalTransaction: item.transaction,
+        cr: item.cr,
+        totalCbt: item.cb,
         productName: item.productName,
         division: item.division,
       );
-    }
-    return grouped.values.toList();
+    }).toList();
   }
 
   @override
@@ -779,7 +800,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
     final range = _getSelectedWeekDateRange();
     _bloc.add(GetReportPerformanceEvent(
-      search: '',
+      search: _getSelectedProductSearch(),
       limit: _limit.toString(),
       offset: _offset.toString(),
       startDate: range['start']!,
@@ -789,134 +810,158 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
   Widget _buildListviewWeek() {
     return BlocConsumer<ReportPerformanceBloc, ReportPerformanceState>(
+        listenWhen: (previous, current) =>
+            previous.reportPerformance != current.reportPerformance ||
+            previous.reportPerformanceProduct !=
+                current.reportPerformanceProduct,
         listener: (context, state) {
-      if (state.status == RequestStatus.empty) {
-        setState(() {
-          _isLoading = false;
-          _isLoadingMore = false;
-          _hasNextPage = false;
-        });
-      } else if (state.status == RequestStatus.failure) {
-        setState(() {
-          _isLoading = false;
-          _isLoadingMore = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${state.message}')),
-        );
-      } else if (state.status == RequestStatus.success) {
-        setState(() {
-          _isLoading = false;
-          _isLoadingMore = false;
+          if (valueTab == 1 &&
+              selectedProductId == null &&
+              state.reportPerformanceProduct.isNotEmpty) {
+            setState(() {
+              selectedProductId =
+                  state.reportPerformanceProduct.first.id?.toString();
+              hasWeeklyProductFilter = selectedProductId != null;
+            });
 
-          var newData = _aggregateWeeklyData(state.reportPerformance ?? []);
-
-          if (_offset == 0) {
-            // Reset data for first load
-            listDataWeek = newData;
-            filteredDataWeek = List.from(newData);
-            attemptCount = 0;
-          } else {
-            // Add data for infinite scroll
-            if (newData.isEmpty) {
-              attemptCount++;
-              if (attemptCount >= maxAttempts) {
-                _hasNextPage = false;
-              }
-            } else {
-              attemptCount = 0;
-              listDataWeek.addAll(newData);
-              filteredDataWeek = List.from(listDataWeek);
-              _offset += _limit;
+            if (_selectedWeek != null) {
+              _loadWeeklyData();
             }
+            return;
           }
 
-          // Check if there's more data
-          _hasNextPage = false;
-        });
-      }
-    }, builder: (context, state) {
-      if (valueTab != 1) {
-        return const SizedBox(); // Return empty if not weekly tab
-      }
+          if (state.status == RequestStatus.empty) {
+            setState(() {
+              _isLoading = false;
+              _isLoadingMore = false;
+              _hasNextPage = false;
+            });
+          } else if (state.status == RequestStatus.failure) {
+            setState(() {
+              _isLoading = false;
+              _isLoadingMore = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: ${state.message}')),
+            );
+          } else if (state.status == RequestStatus.success) {
+            setState(() {
+              _isLoading = false;
+              _isLoadingMore = false;
 
-      List<ReportPerformanceWeeklyModel> displayData = _getWeeklyDisplayData();
+              var newData = _aggregateWeeklyData(state.reportPerformance ?? []);
 
-      // Show shimmer loading
-      bool shouldShowShimmer =
-          _isLoading && displayData.isEmpty && !_isTabChanging && valueTab == 1;
-
-      if (shouldShowShimmer) {
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          itemCount: 10,
-          itemBuilder: (context, index) {
-            return const CardShimmerReportPerformance();
-          },
-        );
-      }
-
-      // Show empty state
-      if (displayData.isEmpty && !_isLoading) {
-        return RefreshIndicator(
-          onRefresh: _refreshWeeklyData,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: DsEmptyState(
-                  imagePath: 'assets/images/team/empty_state_feed.svg',
-                  title: 'Report Performa Kosong',
-                  description: _getWeeklyEmptyStateMessage(),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-
-      return RefreshIndicator(
-          onRefresh: _refreshWeeklyData,
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            itemCount: displayData.length +
-                (_shouldShowWeeklyLoadingIndicator() ? 1 : 0),
-            itemBuilder: (context, index) {
-              // Show loading indicator at bottom
-              if (index == displayData.length) {
-                if (attemptCount >= maxAttempts) {
-                  return const SizedBox.shrink();
+              if (_offset == 0) {
+                // Reset data for first load
+                listDataWeek = newData;
+                filteredDataWeek = List.from(newData);
+                attemptCount = 0;
+              } else {
+                // Add data for infinite scroll
+                if (newData.isEmpty) {
+                  attemptCount++;
+                  if (attemptCount >= maxAttempts) {
+                    _hasNextPage = false;
+                  }
+                } else {
+                  attemptCount = 0;
+                  listDataWeek.addAll(newData);
+                  filteredDataWeek = List.from(listDataWeek);
+                  _offset += _limit;
                 }
-
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Center(
-                    child: _isLoadingMore
-                        ? const CircularProgressIndicator()
-                        : const SizedBox.shrink(),
-                  ),
-                );
               }
 
-              final item = displayData[index];
-              // final itemId = item.id ?? index;
-              // final isExpanded = expandedItems.contains(itemId);
+              // Check if there's more data
+              _hasNextPage = false;
+            });
+          }
+        },
+        builder: (context, state) {
+          if (valueTab != 1) {
+            return const SizedBox(); // Return empty if not weekly tab
+          }
 
-              return CardWeek(
-                name: item.talentName ?? "",
-                role: _expandDivisionName(item.division ?? ""),
-                date: "",
-                nameProduct: item.productName ?? "",
-                leads: item.totalLeads.toString(),
-                transaksi: item.totalTransaction.toString(),
-                cr: convertCR(item.cr ?? 0),
-                cbt: item.totalCbt.toString(),
-              );
-            },
-          ));
-    });
+          List<ReportPerformanceWeeklyModel> displayData =
+              _getWeeklyDisplayData();
+
+          // Show shimmer loading
+          bool shouldShowShimmer = _isLoading &&
+              displayData.isEmpty &&
+              !_isTabChanging &&
+              valueTab == 1;
+
+          if (shouldShowShimmer) {
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              itemCount: 10,
+              itemBuilder: (context, index) {
+                return const CardShimmerReportPerformance();
+              },
+            );
+          }
+
+          // Show empty state
+          if (displayData.isEmpty && !_isLoading) {
+            return RefreshIndicator(
+              onRefresh: _refreshWeeklyData,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: DsEmptyState(
+                      imagePath: 'assets/images/team/empty_state_feed.svg',
+                      title: 'Report Performa Kosong',
+                      description: _getWeeklyEmptyStateMessage(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+              onRefresh: _refreshWeeklyData,
+              child: ListView.builder(
+                controller: _scrollController,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                itemCount: displayData.length +
+                    (_shouldShowWeeklyLoadingIndicator() ? 1 : 0),
+                itemBuilder: (context, index) {
+                  // Show loading indicator at bottom
+                  if (index == displayData.length) {
+                    if (attemptCount >= maxAttempts) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Center(
+                        child: _isLoadingMore
+                            ? const CircularProgressIndicator()
+                            : const SizedBox.shrink(),
+                      ),
+                    );
+                  }
+
+                  final item = displayData[index];
+                  // final itemId = item.id ?? index;
+                  // final isExpanded = expandedItems.contains(itemId);
+
+                  return CardWeek(
+                    name: item.talentName ?? "",
+                    role: _expandDivisionName(item.division ?? ""),
+                    date: "",
+                    nameProduct: item.productName ?? "",
+                    leads: item.totalLeads.toString(),
+                    transaksi: item.totalTransaction.toString(),
+                    cr: convertCR(item.cr ?? 0),
+                    cbt: item.totalCbt.toString(),
+                  );
+                },
+              ));
+        });
   }
 
   // Monthly helper methods
@@ -969,6 +1014,14 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
         limit: _limit,
         offset: _offset,
         month: monthNumber,
+      ));
+
+      final range = _getSelectedMonthDateRange();
+      _bloc.add(GetReportPerformanceMonthlyDetailEvent(
+        limit: _limit.toString(),
+        offset: '0',
+        startDate: range['start']!,
+        endDate: range['end']!,
       ));
     }
   }
@@ -1100,9 +1153,17 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
                   transaksi: item.transaction?.toString() ?? "0",
                   cr: convertCR(item.cr ?? 0),
                   ontap: () {
+                    final rawDetails = _bloc
+                        .state.reportPerformanceMonthlyDetail
+                        .where(
+                            (detail) => detail.productName == item.productName)
+                        .toList();
                     AppRouter.router
                         .push(PAGES.reportdetailperformance.screenPath, extra: {
                       "detailModel": item.detail,
+                      "rawDetailModel": rawDetails,
+                      "startDate": _getSelectedMonthDateRange()['start'],
+                      "endDate": _getSelectedMonthDateRange()['end'],
                       "productName": item.productName,
                     });
                   },

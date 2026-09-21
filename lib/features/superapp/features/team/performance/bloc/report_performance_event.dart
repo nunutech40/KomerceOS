@@ -72,6 +72,23 @@ class GetReportPerformanceMonthEvent extends ReportPerformanceEvent {
       ];
 }
 
+class GetReportPerformanceMonthlyDetailEvent extends ReportPerformanceEvent {
+  final String limit;
+  final String offset;
+  final String startDate;
+  final String endDate;
+
+  const GetReportPerformanceMonthlyDetailEvent({
+    required this.limit,
+    required this.offset,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  @override
+  List<Object?> get props => [limit, offset, startDate, endDate];
+}
+
 class GetReportPerformanceProductEvent extends ReportPerformanceEvent {
   final String keyword;
   final String partnerId;
