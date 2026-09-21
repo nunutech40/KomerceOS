@@ -49,6 +49,24 @@ class _NotificationPageViewState extends State<NotificationPageView>
     'Komads',
     'Komed',
   ];
+
+  // Label yang ditampilkan tidak selalu sama dengan service code API.
+  // Khusus Komcards, API menggunakan nama service "komcard" (singular).
+  static const List<String> _filterServices = [
+    'semua',
+    'komship',
+    'kompack',
+    'komtim',
+    'komchat',
+    'komcard',
+    'komform',
+    'komplace',
+    'komclass',
+    'pumkm',
+    'komads',
+    'komed',
+  ];
+
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -85,7 +103,7 @@ class _NotificationPageViewState extends State<NotificationPageView>
     setState(() {
       _selectedChipIndex = index;
     });
-    final service = _filterChips[index];
+    final service = _filterServices[index];
     context.read<NotificationV2Bloc>().add(FilterServiceChangedEvent(service));
   }
 

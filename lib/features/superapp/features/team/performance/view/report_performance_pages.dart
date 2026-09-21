@@ -119,13 +119,13 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     'Desember',
   ];
 
-  final List<String> _listWeek = [
-    'Week 1',
-    'Week 2',
-    'Week 3',
-    'Week 4',
-    'Week 5',
-  ];
+  List<String> get _weeksForSelectedMonth {
+    final month = _listMonths.indexOf(_selectedMonth ?? '') + 1;
+    final firstDay = DateTime(DateTime.now().year, month, 1);
+    final daysInMonth = DateTime(DateTime.now().year, month + 1, 0).day;
+    final weekCount = ((firstDay.weekday - 1 + daysInMonth) / 7).ceil();
+    return List.generate(weekCount, (index) => 'Week ${index + 1}');
+  }
 
   ProfileResponse? profileResponse;
   @override
@@ -148,7 +148,8 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
 // Add method to fetch product list
   Future<String> _resolvePartnerId() async {
-    final partnerIdFromSuperappLogin = await pref.getPartnerIdFromSuperappLogin();
+    final partnerIdFromSuperappLogin =
+        await pref.getPartnerIdFromSuperappLogin();
     if (partnerIdFromSuperappLogin != null) {
       return partnerIdFromSuperappLogin.toString();
     }
@@ -303,16 +304,13 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
     setState(() {
       _isLoadingMore = true;
     });
-    final weekNumber = _selectedWeek != null
-        ? int.parse(_selectedWeek!.replaceAll('Week ', ''))
-        : 1;
-    _bloc.add(GetReportPerformanceWeekEvent(
-      limit: _limit,
-      offset: (_offset + _limit),
-      week: weekNumber,
-      month: '',
-      keyword: '',
-      productId: selectedProductId ?? '',
+    final range = _getSelectedWeekDateRange();
+    _bloc.add(GetReportPerformanceEvent(
+      search: '',
+      limit: _limit.toString(),
+      offset: (_offset + _limit).toString(),
+      startDate: range['start']!,
+      endDate: range['end']!,
     ));
   }
 
@@ -406,6 +404,54 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
     // Pastikan tidak melebihi week 5 dan minimal week 1
     return weekNumber.clamp(1, 5);
+  }
+
+  String _formatReportDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Map<String, String> _getSelectedWeekDateRange() {
+    final month = _listMonths.indexOf(_selectedMonth ?? '') + 1;
+    final year = DateTime.now().year;
+    final week = _selectedWeek != null
+        ? int.parse(_selectedWeek!.replaceAll('Week ', ''))
+        : 1;
+    final firstDay = DateTime(year, month, 1);
+    final lastDay = DateTime(year, month + 1, 0);
+    final firstMonday = firstDay.subtract(
+      Duration(days: firstDay.weekday - 1),
+    );
+    final start = firstMonday.add(Duration(days: (week - 1) * 7));
+    final end = start.add(const Duration(days: 6));
+
+    return {
+      'start': _formatReportDate(start.isBefore(firstDay) ? firstDay : start),
+      'end': _formatReportDate(end.isAfter(lastDay) ? lastDay : end),
+    };
+  }
+
+  List<ReportPerformanceWeeklyModel> _aggregateWeeklyData(
+    List<ReportPerformanceModel> data,
+  ) {
+    final grouped = <String, ReportPerformanceWeeklyModel>{};
+    for (final item in data) {
+      final key = '${item.productId}|${item.talentName}|${item.division}';
+      final existing = grouped[key];
+      final leads = (existing?.totalLeads ?? 0) + (item.leads ?? 0);
+      final transactions =
+          (existing?.totalTransaction ?? 0) + (item.transaction ?? 0);
+      grouped[key] = ReportPerformanceWeeklyModel(
+        producId: item.productId,
+        talentName: item.talentName,
+        totalLeads: leads,
+        totalTransaction: transactions,
+        cr: leads == 0 ? 0 : transactions / leads * 100,
+        totalCbt: (existing?.totalCbt ?? 0) + (item.cb ?? 0),
+        productName: item.productName,
+        division: item.division,
+      );
+    }
+    return grouped.values.toList();
   }
 
   @override
@@ -725,18 +771,13 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
       _hasNextPage = true;
     });
 
-    // Extract week number from selected week
-    final weekNumber = _selectedWeek != null
-        ? int.parse(_selectedWeek!.replaceAll('Week ', ''))
-        : 1;
-
-    _bloc.add(GetReportPerformanceWeekEvent(
-      limit: _limit,
-      offset: _offset,
-      week: weekNumber,
-      keyword: '', // Add keyword if needed
-      month: '', // Add month if needed
-      productId: selectedProductId ?? '', // Pastikan productId dikirim
+    final range = _getSelectedWeekDateRange();
+    _bloc.add(GetReportPerformanceEvent(
+      search: '',
+      limit: _limit.toString(),
+      offset: _offset.toString(),
+      startDate: range['start']!,
+      endDate: range['end']!,
     ));
   }
 
@@ -762,7 +803,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
           _isLoading = false;
           _isLoadingMore = false;
 
-          var newData = state.reportPerformanceWeekly ?? [];
+          var newData = _aggregateWeeklyData(state.reportPerformance ?? []);
 
           if (_offset == 0) {
             // Reset data for first load
@@ -785,9 +826,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
           }
 
           // Check if there's more data
-          if (newData.length < _limit) {
-            _hasNextPage = false;
-          }
+          _hasNextPage = false;
         });
       }
     }, builder: (context, state) {
@@ -1137,7 +1176,7 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
                   fontSize: 14,
                   color: AppColors.alwaysBlack,
                 ),
-                items: _listWeek.map((String value) {
+                items: _weeksForSelectedMonth.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
@@ -1156,7 +1195,6 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
             ),
           ),
         ),
-        const SizedBox(width: AppSpacing.xs),
         DsSquareIconButton(
           customIcon: SvgPicture.asset(
             'assets/images/superapp/ic_filter.svg',
