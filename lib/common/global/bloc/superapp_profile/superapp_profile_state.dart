@@ -76,29 +76,22 @@ class SuperappProfileState extends Equatable {
     );
   }
 
-  /// true jika user punya Komship DAN sudah verifikasi email Komship.
-  /// Business logic ini terpusat di state, tidak perlu dihitung ulang di UI.
+  /// true jika user memiliki akses Komship.
+  ///
+  /// Flag produk adalah sumber kebenaran untuk visibility menu. Data
+  /// [productMailVerifications] hanya digunakan untuk alur verifikasi email,
+  /// bukan sebagai syarat akses produk.
   bool get isKomshipVerified {
     final profile = displayProfile;
     if (profile == null) return false;
-    return profile.isKomship == 1 &&
-        (profile.productMailVerifications.any(
-          (e) =>
-              e.productName?.toLowerCase() == 'komship' && e.isVerified == true,
-        ));
+    return profile.isKomship == 1;
   }
 
-  /// true jika user punya Komcards DAN sudah verifikasi email Komcards.
+  /// true jika user memiliki akses Komcards.
   bool get isKomcardsVerified {
     final profile = displayProfile;
     if (profile == null) return false;
-    return profile.isKomcards == 1 &&
-        (profile.productMailVerifications.any(
-          (e) =>
-              (e.productName?.toLowerCase() == 'komcard' ||
-                  e.productName?.toLowerCase() == 'komcards') &&
-              e.isVerified == true,
-        ));
+    return profile.isKomcards == 1;
   }
 
   SuperappProfileState copyWith({
