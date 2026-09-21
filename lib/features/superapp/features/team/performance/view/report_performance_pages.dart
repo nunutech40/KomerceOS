@@ -731,7 +731,13 @@ class _ReportPerformancePagesState extends State<ReportPerformancePages>
 
   // Weekly helper methods
   List<ReportPerformanceWeeklyModel> _getWeeklyDisplayData() {
-    return hasWeeklyProductFilter ? filteredDataWeek : listDataWeek;
+    if (!hasWeeklyProductFilter || selectedProductId == null) {
+      return listDataWeek;
+    }
+
+    return listDataWeek
+        .where((item) => item.producId.toString() == selectedProductId)
+        .toList();
   }
 
   bool _shouldShowWeeklyLoadingIndicator() {
