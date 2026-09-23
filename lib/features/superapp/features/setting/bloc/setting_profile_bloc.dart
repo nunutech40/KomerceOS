@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../domain/entities/setting_profile.dart';
 import '../domain/repositories/setting_profile_repository.dart';
@@ -12,6 +13,7 @@ class SettingProfileBloc
   SettingProfileBloc({required this.repository})
       : super(const SettingProfileState.initial()) {
     on<SettingProfileFetchRequested>(_onFetch);
+    on<SettingProfileGlobalLoaded>(_onGlobalLoaded);
     on<SettingProfileChanged>(_onChanged);
     on<SettingProfileSaveRequested>(_onSaveRequested);
     on<SettingAccountProfileUpdateRequested>(_onAccountUpdate);
@@ -19,7 +21,42 @@ class SettingProfileBloc
     on<SettingBusinessSectorsRequested>(_onSectorsRequested);
     on<SettingBusinessLocationsRequested>(_onLocationsRequested);
     on<SettingBusinessLocationsDebounced>(_onLocationsDebounced);
-    add(const SettingProfileFetchRequested());
+  }
+
+  void _onGlobalLoaded(
+      SettingProfileGlobalLoaded event, Emitter<SettingProfileState> emit) {
+    if (state.isDirty || state.saving) return;
+    final profile = event.profile;
+    final business = profile.businessProfile;
+    final settingProfile = SettingProfile(
+      fullName: profile.fullName ?? '',
+      username: profile.username ?? '',
+      phone: profile.noHp ?? '',
+      email: profile.email ?? '',
+      address: profile.address ?? '',
+      gender: profile.gender == 1
+          ? ProfileGender.male
+          : profile.gender == 2
+              ? ProfileGender.female
+              : null,
+      businessName: business?.brandName ?? '',
+      businessPhone: business?.businessPhone ?? '',
+      location: business?.location == null
+          ? null
+          : ProfileOption(id: business!.location!, label: business.location!),
+      businessSector: business?.businessSector == null
+          ? null
+          : ProfileOption(
+              id: business!.businessSector!, label: business.businessSector!),
+      logoUrl: business?.businessLogo,
+    );
+    emit(state.copyWith(
+      original: settingProfile,
+      draft: settingProfile,
+      loading: false,
+      accountReadOnly: profile.isKtpVerified == true,
+      message: null,
+    ));
   }
 
   Future<void> _onSectorsRequested(SettingBusinessSectorsRequested event,
@@ -102,6 +139,7 @@ class SettingProfileBloc
       if (_businessChanged) {
         saved = await repository.updateBusiness(state.draft);
       }
+      repository.notifyProfileRefresh();
       if (!isClosed) {
         emit(state.copyWith(
             original: saved,
@@ -109,11 +147,9 @@ class SettingProfileBloc
             saving: false,
             message: 'Profil berhasil disimpan.'));
       }
-    } catch (_) {
+    } catch (error) {
       if (!isClosed) {
-        emit(state.copyWith(
-            saving: false,
-            message: 'Gagal menyimpan profil. Silakan coba lagi.'));
+        emit(state.copyWith(saving: false, message: _saveErrorMessage(error)));
       }
     }
   }
@@ -135,6 +171,7 @@ class SettingProfileBloc
         savingAccount: account, savingBusiness: !account, message: null));
     try {
       final saved = await update(state.draft);
+      repository.notifyProfileRefresh();
       if (!isClosed) {
         emit(state.copyWith(
             original: saved,
@@ -143,25 +180,28 @@ class SettingProfileBloc
             savingBusiness: false,
             message: 'Profil berhasil disimpan.'));
       }
-    } catch (_) {
+    } catch (error) {
       if (!isClosed) {
         emit(state.copyWith(
             savingAccount: false,
             savingBusiness: false,
-            message: 'Gagal menyimpan profil. Silakan coba lagi.'));
+            message: _saveErrorMessage(error)));
       }
     }
   }
 
-  bool get _accountChanged =>
-      state.original.fullName != state.draft.fullName ||
-      state.original.gender != state.draft.gender ||
-      state.original.address != state.draft.address;
+  bool get _accountChanged => state.isAccountDirty;
 
-  bool get _businessChanged =>
-      state.original.businessName != state.draft.businessName ||
-      state.original.businessPhone != state.draft.businessPhone ||
-      state.original.location != state.draft.location ||
-      state.original.businessSector != state.draft.businessSector ||
-      state.original.logoPath != state.draft.logoPath;
+  bool get _businessChanged => state.isBusinessDirty;
+
+  String _saveErrorMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map<String, dynamic>) {
+        final message = data['message'];
+        if (message is String && message.trim().isNotEmpty) return message;
+      }
+    }
+    return 'Gagal menyimpan profil. Silakan coba lagi.';
+  }
 }

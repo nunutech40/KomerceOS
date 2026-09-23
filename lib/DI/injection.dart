@@ -487,11 +487,16 @@ Future<void> initDependencies() async {
             remoteDataSource: locator(),
             sharedPreferences: locator.getAsync<SharedPreferences>(),
           ));
+  locator.registerLazySingleton<SuperappProfileRepository>(
+      () => locator<SuperappProfileRepositoryImpl>());
 
   locator.registerLazySingleton<NotificationV2Repository>(
       () => NotificationV2RepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<SettingProfileRepository>(
-      () => SettingProfileRepositoryImpl(remote: locator()));
+      () => SettingProfileRepositoryImpl(
+            remote: locator(),
+            superappProfileRepository: locator(),
+          ));
   locator.registerLazySingleton<TeamRepository>(
       () => TeamRepositoryImpl(remoteDataSource: locator()));
 

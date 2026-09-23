@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/DI/injection.dart';
 import '../data/services/profile_image_service.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
@@ -24,6 +27,10 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   void initState() {
     super.initState();
     _settingProfile = locator<SettingProfileBloc>();
+    final profile = context.read<SuperappProfileBloc>().state.displayProfile;
+    if (profile != null) {
+      _settingProfile.add(SettingProfileGlobalLoaded(profile));
+    }
   }
 
   @override
@@ -35,7 +42,17 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   @override
   Widget build(BuildContext context) => BlocProvider.value(
         value: _settingProfile,
-        child: _SettingProfileForm(config: widget),
+        child: BlocListener<SuperappProfileBloc, SuperappProfileState>(
+          listenWhen: (previous, current) =>
+              previous.displayProfile != current.displayProfile,
+          listener: (_, state) {
+            final profile = state.displayProfile;
+            if (profile != null) {
+              _settingProfile.add(SettingProfileGlobalLoaded(profile));
+            }
+          },
+          child: _SettingProfileForm(config: widget),
+        ),
       );
 }
 
@@ -70,7 +87,10 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder: (_) => ProfileOptionSheet(
-              title: title, options: options, selectedId: current?.id));
+              title: title,
+              options: options,
+              selectedId: current?.id,
+              showSelectionIndicator: title == 'Jenis Kelamin'));
       if (mounted && result != null) apply(result);
     } catch (_) {
       if (mounted) _message('Gagal memuat pilihan. Silakan coba lagi.');
@@ -150,6 +170,8 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
         settingProfile
             .update(settingProfile.state.draft.copyWith(logoPath: image.path));
       }
+    } on FileSystemException catch (error) {
+      if (mounted) _message(error.message);
     } catch (_) {
       if (mounted) _message('Gagal memilih foto. Silakan coba lagi.');
     } finally {
@@ -173,7 +195,7 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
   @override
   Widget build(BuildContext context) =>
       BlocConsumer<SettingProfileBloc, SettingProfileState>(
-        listener: (_, state) {
+        listener: (context, state) {
           if (state.message != null) _message(state.message!);
         },
         builder: (context, state) {
@@ -184,52 +206,60 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                 title: 'Profile',
                 backgroundColor: AppColors.background,
                 containerLeadingColor: AppColors.alwaysWhite),
-            body: AbsorbPointer(
-                absorbing: state.saving,
-                child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SectionName(
-                              profile: p,
-                              readOnly: state.accountReadOnly,
-                              onNameChanged: (v) => settingProfile
-                                  .update(p.copyWith(fullName: v)),
-                              onUsernameChanged: (v) => settingProfile
-                                  .update(p.copyWith(username: v))),
-                          const SizedBox(height: AppSpacing.lg),
-                          SectionGender(
-                              profile: p,
-                              enabled: !_selecting,
-                              onTap: () => _gender(p)),
-                          const SizedBox(height: AppSpacing.lg),
-                          SectionContacts(
-                              profile: p,
-                              readOnly: state.accountReadOnly,
-                              onTap: _contactInfo,
-                              onPhoneChanged: (v) =>
-                                  settingProfile.update(p.copyWith(phone: v)),
-                              onEmailChanged: (v) =>
-                                  settingProfile.update(p.copyWith(email: v))),
-                          const SizedBox(height: AppSpacing.lg),
-                          SectionAddress(
-                              profile: p,
-                              onChanged: (v) => settingProfile
-                                  .update(p.copyWith(address: v))),
-                          const SizedBox(height: AppSpacing.xl),
-                          SectionBusiness(
-                            profile: p,
-                            enabled: !_selecting,
-                            onUpload: _upload,
-                            onNameChanged: (v) => settingProfile
-                                .update(p.copyWith(businessName: v)),
-                            onPhoneChanged: (v) => settingProfile
-                                .update(p.copyWith(businessPhone: v)),
-                            onLocationTap: () => _businessLocation(p),
-                            onSectorTap: () => _businessSector(p),
-                          ),
-                        ]))),
+            body: state.loading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryBase,
+                    ),
+                  )
+                : AbsorbPointer(
+                    absorbing: state.saving,
+                    child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SectionName(
+                                  profile: p,
+                                  readOnly: state.accountReadOnly,
+                                  onNameChanged: (v) => settingProfile
+                                      .update(p.copyWith(fullName: v)),
+                                  onUsernameChanged: (v) => settingProfile
+                                      .update(p.copyWith(username: v))),
+                              const SizedBox(height: AppSpacing.lg),
+                              SectionGender(
+                                  profile: p,
+                                  enabled:
+                                      !state.accountReadOnly && !_selecting,
+                                  onTap: () => _gender(p)),
+                              const SizedBox(height: AppSpacing.lg),
+                              SectionContacts(
+                                  profile: p,
+                                  readOnly: state.accountReadOnly,
+                                  onTap: _contactInfo,
+                                  onPhoneChanged: (v) => settingProfile
+                                      .update(p.copyWith(phone: v)),
+                                  onEmailChanged: (v) => settingProfile
+                                      .update(p.copyWith(email: v))),
+                              const SizedBox(height: AppSpacing.lg),
+                              SectionAddress(
+                                  profile: p,
+                                  readOnly: state.accountReadOnly,
+                                  onChanged: (v) => settingProfile
+                                      .update(p.copyWith(address: v))),
+                              const SizedBox(height: AppSpacing.xl),
+                              SectionBusiness(
+                                profile: p,
+                                enabled: !_selecting,
+                                onUpload: _upload,
+                                onNameChanged: (v) => settingProfile
+                                    .update(p.copyWith(businessName: v)),
+                                onPhoneChanged: (v) => settingProfile
+                                    .update(p.copyWith(businessPhone: v)),
+                                onLocationTap: () => _businessLocation(p),
+                                onSectorTap: () => _businessSector(p),
+                              ),
+                            ]))),
             bottomNavigationBar: ColoredBox(
                 color: AppColors.alwaysWhite,
                 child: SafeArea(

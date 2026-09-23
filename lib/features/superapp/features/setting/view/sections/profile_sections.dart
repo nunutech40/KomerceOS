@@ -97,16 +97,23 @@ class SectionContacts extends StatelessWidget {
 class SectionAddress extends StatelessWidget {
   final SettingProfile profile;
   final ValueChanged<String> onChanged;
+  final bool readOnly;
   const SectionAddress(
-      {super.key, required this.profile, required this.onChanged});
+      {super.key,
+      required this.profile,
+      required this.onChanged,
+      this.readOnly = false});
   @override
   Widget build(BuildContext context) => ProfileFormCard(children: [
-        ProfileTextField(
-            label: 'Alamat Lengkap',
-            value: profile.address,
-            hint: 'Masukkan Alamat',
-            onChanged: onChanged,
-            lines: 4)
+        readOnly
+            ? ProfileReadonlyField(
+                label: 'Alamat Lengkap', value: profile.address)
+            : ProfileTextField(
+                label: 'Alamat Lengkap',
+                value: profile.address,
+                hint: 'Masukkan Alamat',
+                onChanged: onChanged,
+                lines: 4)
       ]);
 }
 

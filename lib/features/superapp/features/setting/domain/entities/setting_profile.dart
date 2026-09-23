@@ -66,12 +66,19 @@ class SettingProfile extends Equatable {
         logoPath: logoPath ?? this.logoPath,
       );
 
-  bool get isValid =>
+  bool get isAccountValid =>
       fullName.trim().isNotEmpty &&
+      username.trim().isNotEmpty &&
+      email.trim().isNotEmpty &&
+      phone.trim().isNotEmpty;
+
+  bool get isBusinessValid =>
       businessName.trim().isNotEmpty &&
       businessName.length <= 30 &&
       RegExp(r'^\+?[0-9]{8,15}$').hasMatch(businessPhone.trim()) &&
       location != null;
+
+  bool get isValid => isAccountValid && isBusinessValid;
 
   @override
   List<Object?> get props => [

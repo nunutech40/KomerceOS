@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../domain/entities/setting_profile.dart';
+import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart';
 
 abstract class SettingProfileEvent extends Equatable {
   const SettingProfileEvent();
@@ -9,6 +10,14 @@ abstract class SettingProfileEvent extends Equatable {
 
 class SettingProfileFetchRequested extends SettingProfileEvent {
   const SettingProfileFetchRequested();
+}
+
+class SettingProfileGlobalLoaded extends SettingProfileEvent {
+  final SuperappProfileModel profile;
+  const SettingProfileGlobalLoaded(this.profile);
+
+  @override
+  List<Object?> get props => [profile];
 }
 
 class SettingProfileChanged extends SettingProfileEvent {

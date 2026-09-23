@@ -6,6 +6,7 @@ abstract class SettingProfileRepository {
   Future<SettingProfile> getProfile();
   Future<SettingProfile> updateAccount(SettingProfile profile);
   Future<SettingProfile> updateBusiness(SettingProfile profile);
+  void notifyProfileRefresh();
   Future<List<ProfileOption>> getBusinessSectors();
   Future<List<ProfileOption>> searchBusinessLocations(String keyword);
 }

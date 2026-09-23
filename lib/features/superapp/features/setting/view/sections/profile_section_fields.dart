@@ -109,8 +109,9 @@ class ProfilePickerField extends StatelessWidget {
                             color: value == null
                                 ? AppColors.grey600
                                 : AppColors.alwaysBlack))),
-                const Icon(Icons.keyboard_arrow_down,
-                    size: 18, color: AppColors.grey600)
+                if (enabled)
+                  const Icon(Icons.keyboard_arrow_down,
+                      size: 18, color: AppColors.grey600)
               ]))));
 }
 

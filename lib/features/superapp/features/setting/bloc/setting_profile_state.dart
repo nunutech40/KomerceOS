@@ -26,9 +26,9 @@ class SettingProfileState extends Equatable {
       this.businessSectors = const [],
       this.message});
   const SettingProfileState.initial()
-      : original = _uiPlaceholderProfile,
-        draft = _uiPlaceholderProfile,
-        loading = false,
+      : original = const SettingProfile(),
+        draft = const SettingProfile(),
+        loading = true,
         loadingLocations = false,
         loadingSectors = false,
         saving = false,
@@ -39,7 +39,25 @@ class SettingProfileState extends Equatable {
         businessSectors = const [],
         message = null;
   bool get isDirty => draft != original;
-  bool get canSave => isDirty && draft.isValid && !saving && !loading;
+  bool get isAccountDirty =>
+      original.fullName != draft.fullName ||
+      original.username != draft.username ||
+      original.phone != draft.phone ||
+      original.email != draft.email ||
+      original.gender != draft.gender ||
+      original.address != draft.address;
+  bool get isBusinessDirty =>
+      original.businessName != draft.businessName ||
+      original.businessPhone != draft.businessPhone ||
+      original.location != draft.location ||
+      original.businessSector != draft.businessSector ||
+      original.logoPath != draft.logoPath;
+  bool get canSave =>
+      isDirty &&
+      (!isAccountDirty || (!accountReadOnly && draft.isAccountValid)) &&
+      (!isBusinessDirty || draft.isBusinessValid) &&
+      !saving &&
+      !loading;
   SettingProfileState copyWith(
           {SettingProfile? original,
           SettingProfile? draft,
@@ -82,18 +100,3 @@ class SettingProfileState extends Equatable {
         message
       ];
 }
-
-/// Temporary presentation data used while the profile API is not wired yet.
-const _uiPlaceholderProfile = SettingProfile(
-  fullName: 'Rilas Test',
-  username: 'rilastest22',
-  phone: '087713222333',
-  email: 'rilastest22@yopmail.com',
-  address: 'Test Ya',
-  gender: ProfileGender.male,
-  businessName: '3D Printing',
-  businessPhone: '08955559837',
-  location: ProfileOption(id: 'placeholder-location', label: 'Teupah Selatan'),
-  businessSector:
-      ProfileOption(id: 'placeholder-sector', label: 'Perabotan Rumah'),
-);
