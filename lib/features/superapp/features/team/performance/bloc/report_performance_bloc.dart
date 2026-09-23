@@ -20,6 +20,8 @@ class ReportPerformanceBloc
     on<GetReportPerformanceProductEvent>(_handleGetProductReportPerformance);
     on<GetReportPerformanceWeekEvent>(_handleGetWeeklyReportPerformance);
     on<GetReportPerformanceMonthEvent>(_handleGetMonthlyReportPerformance);
+    on<GetReportPerformanceMonthlyDetailEvent>(
+        _handleGetMonthlyReportPerformanceDetail);
   }
 
   final GetReportPerformanceUseCase getReportPerformanceUseCase;
@@ -58,6 +60,34 @@ class ReportPerformanceBloc
           message: 'Success',
           status: RequestStatus.success,
           reportPerformance: reportPerformance,
+        ));
+      },
+    );
+  }
+
+  Future<void> _handleGetMonthlyReportPerformanceDetail(
+    GetReportPerformanceMonthlyDetailEvent event,
+    Emitter<ReportPerformanceState> emit,
+  ) async {
+    final reportPerformance = await getReportPerformanceUseCase.execute(
+      search: '',
+      limit: event.limit,
+      offset: event.offset,
+      startDate: event.startDate,
+      endDate: event.endDate,
+    );
+
+    reportPerformance.fold(
+      (_) {},
+      (data) {
+        final isFirstPage = event.offset == '0';
+        final combined = isFirstPage
+            ? data
+            : [...state.reportPerformanceMonthlyDetail, ...data];
+        emit(state.copyWith(
+          reportPerformanceMonthlyDetail: combined,
+          reportPerformanceMonthlyDetailHasMore:
+              data.length >= int.parse(event.limit),
         ));
       },
     );

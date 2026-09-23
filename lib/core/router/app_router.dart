@@ -5,6 +5,7 @@ import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
 import 'package:komtim_partner/core/domain/entities/auth_state.dart';
 import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart';
+import 'package:komtim_partner/core/domain/entities/report_performance_model.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
 import 'package:komtim_partner/core/domain/usecases/reset_password_use_case.dart';
 import 'package:komtim_partner/features/pin/view/pin_page.dart';
@@ -473,6 +474,10 @@ class AppRouter {
           final extra = state.extra as Map<String, dynamic>?;
           return DetailReportPerformanceMonthPages(
             detailModel: extra?['detailModel'] as List<DetailModel>? ?? [],
+            rawDetailModel:
+                extra?['rawDetailModel'] as List<ReportPerformanceModel>? ?? [],
+            startDate: extra?['startDate'] as String?,
+            endDate: extra?['endDate'] as String?,
             productName: extra?['productName'] ?? ' - ',
           );
         },

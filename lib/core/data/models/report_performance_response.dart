@@ -69,6 +69,7 @@ class ReportPerformanceResponse extends Equatable {
   ReportPerformanceModel toEntity() {
     return ReportPerformanceModel(
       id: id,
+      productId: productId,
       talentName: talentName,
       description: description,
       division: division,

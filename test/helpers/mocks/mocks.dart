@@ -8,6 +8,7 @@ import 'package:komtim_partner/core/domain/managers/authentication_manager.dart'
 import 'package:komtim_partner/core/domain/repositories/attendance_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/auth_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/invoice_repository.dart';
+import 'package:komtim_partner/core/domain/repositories/report_performance_repository.dart';
 import 'package:komtim_partner/core/domain/repositories/profile_repository.dart';
 import 'package:komtim_partner/core/domain/usecases/change_password_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/do_login_use_case.dart';
@@ -30,6 +31,7 @@ export 'mocks.mocks.dart';
   AuthRemoteDataSource,
   SharedPref,
   InvoiceRepository,
+  ReportPerformanceRepository,
   AuthRepository,
   ProfileRepository,
   AttendanceRepostiory,
