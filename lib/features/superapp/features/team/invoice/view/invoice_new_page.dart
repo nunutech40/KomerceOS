@@ -272,8 +272,9 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
       return code.contains(_searchQuery);
     }).toList();
 
-    final completedList =
-        filteredInvoices.where((i) => i.transactionStatus != 'unpaid').toList();
+    final completedList = filteredInvoices
+        .where((i) => i.isPaid && i.transactionStatus != 'unpaid')
+        .toList();
 
     return ListView(
       controller: _scrollController,

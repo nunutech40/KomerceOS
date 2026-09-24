@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:komtim_partner/core/domain/entities/invoices_model.dart';
 
-
 class InvoicesResponse extends Equatable {
   final List<InvoicesResponseData>? data;
 
@@ -76,6 +75,7 @@ class InvoicesResponseData extends Equatable {
       invoiceId: invoiceId,
       invoiceCode: invoiceCode,
       isPaid: isPaid,
+      transactionStatus: isPaid ? 'paid' : 'unpaid',
       amountTotal: amountTotal,
       expiredAt: expiredAt,
       createdAt: createdAt,
