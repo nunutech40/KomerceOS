@@ -49,6 +49,7 @@ class SuperappProfileModel extends Equatable {
   final int? isAffiliate;
   final int? isKomcards;
   final int? isKomchat;
+  final int? isKomtim;
   final String? accountStatus;
 
   // Sub-data
@@ -76,6 +77,7 @@ class SuperappProfileModel extends Equatable {
     this.isAffiliate,
     this.isKomcards,
     this.isKomchat,
+    this.isKomtim,
     this.accountStatus,
     this.productMailVerifications = const [],
     this.userLevels = const [],
@@ -103,6 +105,7 @@ class SuperappProfileModel extends Equatable {
         isAffiliate,
         isKomcards,
         isKomchat,
+        isKomtim,
         accountStatus,
         productMailVerifications,
         userLevels,

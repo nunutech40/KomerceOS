@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/string.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/core/domain/entities/detail_shopping_model.dart';
+import 'package:komtim_partner/features/superapp/features/team/listteam/widget/dash_line_team.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/widget/item_payment.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/widget/item_product.dart';
 import 'package:komtim_partner/features/superapp/features/team/shopping/widget/item_talents.dart';
@@ -11,35 +13,26 @@ class DetailList extends StatelessWidget {
 
   const DetailList({super.key, required this.detailShopping});
 
-  Color getColor(String? condition) {
+  Color getBadgeBackgroundColor(String? condition) {
     switch (condition) {
       case 'requested':
-        return const Color(0xFFFBA63C);
+        return const Color(0xFFF95E16);
       case 'rejected':
-        return const Color(0xFFE31A1A);
+        return const Color(0xFFDC2626);
       case 'approved':
-        return const Color(0xFF34A770);
-      case 'canceled':
-        return const Color(0xFF626262);
       case 'completed':
-        return const Color(0xFF08A0F7);
+        return const Color(0xFF22C55E);
+      case 'canceled':
+        return const Color(0xFFF3F4F6);
       default:
-        return Colors.green;
+        return const Color(0xFFF3F4F6);
     }
   }
 
-  Color getFillColor(String? condition) {
+  Color getBadgeTextColor(String? condition) {
     switch (condition) {
-      case 'requested':
-        return const Color(0xFFFFF2E2);
-      case 'rejected':
-        return const Color(0xFFFFECEC);
-      case 'approved':
-        return const Color(0xFFDCF3EB);
       case 'canceled':
-        return const Color(0xFFE2E2E2);
-      case 'completed':
-        return const Color(0xFFDFF3FF);
+        return AppColors.black0A0A;
       default:
         return Colors.white;
     }
@@ -64,193 +57,206 @@ class DetailList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // CARD 1: Rincian Belanja
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.cardColorFEFCF8,
+              border: Border.all(color: const Color(0xFFF3F4F6)),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Expanded(
-                      child: SizedBox(
-                        child: Text(
-                          Strings.label_rincian_shopping,
-                          style: TextStyle(
-                            color: Color(0xFF333333),
-                            fontSize: 14,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w600,
-                            height: 0,
-                          ),
-                        ),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBgFFF7ED,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.description_outlined,
+                        color: Color(0xFFF95E16),
+                        size: 20,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.only(
-                          top: 4, left: 10, right: 11, bottom: 4),
-                      decoration: ShapeDecoration(
-                        color: getFillColor(detailShopping?.status),
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                              width: 1,
-                              color: getColor(detailShopping?.status)),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            statusShopping(detailShopping?.status),
+                          const Text(
+                            'Rincian Belanja',
                             style: TextStyle(
-                              color: getColor(detailShopping?.status),
+                              color: Color(0xFF111827),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            detailShopping?.transactionNo ?? '',
+                            style: const TextStyle(
+                              color: gray737373,
                               fontSize: 12,
-                              fontFamily: 'Plus Jakarta Sans',
                               fontWeight: FontWeight.w400,
-                              height: 0,
                             ),
                           ),
                         ],
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: getBadgeBackgroundColor(detailShopping?.status),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        statusShopping(detailShopping?.status),
+                        style: TextStyle(
+                          color: getBadgeTextColor(detailShopping?.status),
+                          fontSize: 12,
+                          fontWeight:
+                              getBadgeTextColor(detailShopping?.status) ==
+                                      AppColors.black0A0A
+                                  ? FontWeight.w700
+                                  : FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  child: Text(
-                    detailShopping?.transactionNo ?? '',
-                    style: const TextStyle(
-                      color: Color(0xFF818181),
-                      fontSize: 12,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w400,
-                      height: 0,
-                    ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardColorFEF9F2,
+                    border: Border.all(color: AppColors.cardBorderFEF0DA),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      const Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Talent',
+                              style: TextStyle(
+                                color: gray737373,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Skill Role',
+                              style: TextStyle(
+                                color: gray737373,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      detailShopping?.talents != null
+                          ? ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: detailShopping!.talents!.length,
+                              itemBuilder: (context, index) {
+                                return ItemTalents(
+                                  talent: detailShopping!.talents![index],
+                                );
+                              },
+                            )
+                          : Container(),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          // CARD 2: Detail Barang
           Container(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        child: Text(
-                          Strings.label_talent,
-                          style: TextStyle(
-                            color: Color(0xFF818181),
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Expanded(
-                      child: SizedBox(
-                        child: Text(
-                          Strings.label_skill_role,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Color(0xFF818181),
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                detailShopping?.talents != null
-                    ? ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: detailShopping!.talents!.length,
-                        itemBuilder: (context, index) {
-                          return ItemTalents(
-                            talent: detailShopping!.talents![index],
-                          );
-                        },
-                      )
-                    : Container()
-              ],
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: const Color(0xFFF3F4F6)),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Expanded(
-                      child: SizedBox(
-                        child: Text(
-                          Strings.label_product_name,
-                          style: TextStyle(
-                            color: Color(0xFF818181),
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w400,
-                            height: 0,
-                          ),
-                        ),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBgFFF7ED,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.description_outlined,
+                        color: Color(0xFFF95E16),
+                        size: 20,
                       ),
                     ),
-                    SizedBox(width: 4),
-                    Expanded(
-                      child: SizedBox(
-                        child: Text(
-                          Strings.label_price,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Color(0xFF818181),
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w400,
-                            height: 0,
-                          ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Detail Barang',
+                        style: TextStyle(
+                          color: AppColors.black0A0A,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const Divider(color: Color(0xFFF3F4F6), thickness: 1),
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Nama Barang',
+                        style: TextStyle(
+                          color: gray737373,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Harga',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: gray737373,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 detailShopping?.shoppingItems != null
                     ? ListView.builder(
                         shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: detailShopping!.shoppingItems!.length,
                         itemBuilder: (context, index) {
                           return ItemProduct(
@@ -258,80 +264,19 @@ class DetailList extends StatelessWidget {
                           );
                         },
                       )
-                    : Container()
-              ],
-            ),
-          ),
-          (detailShopping?.status == 'approved' ||
-                  detailShopping?.status == 'completed')
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              child: Text(
-                                Strings.label_payment,
-                                style: TextStyle(
-                                  color: Color(0xFF818181),
-                                  fontSize: 12,
-                                  fontFamily: 'Plus Jakarta Sans',
-                                  fontWeight: FontWeight.w400,
-                                  height: 0,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      detailShopping?.payments != null
-                          ? ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: detailShopping!.payments!.length,
-                              itemBuilder: (context, index) {
-                                return ItemPayment(
-                                  pay: detailShopping!.payments![index],
-                                );
-                              },
-                            )
-                          : Container()
-                    ],
-                  ),
-                )
-              : Container(),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                    : Container(),
+                const SizedBox(height: 12),
+                const DashedLine(),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
-                      child: SizedBox(
-                        child: Text(
-                          Strings.label_total,
-                          style: TextStyle(
-                            color: Color(0xFF333333),
-                            fontSize: 14,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w600,
-                            height: 0,
-                          ),
-                        ),
+                    const Text(
+                      'Total',
+                      style: TextStyle(
+                        color: AppColors.black0A0A,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
@@ -340,73 +285,84 @@ class DetailList extends StatelessWidget {
                       style: const TextStyle(
                         color: Color(0xFFF95E16),
                         fontSize: 14,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w600,
-                        height: 0,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    child: Text(
-                      Strings.label_note,
-                      style: TextStyle(
-                        color: Color(0xFF818181),
-                        fontSize: 12,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                        height: 0,
-                      ),
+                const SizedBox(height: 22),
+                const Text(
+                  'Catatan',
+                  style: TextStyle(
+                    color: gray737373,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    (detailShopping?.notes == null ||
+                            detailShopping?.notes == '')
+                        ? '-'
+                        : detailShopping!.notes!,
+                    style: TextStyle(
+                      color: (detailShopping?.notes == null ||
+                              detailShopping?.notes == '')
+                          ? gray737373
+                          : AppColors.black0A0A,
+                      fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                            width: 1, color: Color(0xFFE2E2E2)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            child: Text(
-                              detailShopping?.notes ?? '-',
-                              style: TextStyle(
-                                color: detailShopping?.notes == '' ||
-                                        detailShopping?.notes == null
-                                    ? const Color(0xFFC2C2C2)
-                                    : const Color(0xFF333333),
-                                fontSize: 14,
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontWeight: FontWeight.w400,
-                                height: 0,
-                                letterSpacing: -0.25,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 16),
+          // Payment History (if any)
+          (detailShopping?.status == 'approved' ||
+                  detailShopping?.status == 'completed')
+              ? Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFF3F4F6)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Riwayat Pembayaran',
+                        style: TextStyle(
+                          color: AppColors.black0A0A,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      detailShopping?.payments != null
+                          ? ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: detailShopping!.payments!.length,
+                              itemBuilder: (context, index) {
+                                return ItemPayment(
+                                  pay: detailShopping!.payments![index],
+                                );
+                              },
+                            )
+                          : Container(),
+                    ],
+                  ),
+                )
+              : Container(),
         ],
       ),
     );

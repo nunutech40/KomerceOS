@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/core/data/models/detail_shopping_response.dart';
 
 class ItemTalents extends StatelessWidget {
   final TalentRequest? talent;
 
-  const ItemTalents({super.key,  this.talent});
+  const ItemTalents({super.key, this.talent});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -19,10 +20,9 @@ class ItemTalents extends StatelessWidget {
               child: Text(
                 talent?.talentName ?? '',
                 style: const TextStyle(
-                  color: Color(0xFF333333),
-                  fontSize: 12,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.black0A0A,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -32,12 +32,11 @@ class ItemTalents extends StatelessWidget {
             child: SizedBox(
               child: Text(
                 talent?.talentSkill ?? '',
-                textAlign: TextAlign.right,
+                textAlign: TextAlign.start,
                 style: const TextStyle(
-                  color: Color(0xFF333333),
-                  fontSize: 12,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.black0A0A,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

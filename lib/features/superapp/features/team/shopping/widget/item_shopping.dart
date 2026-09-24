@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/common/global/widgets/profile_avatar_custom.dart';
+import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
-import 'package:komtim_partner/common/utils/custom_date_format.dart';
 import 'package:komtim_partner/core/domain/entities/shopping_list_model.dart';
 
 class ItemShopping extends StatelessWidget {
@@ -30,35 +30,26 @@ class ItemShopping extends StatelessWidget {
     }
   }
 
-  Color getColor(String? condition) {
+  Color getBadgeBackgroundColor(String? condition) {
     switch (condition) {
-      case 'requested':
-        return const Color(0xFFFBA63C);
-      case 'rejected':
-        return const Color(0xFFE31A1A);
+      case 'requested': // Diajukan
+        return const Color(0xFFF95E16);
+      case 'rejected': // Ditolak
+        return const Color(0xFFDC2626);
       case 'approved':
-        return const Color(0xFF34A770);
-      case 'canceled':
-        return const Color(0xFF626262);
-      case 'completed':
-        return const Color(0xFF08A0F7);
+      case 'completed': // Selesai
+        return const Color(0xFF22C55E);
+      case 'canceled': // Dibatalkan
+        return const Color(0xFFF3F4F6);
       default:
-        return Colors.green;
+        return const Color(0xFFF3F4F6);
     }
   }
 
-  Color getFillColor(String? condition) {
+  Color getBadgeTextColor(String? condition) {
     switch (condition) {
-      case 'requested':
-        return const Color(0xFFFFF2E2);
-      case 'rejected':
-        return const Color(0xFFFFECEC);
-      case 'approved':
-        return const Color(0xFFDCF3EB);
       case 'canceled':
-        return const Color(0xFFE2E2E2);
-      case 'completed':
-        return const Color(0xFFDFF3FF);
+        return AppColors.black0A0A;
       default:
         return Colors.white;
     }
@@ -81,9 +72,28 @@ class ItemShopping extends StatelessWidget {
     }
   }
 
-  String changeFormat(String date) {
-    date = date.replaceAll('-', '/');
-    return date;
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return '';
+    try {
+      final DateTime date = DateTime.parse(dateStr);
+      final List<String> months = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember'
+      ];
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (e) {
+      return dateStr;
+    }
   }
 
   @override
@@ -98,132 +108,88 @@ class ItemShopping extends StatelessWidget {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        color: Colors.transparent,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: double.infinity,
-              decoration: ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                getInitials(name).toUpperCase(),
+                style: const TextStyle(
+                  color: Color(0xFF9CA3AF),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                ProfileAvatarCustom(
-                                  backgroundImage: imageUrl,
-                                  w: 32.0,
-                                  h: 32.0,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    shopping.userRequestName ?? '',
-                                    style: const TextStyle(
-                                      color: Color(0xFF333333),
-                                      fontSize: 14,
-                                      fontFamily: 'Plus Jakarta Sans',
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: ShapeDecoration(
-                                      color: getFillColor(shopping.status),
-                                      shape: RoundedRectangleBorder(
-                                        side: BorderSide(
-                                          width: 1,
-                                          color: getColor(shopping.status),
-                                        ),
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          statusShopping(shopping.status),
-                                          style: TextStyle(
-                                            color: getColor(shopping.status),
-                                            fontSize: 12,
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            fontWeight: FontWeight.w400,
-                                            height: 0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            color: AppColors.black0A0A,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            changeFormat(
-                                CustomDateFormat.convertToDateFormatDMY(
-                                    shopping.createdAt ?? '')),
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: Color(0xFF818181),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                            ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: getBadgeBackgroundColor(shopping.status),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          statusShopping(shopping.status),
+                          style: TextStyle(
+                            color: getBadgeTextColor(shopping.status),
+                            fontSize: 12,
+                            fontWeight: getBadgeTextColor(shopping.status) ==
+                                    AppColors.black0A0A
+                                ? FontWeight.w700
+                                : FontWeight.w700,
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            CurrencyFormat.convertToIdr(shopping.total ?? 0, 0),
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: Color(0xFFF95E16),
-                              fontSize: 16,
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _formatDate(shopping.createdAt),
+                        style: const TextStyle(
+                          color: gray737373,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        CurrencyFormat.convertToIdr(shopping.total ?? 0, 0),
+                        style: const TextStyle(
+                          color: gray737373,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),

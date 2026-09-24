@@ -51,7 +51,7 @@ abstract class BaseRepository {
           final metaMessage = meta['message'];
           if (metaMessage != null && metaMessage.toString().isNotEmpty) {
             String errorMessage = metaMessage.toString();
-            
+
             final data = responseData['data'];
             if (data is Map<String, dynamic>) {
               if (data.containsKey('login_attempt')) {
@@ -63,8 +63,15 @@ abstract class BaseRepository {
               if (data.containsKey('count_down')) {
                 errorMessage += ' count_down: ${data['count_down']}';
               }
+              if (data.containsKey('attempt_left')) {
+                errorMessage += ' Sisa percobaan: ${data['attempt_left']}';
+              }
+            } else if (data is String && data.isNotEmpty) {
+              errorMessage += ': $data';
+            } else if (data is List && data.isNotEmpty) {
+              errorMessage += ': ${data.join(', ')}';
             }
-            
+
             return ServerFailure(errorMessage);
           }
         }

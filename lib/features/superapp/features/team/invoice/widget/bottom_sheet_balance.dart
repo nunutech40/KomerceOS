@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
+import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/core/domain/entities/balance_analytics_model.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -57,10 +59,10 @@ class BottomSheetBalance extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  SvgPicture.asset(
-                    'assets/images/ic_info-circle_red.svg',
-                    width: 40,
-                    height: 40,
+                  const DsAppImage(
+                    source: 'assets/images/superapp/team/ic_danger.png',
+                    width: 100,
+                    height: 100,
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -147,10 +149,11 @@ class BottomSheetBalance extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text:
-                                    'Potensi Pendapatan Order Dikirim (${CurrencyFormat.convertToIdr(data?.incomeOrderPotential.toInt() ?? 0,0)}) - Ongkir Retur Ketika Sampai (${CurrencyFormat.convertToIdr(data?.ongkirReturOnFinished.toInt() ?? 0,0)}) - Resiko Ongkir Menjadi Retur (${CurrencyFormat.convertToIdr(data?.ongkirRiskBecomeRetur.toInt() ?? 0,0)}) = Saldo Ideal ',
+                                    'Potensi Pendapatan Order Dikirim (${CurrencyFormat.convertToIdr(data?.incomeOrderPotential.toInt() ?? 0, 0)}) - Ongkir Retur Ketika Sampai (${CurrencyFormat.convertToIdr(data?.ongkirReturOnFinished.toInt() ?? 0, 0)}) - Resiko Ongkir Menjadi Retur (${CurrencyFormat.convertToIdr(data?.ongkirRiskBecomeRetur.toInt() ?? 0, 0)}) = Saldo Ideal ',
                               ),
                               TextSpan(
-                                text: '(${CurrencyFormat.convertToIdr(data?.idealBalance.toInt() ?? 0,0)})',
+                                text:
+                                    '(${CurrencyFormat.convertToIdr(data?.idealBalance.toInt() ?? 0, 0)})',
                                 style: const TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.w500,
@@ -179,12 +182,6 @@ class BottomSheetBalance extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  SvgPicture.asset(
-                    'assets/images/ic_info-circle_red.svg',
-                    width: 40,
-                    height: 40,
-                  ),
-                  const SizedBox(height: 16),
                   const Text(
                     'Saldo kamu tidak mencukupi karena sedang diproses untuk penarikan.',
                     textAlign: TextAlign.center,
@@ -192,6 +189,12 @@ class BottomSheetBalance extends StatelessWidget {
                       color: Color(0xFF333333),
                       fontSize: 14,
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  SvgPicture.asset(
+                    'assets/images/superapp/team/ic_proses_withdraw_saldo.svg',
+                    width: 260,
+                    height: 260,
                   ),
                 ],
               ),
@@ -210,10 +213,10 @@ class BottomSheetBalance extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  SvgPicture.asset(
-                    'assets/images/ic_info-circle_red.svg',
-                    width: 40,
-                    height: 40,
+                  const DsAppImage(
+                    source: 'assets/images/superapp/team/ic_danger.png',
+                    width: 100,
+                    height: 100,
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -298,12 +301,13 @@ class BottomSheetBalance extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                             ),
                             children: [
-                             TextSpan(
+                              TextSpan(
                                 text:
-                                    'Potensi Pendapatan Order Dikirim (${CurrencyFormat.convertToIdr(data?.incomeOrderPotential.toInt() ?? 0,0)}) - Ongkir Retur Ketika Sampai (${CurrencyFormat.convertToIdr(data?.ongkirReturOnFinished.toInt() ?? 0,0)}) - Resiko Ongkir Menjadi Retur (${CurrencyFormat.convertToIdr(data?.ongkirRiskBecomeRetur.toInt() ?? 0,0)}) = Saldo Ideal ',
+                                    'Potensi Pendapatan Order Dikirim (${CurrencyFormat.convertToIdr(data?.incomeOrderPotential.toInt() ?? 0, 0)}) - Ongkir Retur Ketika Sampai (${CurrencyFormat.convertToIdr(data?.ongkirReturOnFinished.toInt() ?? 0, 0)}) - Resiko Ongkir Menjadi Retur (${CurrencyFormat.convertToIdr(data?.ongkirRiskBecomeRetur.toInt() ?? 0, 0)}) = Saldo Ideal ',
                               ),
                               TextSpan(
-                                text: '(${CurrencyFormat.convertToIdr(data?.idealBalance.toInt() ?? 0,0)})',
+                                text:
+                                    '(${CurrencyFormat.convertToIdr(data?.idealBalance.toInt() ?? 0, 0)})',
                                 style: const TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.w500,
@@ -330,7 +334,7 @@ class BottomSheetBalance extends StatelessWidget {
                 if (onClose != null) onClose!();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF27AE60),
+                backgroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

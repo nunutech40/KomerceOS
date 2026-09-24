@@ -38,6 +38,7 @@ class InvoicesResponseData extends Equatable {
   final String expiredAt;
   final String createdAt;
   final String updatedAt;
+  final String? transactionStatus;
 
   const InvoicesResponseData(
       {required this.invoiceId,
@@ -46,7 +47,8 @@ class InvoicesResponseData extends Equatable {
       required this.amountTotal,
       required this.expiredAt,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      this.transactionStatus});
 
   Map<String, dynamic> toJson() => {
         "invoice_id": invoiceId,
@@ -56,6 +58,7 @@ class InvoicesResponseData extends Equatable {
         "expired_at": expiredAt,
         "created_at": createdAt,
         "updated_at": updatedAt,
+        "transaction_status": transactionStatus,
       };
 
   factory InvoicesResponseData.fromJson(Map<String, dynamic> json) {
@@ -67,6 +70,7 @@ class InvoicesResponseData extends Equatable {
       expiredAt: json['expired_at'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
+      transactionStatus: json['transaction_status'],
     );
   }
 
@@ -75,7 +79,7 @@ class InvoicesResponseData extends Equatable {
       invoiceId: invoiceId,
       invoiceCode: invoiceCode,
       isPaid: isPaid,
-      transactionStatus: isPaid ? 'paid' : 'unpaid',
+      transactionStatus: transactionStatus ?? (isPaid ? 'paid' : 'unpaid'),
       amountTotal: amountTotal,
       expiredAt: expiredAt,
       createdAt: createdAt,
@@ -91,6 +95,7 @@ class InvoicesResponseData extends Equatable {
         amountTotal,
         expiredAt,
         createdAt,
-        updatedAt
+        updatedAt,
+        transactionStatus
       ];
 }

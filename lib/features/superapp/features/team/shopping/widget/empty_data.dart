@@ -51,7 +51,6 @@ class EmptyData extends StatelessWidget {
   }
 }
 
-
 class EmptySearch extends StatelessWidget {
   const EmptySearch({super.key});
 

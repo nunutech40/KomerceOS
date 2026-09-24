@@ -42,9 +42,9 @@ class Endpoints {
   static String get invoiceDetail => '$_BaseURL/api/v1/mobile/invoices/detail';
   static String get invoiceDownload =>
       '$_BaseURL/api/v1/mobile/invoices/download';
-  static String get setRating => '$_BaseURL/api/v1/mobile/evaluations/store';
+  static String get setRating => '$_BaseURL/api/v1/evaluations';
   static String get checkEvaluation =>
-      '$_BaseURL/api/v1/mobile/evaluations/check_evaluations';
+      '$_BaseURL/api/v1/evaluations/check_evaluations';
 
 // topup
   static String get bankList =>
@@ -74,12 +74,27 @@ class Endpoints {
       '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/expire-invoice/$id';
 
 // PIN
-  static String get checkPinExisting => '$_BaseURL/api/v1/mobile/pin/check';
+  static String get checkPinExisting => '$_BaseURLKomship/api/v1/pin/check';
   static String get verifyPin => '$_BaseURL/api/v1/mobile/pin/verify';
   static String get savePin => '$_BaseURL/api/v1/mobile/pin/save';
   static String get forgetPin =>
       '$_BaseURL/api/v1/mobile/pin/send_forgot_confirmation';
   static String get verifyOtp => '$_BaseURL/api/v1/mobile/otp/verify';
+
+  // PIN Setting (internal auth API — new)
+  static String get checkPinSetting =>
+      '$_BaseURLInternal/api/v1/user/setting/pin';
+  static String get storePinSetting =>
+      '$_BaseURLInternal/api/v1/user/setting/pin/store';
+
+  // PIN & OTP (internal auth API)
+  static String get securedVerifyPin =>
+      '$_BaseURLInternal/api/v1/user/secured/verify-pin';
+  static String get otpRequestEmail =>
+      '$_BaseURLInternal/api/v1/otp/request-otp/email';
+  static String get otpVerify => '$_BaseURLInternal/api/v1/otp/verify-otp';
+  static String get securedUpdatePin =>
+      '$_BaseURLInternal/api/v1/otp/secured/user/update-pin';
 
 // History
   static String get transactionHistory =>
@@ -126,7 +141,7 @@ class Endpoints {
 
   //paymentKompay
   static String get paymentKompay =>
-      '$_BaseURL/api/v1/mobile/transaction/kompay';
+      '$_BaseURL/api/v1/partner/invoices/pay';
   static String get transactionBalance =>
       '$_BaseURLInternal/api/v1/kmpoin/balance_analytics';
 

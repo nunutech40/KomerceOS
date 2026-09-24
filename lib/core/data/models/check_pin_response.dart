@@ -15,7 +15,7 @@ class CheckPinResponse extends Equatable {
 
   factory CheckPinResponse.fromJson(Map<String, dynamic> json) {
     return CheckPinResponse(
-      isExist: json['is_exist'],
+      isExist: json['is_set'] ?? json['is_exist'] ?? false,
     );
   }
 

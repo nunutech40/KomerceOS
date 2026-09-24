@@ -5,11 +5,15 @@ import 'package:webview_flutter/webview_flutter.dart';
 class WebViewPage extends StatefulWidget {
   final String url;
   final bool returnToPaymentMethod;
+  /// Callback dipanggil ketika user selesai dari webview pada flow shopping.
+  /// Diisi hanya dari TopupPage yang dibuka via DetailShoppingPage.
+  final VoidCallback? onTopupSuccess;
 
   const WebViewPage({
     Key? key,
     required this.url,
     this.returnToPaymentMethod = false,
+    this.onTopupSuccess,
   }) : super(key: key);
 
   @override
@@ -67,6 +71,10 @@ class _WebViewPageState extends State<WebViewPage> {
               onPressed: () {
                 if (widget.returnToPaymentMethod) {
                   Navigator.of(context).pop();
+                } else if (widget.onTopupSuccess != null) {
+                  // Flow dari shopping: panggil callback agar kembali ke
+                  // detail shopping page setelah user selesai di webview.
+                  widget.onTopupSuccess!();
                 } else {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 }

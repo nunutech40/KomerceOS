@@ -113,42 +113,38 @@ class _InvoiceReportSummaryPageState extends State<InvoiceReportSummaryPage>
           bottomNavigationBar:
               BlocConsumer<InvoiceDetailBloc, InvoiceDetailState>(
             listener: (context, state) {
-              if (state.statusEvaluation == RequestStatus.success &&
-                  state.invoiceCheckEvaluation?.xenditPaymentUrl != null) {
-                AppRouter.router.pushNamed(PAGES.paymentmethod.screenName,
-                    queryParameters: {
-                      'id': [state.invoiceDetail?.invoiceCode],
-                      'xenditUrl': [
-                        state.invoiceCheckEvaluation?.xenditPaymentUrl
-                      ]
-                    });
-              } else if (state.operation == 'evaluation' &&
-                  state.statusEvaluation == RequestStatus.empty &&
-                  state.invoiceCheckEvaluation?.xenditPaymentUrl == null) {
-                // print('object123 6');
-                if (widget.statusAccount == "off") {
+              if (state.operation == 'evaluation') {
+                if (state.statusEvaluation == RequestStatus.success) {
+                  // is_evaluated: true → Lanjut bayar (navigasi ke payment method)
                   AppRouter.router.pushNamed(PAGES.paymentmethod.screenName,
                       queryParameters: {
                         'id': [state.invoiceDetail?.invoiceCode],
-                        'xenditUrl': [
-                          state.invoiceCheckEvaluation?.xenditPaymentUrl
-                        ]
+                        'xenditUrl': [state.invoiceDetail?.xenditPaymentUrl]
                       });
-                } else {
-                  // print('object123 rate');
-                  AppRouter.router.pushNamed(
-                    PAGES.rateTalentNotifPage.screenName,
-                    queryParameters: {
-                      'xenditUrl': [state.invoiceDetail?.xenditPaymentUrl],
-                      'invoiceId': [
-                        ((state.invoiceDetail?.invoiceId).toString())
-                      ],
-                      'invoiceCode': [state.invoiceDetail?.invoiceCode]
-                    },
-                  );
+                } else if (state.statusEvaluation == RequestStatus.empty) {
+                  // is_evaluated: false → Belum rating, navigasi ke form rating
+                  if (widget.statusAccount == "off") {
+                    // Kecuali akun off, biarkan masuk ke payment
+                    AppRouter.router.pushNamed(PAGES.paymentmethod.screenName,
+                        queryParameters: {
+                          'id': [state.invoiceDetail?.invoiceCode],
+                          'xenditUrl': [state.invoiceDetail?.xenditPaymentUrl]
+                        });
+                  } else {
+                    AppRouter.router.pushNamed(
+                      PAGES.rateTalentNotifPage.screenName,
+                      queryParameters: {
+                        'xenditUrl': [state.invoiceDetail?.xenditPaymentUrl],
+                        'invoiceId': [
+                          ((state.invoiceDetail?.invoiceId).toString())
+                        ],
+                        'invoiceCode': [state.invoiceDetail?.invoiceCode]
+                      },
+                    );
+                  }
+                } else if (state.statusEvaluation == RequestStatus.failure) {
+                  handleFailureState(context, state, state.message);
                 }
-              } else if (state.statusEvaluation == RequestStatus.failure) {
-                handleFailureState(context, state, state.message);
               }
             },
             builder: (context, state) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart'
     hide AppTypography;
@@ -102,19 +101,20 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
       appBar: DsAppBar(
         title: Strings.label_invoice,
         onBackPressed: () => AppRouter.router.pop(),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 24),
-            child: DsSquareIconButton(
-              customIcon: SvgPicture.asset(
-                'assets/images/team/ic_calender.svg',
-                width: 20,
-                height: 20,
-              ),
-              onTap: () {},
-            ),
-          ),
-        ],
+        //! TODO: implement filter and sort feature hide for reason
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 24),
+        //     child: DsSquareIconButton(
+        //       customIcon: SvgPicture.asset(
+        //         'assets/images/team/ic_calender.svg',
+        //         width: 20,
+        //         height: 20,
+        //       ),
+        //       onTap: () {},
+        //     ),
+        //   ),
+        // ],
       ),
       body: BlocConsumer<InvoiceListBloc, InvoiceListState>(
         listener: (context, state) {
@@ -249,9 +249,26 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
         physics: const AlwaysScrollableScrollPhysics(),
         children: const [
           SizedBox(height: 100),
-          Center(child: Text(Strings.label_no_data)),
+          Center(
+            child: DsEmptyState(
+              imagePath: 'assets/images/team/empty_state_feed.svg',
+              title: 'Tidak ada invoice',
+              description: 'Tidak ada pembayaran invoice.',
+            ),
+          ),
         ],
       );
+    }
+
+    // Helper: menentukan apakah invoice masih belum dibayar.
+    // Fallback ke isPaid jika transactionStatus null/kosong,
+    // dan perbandingan status dibuat case-insensitive.
+    bool isUnpaid(InvoicesDataModel invoice) {
+      final status = invoice.transactionStatus?.toLowerCase();
+      if (status != null && status.isNotEmpty) {
+        return status == 'unpaid';
+      }
+      return !invoice.isPaid;
     }
 
     final filteredInvoices = _invoices.where((invoice) {
@@ -266,15 +283,13 @@ class _InvoiceNewPageState extends State<InvoiceNewPage>
     final actionRequiredList = allNeedProcess.where((invoice) {
       final type = invoice.transactionType?.toLowerCase();
       if (type != 'invoice' && type != null) return false;
-      if (invoice.transactionStatus != 'unpaid') return false;
+      if (!isUnpaid(invoice)) return false;
       if (_searchQuery.isEmpty) return true;
       final code = (invoice.invoiceCode ?? '').toLowerCase();
       return code.contains(_searchQuery);
     }).toList();
 
-    final completedList = filteredInvoices
-        .where((i) => i.isPaid && i.transactionStatus != 'unpaid')
-        .toList();
+    final completedList = filteredInvoices.where((i) => !isUnpaid(i)).toList();
 
     return ListView(
       controller: _scrollController,

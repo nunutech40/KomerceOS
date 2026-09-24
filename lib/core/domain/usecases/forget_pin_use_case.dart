@@ -9,10 +9,7 @@ class ForgetPinUseCase {
 
   const ForgetPinUseCase(this._repository);
 
-  Future<Either<Failure, DataOtpModel>> execute() {
-    return _repository.forgetPin();
-    
-      // final dummyData = DataOtpModel(expiredAt: '2023-10-12 10:00:00');
-      // return Future.value(Right(dummyData));
+  Future<Either<Failure, DataOtpModel>> execute({String? purpose}) {
+    return _repository.forgetPin(purpose: purpose);
   }
 }

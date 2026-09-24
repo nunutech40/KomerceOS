@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/common/styles.dart';
+
 import 'debounce_button.dart';
 
 class CustomOutlineButton1Small extends DebouncedButton {
@@ -22,7 +24,7 @@ class CustomOutlineButton1Small extends DebouncedButton {
           ),
           buttonStyle: OutlinedButton.styleFrom(
             backgroundColor: Colors.white,
-            foregroundColor: Colors.grey,
+            foregroundColor: gray737373,
             side: const BorderSide(color: Colors.grey, width: 1),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),

@@ -9,9 +9,8 @@ class VerifyOtpUseCase {
 
   const VerifyOtpUseCase(this._repository);
 
-  Future<Either<Failure, VerifyPinModel>> execute(String otp) {
-    return _repository.verifyOtp(otp);
-    // String message = 'OTP verification failed';
-    // return Future.value(Left(UnknownFailure(message)));
+  Future<Either<Failure, VerifyPinModel>> execute(String otp,
+      {String? token}) {
+    return _repository.verifyOtp(otp, token: token);
   }
 }
