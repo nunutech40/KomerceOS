@@ -33,11 +33,11 @@ class Endpoints {
   // Profile Endpoints
   static String get getProfile => '$_BaseURL/api/v1/auth/profile';
   static String get superappGetProfile =>
-      '$_BaseURLSuperApp/auth/api/v1/user/partner/get-profile-mobile';
+      '$_BaseURLInternal/api/v1/user/partner/get-profile-mobile';
   static String get superappUpdateUserProfile =>
-      '$_BaseURLSuperApp/auth/api/v1/user/partner/profile-user';
+      '$_BaseURLInternal/api/v1/user/partner/profile-user';
   static String get superappUpdateBusinessProfile =>
-      '$_BaseURLSuperApp/auth/api/v1/user/partner/profile-business';
+      '$_BaseURLInternal/api/v1/user/partner/profile-business';
 
   // Legacy Komship profile APIs. These intentionally use the Komship host,
   // which is different from the Super App auth/profile host.
