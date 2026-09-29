@@ -12,6 +12,8 @@ class SettingProfileBloc
     extends Bloc<SettingProfileEvent, SettingProfileState> {
   final SettingProfileRepository repository;
   Timer? _locationDebounce;
+  Timer? _logoRefreshTimer;
+  String? _logoUrlBeforeUpload;
   SuperappProfileModel? _pendingGlobalProfile;
   SettingProfileBloc({required this.repository})
       : super(const SettingProfileState.initial()) {
@@ -21,6 +23,7 @@ class SettingProfileBloc
     on<SettingProfileSaveRequested>(_onSaveRequested);
     on<SettingAccountProfileUpdateRequested>(_onAccountUpdate);
     on<SettingBusinessProfileUpdateRequested>(_onBusinessUpdate);
+    on<SettingBusinessLogoRefreshTimedOut>(_onLogoRefreshTimedOut);
     on<SettingBusinessSectorsRequested>(_onSectorsRequested);
     on<SettingBusinessLocationsRequested>(_onLocationsRequested);
     on<SettingBusinessLocationsDebounced>(_onLocationsDebounced);
@@ -43,12 +46,35 @@ class SettingProfileBloc
     var draft = state.draft.mergeRefresh(fresh, state.original);
     final readOnly = profile.isKtpVerified == true;
     if (readOnly) draft = draft.withAccountFrom(fresh);
+    final logoChanged = state.logoStatus != BusinessLogoStatus.ready &&
+        fresh.logoUrl != null &&
+        fresh.logoUrl != _logoUrlBeforeUpload;
+    if (logoChanged) {
+      _logoRefreshTimer?.cancel();
+      _logoUrlBeforeUpload = null;
+    }
     emit(state.copyWith(
       original: fresh,
       draft: draft,
       loading: false,
       accountReadOnly: readOnly,
+      logoStatus: logoChanged ? BusinessLogoStatus.ready : state.logoStatus,
       message: null,
+    ));
+  }
+
+  void _startLogoRefreshTimeout() {
+    _logoRefreshTimer?.cancel();
+    _logoRefreshTimer = Timer(const Duration(seconds: 20),
+        () => add(const SettingBusinessLogoRefreshTimedOut()));
+  }
+
+  void _onLogoRefreshTimedOut(SettingBusinessLogoRefreshTimedOut event,
+      Emitter<SettingProfileState> emit) {
+    if (state.logoStatus != BusinessLogoStatus.awaitingRefresh) return;
+    emit(state.copyWith(
+      logoStatus: BusinessLogoStatus.refreshFailed,
+      message: 'Logo tersimpan, tetapi gambar terbaru belum bisa dimuat.',
     ));
   }
 
@@ -92,6 +118,7 @@ class SettingProfileBloc
   @override
   Future<void> close() {
     _locationDebounce?.cancel();
+    _logoRefreshTimer?.cancel();
     return super.close();
   }
 
@@ -119,10 +146,17 @@ class SettingProfileBloc
   void _onChanged(
       SettingProfileChanged event, Emitter<SettingProfileState> emit) {
     if (state.saving || state.loading) return;
+    final selectedAnotherLogo = event.draft.logoPath != state.draft.logoPath;
+    if (selectedAnotherLogo) {
+      _logoRefreshTimer?.cancel();
+      _logoUrlBeforeUpload = null;
+    }
     emit(state.copyWith(
         draft: state.accountReadOnly
             ? event.draft.withAccountFrom(state.original)
-            : event.draft));
+            : event.draft,
+        logoStatus:
+            selectedAnotherLogo ? BusinessLogoStatus.ready : state.logoStatus));
   }
 
   Future<void> _onSaveRequested(SettingProfileSaveRequested event,
@@ -131,8 +165,16 @@ class SettingProfileBloc
     final draft = state.draft;
     final saveAccount = state.isAccountDirty;
     final saveBusiness = state.isBusinessDirty;
+    final uploadingLogo = saveBusiness && draft.logoPath != null;
+    if (uploadingLogo) _logoUrlBeforeUpload = state.original.logoUrl;
     var updated = false;
-    emit(state.copyWith(saving: true, message: null));
+    var logoUploaded = false;
+    emit(state.copyWith(
+        saving: true,
+        logoStatus: uploadingLogo
+            ? BusinessLogoStatus.awaitingRefresh
+            : state.logoStatus,
+        message: null));
     try {
       if (saveAccount && !state.accountReadOnly) {
         final saved = await repository.updateAccount(draft);
@@ -147,6 +189,10 @@ class SettingProfileBloc
         final saved =
             (await repository.updateBusiness(draft)).withoutSelectedLogo();
         updated = true;
+        if (uploadingLogo) {
+          logoUploaded = true;
+          _startLogoRefreshTimeout();
+        }
         if (isClosed) return;
         emit(state.copyWith(
           original: state.original.withBusinessFrom(saved),
@@ -159,7 +205,12 @@ class SettingProfileBloc
       }
     } catch (error) {
       if (!isClosed) {
-        emit(state.copyWith(saving: false, message: _saveErrorMessage(error)));
+        emit(state.copyWith(
+            saving: false,
+            logoStatus: uploadingLogo && !logoUploaded
+                ? BusinessLogoStatus.ready
+                : state.logoStatus,
+            message: _saveErrorMessage(error)));
       }
     } finally {
       _finishSave(emit, updated);
@@ -185,15 +236,21 @@ class SettingProfileBloc
       return;
     }
     var updated = false;
+    final uploadingLogo = !account && state.draft.logoPath != null;
+    if (uploadingLogo) _logoUrlBeforeUpload = state.original.logoUrl;
     emit(state.copyWith(
         saving: true,
         savingAccount: account,
         savingBusiness: !account,
+        logoStatus: uploadingLogo
+            ? BusinessLogoStatus.awaitingRefresh
+            : state.logoStatus,
         message: null));
     try {
       final result = await update(state.draft);
       final saved = account ? result : result.withoutSelectedLogo();
       updated = true;
+      if (uploadingLogo) _startLogoRefreshTimeout();
       if (!isClosed) {
         emit(state.copyWith(
             original: account
@@ -213,6 +270,8 @@ class SettingProfileBloc
             saving: false,
             savingAccount: false,
             savingBusiness: false,
+            logoStatus:
+                uploadingLogo ? BusinessLogoStatus.ready : state.logoStatus,
             message: _saveErrorMessage(error)));
       }
     } finally {

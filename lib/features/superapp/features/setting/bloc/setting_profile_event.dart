@@ -39,6 +39,10 @@ class SettingBusinessProfileUpdateRequested extends SettingProfileEvent {
   const SettingBusinessProfileUpdateRequested();
 }
 
+class SettingBusinessLogoRefreshTimedOut extends SettingProfileEvent {
+  const SettingBusinessLogoRefreshTimedOut();
+}
+
 class SettingBusinessSectorsRequested extends SettingProfileEvent {
   const SettingBusinessSectorsRequested();
 }

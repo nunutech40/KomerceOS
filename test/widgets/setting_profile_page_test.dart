@@ -9,6 +9,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart';
 import 'package:komtim_partner/features/superapp/features/setting/bloc/setting_profile_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/setting/bloc/setting_profile_event.dart';
+import 'package:komtim_partner/features/superapp/features/setting/bloc/setting_profile_state.dart';
 import 'package:komtim_partner/features/superapp/features/setting/domain/entities/setting_profile.dart';
 import 'package:komtim_partner/features/superapp/features/setting/domain/repositories/setting_profile_repository.dart';
 import 'package:komtim_partner/features/superapp/features/setting/view/setting_profile_page.dart';
@@ -150,6 +151,10 @@ void main() {
     expect(repository.businessUpdates, 1);
     expect(repository.refreshNotifications, 1);
     expect(bloc.state.draft.logoPath, isNull);
+    expect(bloc.state.logoStatus, BusinessLogoStatus.awaitingRefresh);
+    bloc.add(const SettingProfileGlobalLoaded(superappProfile));
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(bloc.state.logoStatus, BusinessLogoStatus.awaitingRefresh);
     bloc.add(const SettingProfileGlobalLoaded(SuperappProfileModel(
       businessProfile: BusinessProfileModel(
         brandName: 'Toko',
@@ -161,7 +166,58 @@ void main() {
     await bloc.stream.firstWhere(
         (s) => s.draft.logoUrl == 'https://example.com/server-logo.jpg');
     expect(bloc.state.draft.logoPath, isNull);
+    expect(bloc.state.logoStatus, BusinessLogoStatus.ready);
     await bloc.close();
+  });
+
+  test('failed logo upload keeps the chosen file and removes loading',
+      () async {
+    final repository = FakeSettingProfileRepository(failBusiness: true);
+    final bloc = SettingProfileBloc(repository: repository);
+    bloc.add(const SettingProfileGlobalLoaded(superappProfile));
+    await bloc.stream.firstWhere((s) => !s.loading);
+    bloc.update(bloc.state.draft.copyWith(logoPath: '/tmp/selected-logo.jpg'));
+    await bloc.stream.firstWhere((s) => s.draft.logoPath != null);
+    bloc.save();
+    await bloc.stream.firstWhere((s) => !s.saving && s.message != null);
+    expect(bloc.state.logoStatus, BusinessLogoStatus.ready);
+    expect(bloc.state.draft.logoPath, '/tmp/selected-logo.jpg');
+    expect(repository.refreshNotifications, 0);
+    await bloc.close();
+  });
+
+  test('logo refresh timeout stops loading without showing the old image',
+      () async {
+    final bloc = SettingProfileBloc(repository: FakeSettingProfileRepository());
+    bloc.add(const SettingProfileGlobalLoaded(superappProfile));
+    await bloc.stream.firstWhere((s) => !s.loading);
+    bloc.update(bloc.state.draft.copyWith(logoPath: '/tmp/new-logo.jpg'));
+    await bloc.stream.firstWhere((s) => s.draft.logoPath != null);
+    bloc.save();
+    await bloc.stream.firstWhere(
+        (s) => !s.saving && s.logoStatus == BusinessLogoStatus.awaitingRefresh);
+    bloc.add(const SettingBusinessLogoRefreshTimedOut());
+    await bloc.stream
+        .firstWhere((s) => s.logoStatus == BusinessLogoStatus.refreshFailed);
+    expect(bloc.state.draft.logoPath, isNull);
+    await bloc.close();
+  });
+
+  testWidgets('only logo shows loading while waiting for the refreshed URL',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SectionBusinessLogo(
+          profile: profile.copyWith(logoUrl: 'https://example.com/old.jpg'),
+          logoStatus: BusinessLogoStatus.awaitingRefresh,
+          onUpload: () {},
+        ),
+      ),
+    ));
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Bisnis Logo'), findsOneWidget);
+    expect(find.text('Unggah'), findsOneWidget);
   });
 
   testWidgets('saved business logo preview uses the server URL',

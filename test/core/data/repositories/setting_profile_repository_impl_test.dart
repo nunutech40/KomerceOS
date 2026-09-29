@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komtim_partner/common/failure.dart';
 import 'package:komtim_partner/config/config.dart';
+import 'package:komtim_partner/config/dev.dart';
 import 'package:komtim_partner/core/data/apiservice/constat_endpoint.dart';
 import 'package:komtim_partner/core/data/apiservice/dio_client.dart';
 import 'package:komtim_partner/core/data/models/superapp_profile_response.dart';
@@ -147,8 +148,22 @@ void main() {
       'business_logo': '/photo_profile_partner/dev/saved-logo.jpg',
     });
     expect(profile.businessLogo,
-        '${Config.instance.baseUrlKomshipHiring}/storage/photo_profile_partner/dev/saved-logo.jpg');
+        '${Config.instance.baseUrlBusinessLogoStorage}/photo_profile_partner/dev/saved-logo.jpg');
     expect(BusinessProfileResponse.fromJson(profile.toJson()), profile);
+  });
+
+  test('dev business logo origin points to the verified auth bucket', () {
+    expect(DevConfig().baseUrlBusinessLogoStorage,
+        'https://storage.googleapis.com/komerce-dev-auth');
+  });
+
+  test('absolute business logo URL from GET is not rewritten', () {
+    const url = 'https://storage.googleapis.com/komerce-dev-auth/'
+        'photo_profile_partner/dev/Gemini_Generated_Image_rqwbt2rqwbt2rqwb.png';
+    final profile = BusinessProfileResponse.fromJson(const {
+      'business_logo': url,
+    });
+    expect(profile.businessLogo, url);
   });
 
   test('business request contains multipart file headers and actual JPEG bytes',

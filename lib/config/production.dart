@@ -22,4 +22,7 @@ class ProductionConfig implements Config {
 
   @override
   String get baseUrlKomshipHiring => 'https://app.komerce.id';
+
+  @override
+  String get baseUrlBusinessLogoStorage => '$baseUrlKomshipHiring/storage';
 }

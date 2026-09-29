@@ -23,4 +23,8 @@ class DevConfig implements Config {
 
   @override
   String get baseUrlKomshipHiring => 'https://dev.komtim.komerce.my.id';
+
+  @override
+  String get baseUrlBusinessLogoStorage =>
+      'https://storage.googleapis.com/komerce-dev-auth';
 }

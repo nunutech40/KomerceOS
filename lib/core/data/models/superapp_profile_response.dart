@@ -86,11 +86,11 @@ class BusinessProfileResponse extends Equatable {
 
     final logo = firstValue(['business_logo', 'logo']);
     final logoUri = logo == null ? null : Uri.tryParse(logo);
-    // Auth returns a storage key; legacy profile returns this same path under
-    // the Komship hiring storage host. Keep absolute URLs unchanged.
+    // Auth may return either a relative storage key or an absolute URL.
+    // Resolve relative keys against the flavor's public business-logo origin.
     final logoUrl = logo == null || logoUri?.hasScheme == true
         ? logo
-        : Uri.parse('${Config.instance.baseUrlKomshipHiring}/storage/')
+        : Uri.parse('${Config.instance.baseUrlBusinessLogoStorage}/')
             .resolve(logo.replaceFirst(RegExp(r'^/+'), ''))
             .toString();
     return BusinessProfileResponse(

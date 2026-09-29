@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import '../../domain/entities/setting_profile.dart';
+import '../../bloc/setting_profile_state.dart';
 import '../../widget/profile_form_card.dart';
 import 'profile_section_fields.dart';
 
@@ -122,11 +123,13 @@ class SectionBusinessLogo extends StatelessWidget {
   final SettingProfile profile;
   final VoidCallback onUpload;
   final bool enabled;
+  final BusinessLogoStatus logoStatus;
   const SectionBusinessLogo(
       {super.key,
       required this.profile,
       required this.onUpload,
-      this.enabled = true});
+      this.enabled = true,
+      this.logoStatus = BusinessLogoStatus.ready});
   @override
   Widget build(BuildContext context) => ProfileFormCard(children: [
         Padding(
@@ -152,6 +155,12 @@ class SectionBusinessLogo extends StatelessWidget {
       ]);
 
   Widget _logoImage(SettingProfile profile) {
+    if (logoStatus == BusinessLogoStatus.awaitingRefresh) {
+      return _logoSpinner();
+    }
+    if (logoStatus == BusinessLogoStatus.refreshFailed) {
+      return const Icon(Icons.broken_image_outlined);
+    }
     if (profile.logoPath != null) {
       return Image.file(File(profile.logoPath!), fit: BoxFit.cover);
     }
@@ -162,8 +171,21 @@ class SectionBusinessLogo extends StatelessWidget {
     return Image.network(url,
         key: ValueKey(url),
         fit: BoxFit.cover,
+        loadingBuilder: (_, child, progress) =>
+            progress == null ? child : _logoSpinner(),
         errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_outlined));
   }
+
+  Widget _logoSpinner() => const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primaryBase,
+          ),
+        ),
+      );
 }
 
 class SectionBusinessInfo extends StatelessWidget {
@@ -216,6 +238,7 @@ class SectionBusiness extends StatelessWidget {
   final ValueChanged<String> onNameChanged, onPhoneChanged;
   final VoidCallback onUpload, onLocationTap, onSectorTap;
   final bool enabled;
+  final BusinessLogoStatus logoStatus;
   const SectionBusiness(
       {super.key,
       required this.profile,
@@ -224,13 +247,17 @@ class SectionBusiness extends StatelessWidget {
       required this.onUpload,
       required this.onLocationTap,
       required this.onSectorTap,
-      this.enabled = true});
+      this.enabled = true,
+      this.logoStatus = BusinessLogoStatus.ready});
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const ProfileSectionHeading('Profile Bisnis'),
         SectionBusinessLogo(
-            profile: profile, enabled: enabled, onUpload: onUpload),
+            profile: profile,
+            enabled: enabled,
+            onUpload: onUpload,
+            logoStatus: logoStatus),
         const SizedBox(height: AppSpacing.lg),
         SectionBusinessInfo(
             profile: profile,

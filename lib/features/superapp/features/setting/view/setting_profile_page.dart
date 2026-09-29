@@ -254,6 +254,7 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                               const SizedBox(height: AppSpacing.xl),
                               SectionBusiness(
                                 profile: p,
+                                logoStatus: state.logoStatus,
                                 enabled: !_selecting,
                                 onUpload: _upload,
                                 onNameChanged: (v) => settingProfile

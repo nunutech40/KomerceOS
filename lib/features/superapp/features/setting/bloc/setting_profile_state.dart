@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../domain/entities/setting_profile.dart';
 
+enum BusinessLogoStatus { ready, awaitingRefresh, refreshFailed }
+
 class SettingProfileState extends Equatable {
   final SettingProfile original, draft;
   final bool loading,
@@ -11,6 +13,7 @@ class SettingProfileState extends Equatable {
       savingBusiness,
       accountReadOnly;
   final List<ProfileOption> locations, businessSectors;
+  final BusinessLogoStatus logoStatus;
   final String? message;
   const SettingProfileState(
       {required this.original,
@@ -24,6 +27,7 @@ class SettingProfileState extends Equatable {
       this.accountReadOnly = false,
       this.locations = const [],
       this.businessSectors = const [],
+      this.logoStatus = BusinessLogoStatus.ready,
       this.message});
   const SettingProfileState.initial()
       : original = const SettingProfile(),
@@ -37,6 +41,7 @@ class SettingProfileState extends Equatable {
         accountReadOnly = false,
         locations = const [],
         businessSectors = const [],
+        logoStatus = BusinessLogoStatus.ready,
         message = null;
   bool get isDirty => draft != original;
   bool get isAccountDirty =>
@@ -70,6 +75,7 @@ class SettingProfileState extends Equatable {
           bool? accountReadOnly,
           List<ProfileOption>? locations,
           List<ProfileOption>? businessSectors,
+          BusinessLogoStatus? logoStatus,
           String? message}) =>
       SettingProfileState(
           original: original ?? this.original,
@@ -83,6 +89,7 @@ class SettingProfileState extends Equatable {
           accountReadOnly: accountReadOnly ?? this.accountReadOnly,
           locations: locations ?? this.locations,
           businessSectors: businessSectors ?? this.businessSectors,
+          logoStatus: logoStatus ?? this.logoStatus,
           message: message);
   @override
   List<Object?> get props => [
@@ -97,6 +104,7 @@ class SettingProfileState extends Equatable {
         accountReadOnly,
         locations,
         businessSectors,
+        logoStatus,
         message
       ];
 }

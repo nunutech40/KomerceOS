@@ -46,8 +46,8 @@ Endpoint Komship `POST https://dev.komship.komerce.my.id/api/v1/my-profile` meng
 
 `https://dev.komtim.komerce.my.id/storage//photo_profile_partner/dev/1790587689_95b30932_komtim_icon.jpeg`
 
-GET URL tersebut menghasilkan HTTP 404. Versi dengan slash yang dinormalisasi (`/storage/photo_profile_partner/...`) juga 404. Update tanpa file mempertahankan path logo pada GET global, tetapi file belum dapat diunduh melalui URL yang diberikan server.
+GET URL tersebut menghasilkan HTTP 404. Versi dengan slash yang dinormalisasi (`/storage/photo_profile_partner/...`) juga 404. Setelah bucket auth dev dikonfirmasi, path logo dari GET ternyata bisa diunduh dari `https://storage.googleapis.com/komerce-dev-auth/` + path relatif; file JPEG akun uji menghasilkan HTTP 200 `image/jpeg`. Flutter dev kini memakai bucket tersebut. URL absolut dari GET tidak diubah. Staging/production masih memakai origin sebelumnya karena bucket-nya belum diverifikasi.
 
-Backend perlu memastikan file upload tersedia pada storage yang dilayani URL tersebut, atau mengembalikan URL publik/signed URL yang bisa diakses. Penyebab internal storage belum diketahui dari repository Flutter ini.
+Catatan: host legacy Komtim di atas bukan origin yang benar untuk logo dari auth dev. Jangan gunakan hasil HTTP 404 di host legacy sebagai bukti bahwa upload file gagal.
 
 Form menampilkan file lokal hanya selama logo baru dipilih tetapi belum disimpan. Setelah PUT sukses, pilihan lokal dilepas; `SuperappProfileBloc` me-refresh GET profil dan preview memakai URL dari respons global. Bila file pada URL itu gagal dimuat, form menampilkan ikon gambar rusak agar kegagalan storage tidak tertutup oleh salinan lokal. HTTP 200 dari PUT dan path pada GET belum membuktikan file gambar dapat diunduh.
