@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../config/config.dart';
+
 import '../../domain/entities/superapp_profile_model.dart';
 
 class UserLevelResponse extends Equatable {
@@ -74,12 +76,30 @@ class BusinessProfileResponse extends Equatable {
   });
 
   factory BusinessProfileResponse.fromJson(Map<String, dynamic> json) {
+    String? firstValue(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) return value;
+      }
+      return null;
+    }
+
+    final logo = firstValue(['business_logo', 'logo']);
+    final logoUri = logo == null ? null : Uri.tryParse(logo);
+    // Auth returns a storage key; legacy profile returns this same path under
+    // the Komship hiring storage host. Keep absolute URLs unchanged.
+    final logoUrl = logo == null || logoUri?.hasScheme == true
+        ? logo
+        : Uri.parse('${Config.instance.baseUrlKomshipHiring}/storage/')
+            .resolve(logo.replaceFirst(RegExp(r'^/+'), ''))
+            .toString();
     return BusinessProfileResponse(
-      businessLogo: json['business_logo'],
-      brandName: json['brand_name'],
-      location: json['location'],
-      businessPhone: json['business_phone'],
-      businessSector: json['business_sector'],
+      businessLogo: logoUrl,
+      brandName: firstValue(['brand_name']),
+      location: firstValue(['location', 'business_location']),
+      businessPhone:
+          firstValue(['business_phone', 'no_hp_business', 'pic_phone']),
+      businessSector: firstValue(['business_sector', 'partner_category_name']),
     );
   }
 

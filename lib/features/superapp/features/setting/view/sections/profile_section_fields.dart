@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import '../../domain/entities/setting_profile.dart';
 import '../../widget/profile_form_card.dart';
 
-class ProfileTextField extends StatelessWidget {
+class ProfileTextField extends StatefulWidget {
   final String label, value, hint;
   final ValueChanged<String> onChanged;
   final bool requiredField, phone;
@@ -18,38 +20,77 @@ class ProfileTextField extends StatelessWidget {
       this.maxLength,
       this.lines = 1,
       this.phone = false});
+
+  @override
+  State<ProfileTextField> createState() => _ProfileTextFieldState();
+}
+
+class _ProfileTextFieldState extends State<ProfileTextField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_controller.text == widget.value) return;
+    _controller.value = TextEditingValue(
+      text: widget.value,
+      selection: TextSelection.collapsed(offset: widget.value.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => ProfileFormRow(
-      label: label,
-      requiredField: requiredField,
+      label: widget.label,
+      requiredField: widget.requiredField,
       child: TextFormField(
-          key: ValueKey(label),
-          initialValue: value,
+          key: ValueKey(widget.label),
+          controller: _controller,
           style: AppTypography.bodySmRegular
               .copyWith(color: AppColors.alwaysBlack),
-          maxLength: maxLength,
-          minLines: lines,
-          maxLines: lines,
-          keyboardType: phone
+          maxLength: widget.maxLength,
+          minLines: widget.lines,
+          maxLines: widget.lines,
+          keyboardType: widget.phone
               ? TextInputType.phone
-              : lines > 1
+              : widget.lines > 1
                   ? TextInputType.multiline
                   : TextInputType.text,
+          inputFormatters: widget.phone
+              ? [
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    return RegExp(r'^\+?[0-9]{0,15}$').hasMatch(newValue.text)
+                        ? newValue
+                        : oldValue;
+                  }),
+                ]
+              : null,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (text) {
-            if (requiredField && (text == null || text.trim().isEmpty)) {
+            if (widget.requiredField && (text == null || text.trim().isEmpty)) {
               return 'Wajib diisi';
             }
-            if (phone &&
+            if (widget.phone &&
                 text != null &&
                 text.isNotEmpty &&
-                !RegExp(r'^\+?[0-9]{8,15}$').hasMatch(text.trim())) {
+                !isValidPhoneNumber(text)) {
               return 'Masukkan 8–15 digit nomor HP';
             }
             return null;
           },
           decoration: InputDecoration(
-              hintText: hint,
+              hintText: widget.hint,
               hintStyle: AppTypography.bodySmRegular
                   .copyWith(color: AppColors.grey600),
               border: InputBorder.none,
@@ -58,7 +99,7 @@ class ProfileTextField extends StatelessWidget {
               filled: false,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(vertical: 12)),
-          onChanged: onChanged));
+          onChanged: widget.onChanged));
 }
 
 class ProfileReadonlyField extends StatelessWidget {

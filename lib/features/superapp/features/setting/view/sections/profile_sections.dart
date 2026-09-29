@@ -82,6 +82,7 @@ class SectionContacts extends StatelessWidget {
                 label: 'No. HP',
                 value: profile.phone,
                 hint: 'No. HP',
+                phone: true,
                 onChanged: onPhoneChanged ?? (_) {}),
         readOnly
             ? ProfileReadonlyField(
@@ -133,18 +134,7 @@ class SectionBusinessLogo extends StatelessWidget {
             child: Row(children: [
               ClipOval(
                   child: SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: profile.logoPath != null
-                          ? Image.file(File(profile.logoPath!),
-                              fit: BoxFit.cover)
-                          : profile.logoUrl == null
-                              ? SvgPicture.asset(
-                                  'assets/images/superapp/home/ic_komerce_os.svg')
-                              : Image.network(profile.logoUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const Icon(Icons.store_outlined)))),
+                      width: 48, height: 48, child: _logoImage(profile))),
               const SizedBox(width: AppSpacing.sm),
               const Expanded(
                   child:
@@ -160,6 +150,20 @@ class SectionBusinessLogo extends StatelessWidget {
                   label: const Text('Unggah'))
             ]))
       ]);
+
+  Widget _logoImage(SettingProfile profile) {
+    if (profile.logoPath != null) {
+      return Image.file(File(profile.logoPath!), fit: BoxFit.cover);
+    }
+    final url = profile.logoUrl;
+    if (url == null) {
+      return SvgPicture.asset('assets/images/superapp/home/ic_komerce_os.svg');
+    }
+    return Image.network(url,
+        key: ValueKey(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_outlined));
+  }
 }
 
 class SectionBusinessInfo extends StatelessWidget {

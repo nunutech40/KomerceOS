@@ -18,33 +18,7 @@ class SettingProfileRepositoryImpl implements SettingProfileRepository {
     final result = await superappProfileRepository.getProfile();
     return result.fold(
       (failure) => throw Exception(failure.message),
-      (profile) {
-        final business = profile.businessProfile;
-        return SettingProfile(
-          fullName: profile.fullName ?? '',
-          username: profile.username ?? '',
-          phone: profile.noHp ?? '',
-          email: profile.email ?? '',
-          address: profile.address ?? '',
-          gender: profile.gender == 1
-              ? ProfileGender.male
-              : profile.gender == 2
-                  ? ProfileGender.female
-                  : null,
-          businessName: business?.brandName ?? '',
-          businessPhone: business?.businessPhone ?? '',
-          location: business?.location == null
-              ? null
-              : ProfileOption(
-                  id: business!.location!, label: business.location!),
-          businessSector: business?.businessSector == null
-              ? null
-              : ProfileOption(
-                  id: business!.businessSector!,
-                  label: business.businessSector!),
-          logoUrl: business?.businessLogo,
-        );
-      },
+      SettingProfile.fromGlobalProfile,
     );
   }
 
@@ -54,7 +28,7 @@ class SettingProfileRepositoryImpl implements SettingProfileRepository {
       'full_name': profile.fullName,
       'username': profile.username,
       'email': profile.email,
-      'no_hp': profile.phone,
+      'no_hp': normalizePhoneNumber(profile.phone),
       'gender': switch (profile.gender) {
         ProfileGender.male => 1,
         ProfileGender.female => 2,
@@ -62,22 +36,35 @@ class SettingProfileRepositoryImpl implements SettingProfileRepository {
       },
       'address': profile.address,
     });
-    return profile;
+    return profile.copyWith(phone: normalizePhoneNumber(profile.phone));
   }
 
   @override
   Future<SettingProfile> updateBusiness(SettingProfile profile) async {
-    final data = <String, dynamic>{
+    final fields = <String, dynamic>{
       'brand_name': profile.businessName,
-      'business_phone': profile.businessPhone,
-      'location': profile.location?.label,
-      'business_sector': profile.businessSector?.label,
+      // These are the fields accepted and persisted by the current auth API.
+      'pic_phone': normalizePhoneNumber(profile.businessPhone),
+      'business_location': profile.location?.label,
+      'partner_category_name': profile.businessSector?.label,
     };
-    if (profile.logoPath != null && File(profile.logoPath!).existsSync()) {
-      data['business_logo'] = await MultipartFile.fromFile(profile.logoPath!);
+    final imagePath = profile.logoPath;
+    if (imagePath != null) {
+      if (!await File(imagePath).exists()) {
+        throw const FileSystemException(
+            'File logo tidak ditemukan. Pilih ulang logo.');
+      }
+      // The documented `logo` alias binds a file correctly; `business_logo`
+      // currently causes the dev API's multipart binder to return HTTP 400.
+      fields['logo'] = await MultipartFile.fromFile(
+        imagePath,
+        filename: imagePath.split('/').last,
+        contentType: DioMediaType('image', 'jpeg'),
+      );
     }
-    await remote.updateBusiness(data);
-    return profile;
+    await remote.updateBusiness(fields);
+    return profile.copyWith(
+        businessPhone: normalizePhoneNumber(profile.businessPhone));
   }
 
   @override

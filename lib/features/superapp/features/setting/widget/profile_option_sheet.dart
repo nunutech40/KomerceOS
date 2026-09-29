@@ -28,24 +28,29 @@ class ProfileOptionSheet extends StatefulWidget {
 
 class _ProfileOptionSheetState extends State<ProfileOptionSheet> {
   ProfileOption? selected;
+
+  ProfileOption? _findSelectedOption() {
+    for (final option in widget.options) {
+      // Profile API returns the location/sector name, while the option list
+      // uses a master ID. Support both so existing selections are preserved.
+      if (option.id == widget.selectedId || option.label == widget.selectedId) {
+        return option;
+      }
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
-    for (final option in widget.options) {
-      if (option.id == widget.selectedId) selected = option;
-    }
+    selected = _findSelectedOption();
   }
 
   @override
   void didUpdateWidget(covariant ProfileOptionSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (selected != null || widget.selectedId == null) return;
-    for (final option in widget.options) {
-      if (option.id == widget.selectedId) {
-        selected = option;
-        break;
-      }
-    }
+    selected = _findSelectedOption();
   }
 
   @override
@@ -252,29 +257,34 @@ class _ProfileOptionSheetState extends State<ProfileOptionSheet> {
           const Divider(height: 1, color: AppColors.grey200),
       itemBuilder: (_, index) {
         final option = widget.options[index];
-        return InkWell(
-          onTap: () => setState(() => selected = option),
-          child: SizedBox(
-            height: 44,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      option.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.bodySmRegular.copyWith(
-                        color: AppColors.grey900,
+        final isSelected = selected == option;
+        return Semantics(
+          button: true,
+          selected: isSelected,
+          child: InkWell(
+            onTap: () => setState(() => selected = option),
+            child: SizedBox(
+              height: 44,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        option.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.bodySmRegular.copyWith(
+                          color: AppColors.grey900,
+                        ),
                       ),
                     ),
-                  ),
-                  if (widget.showSelectionIndicator) ...[
-                    const SizedBox(width: AppSpacing.sm),
-                    _SelectionIndicator(selected: selected == option),
+                    if (widget.showSelectionIndicator) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      _SelectionIndicator(selected: isSelected),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

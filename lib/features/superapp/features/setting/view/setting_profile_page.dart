@@ -27,10 +27,12 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   void initState() {
     super.initState();
     _settingProfile = locator<SettingProfileBloc>();
-    final profile = context.read<SuperappProfileBloc>().state.displayProfile;
+    final globalProfile = context.read<SuperappProfileBloc>();
+    final profile = globalProfile.state.displayProfile;
     if (profile != null) {
       _settingProfile.add(SettingProfileGlobalLoaded(profile));
     }
+    globalProfile.add(const FetchSuperappProfileEvent());
   }
 
   @override
@@ -125,6 +127,7 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
             options: state.businessSectors,
             loading: state.loadingSectors,
             selectedId: profile.businessSector?.id,
+            showSelectionIndicator: true,
           ),
         ),
       ),
@@ -150,6 +153,7 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
             loading: state.loadingLocations,
             selectedId: profile.location?.id,
             searchable: true,
+            showSelectionIndicator: true,
             onSearchChanged: (keyword) =>
                 settingProfile.add(SettingBusinessLocationsRequested(keyword)),
           ),

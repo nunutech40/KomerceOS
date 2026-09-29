@@ -59,12 +59,16 @@ class SettingProfileRemoteDataSourceImpl
   @override
   Future<void> updateAccount(Map<String, dynamic> data) async {
     await client.put(Endpoints.superappUpdateUserProfile,
-        data: FormData.fromMap(data));
+        data: FormData.fromMap(data),
+        options: Options(contentType: Headers.multipartFormDataContentType));
   }
 
   @override
   Future<void> updateBusiness(Map<String, dynamic> data) async {
-    await client.put(Endpoints.superappUpdateBusinessProfile,
-        data: FormData.fromMap(data));
+    await client.put(
+      Endpoints.superappUpdateBusinessProfile,
+      data: FormData.fromMap(data),
+      options: Options(contentType: Headers.multipartFormDataContentType),
+    );
   }
 }

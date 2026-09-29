@@ -1,4 +1,19 @@
 import 'package:equatable/equatable.dart';
+import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart';
+
+final RegExp _phoneNumberPattern = RegExp(r'^\+?[0-9]{8,15}$');
+
+/// API menerima nomor 8–15 digit, dengan awalan `+` opsional.
+bool isValidPhoneNumber(String value) =>
+    _phoneNumberPattern.hasMatch(value.trim());
+
+/// Hapus pemisah yang sering terbawa dari paste, tanpa mengubah 08… atau +62….
+String normalizePhoneNumber(String value) {
+  final trimmed = value.trim();
+  final hasLeadingPlus = trimmed.startsWith('+');
+  final digits = trimmed.replaceAll(RegExp(r'\D'), '');
+  return hasLeadingPlus ? '+$digits' : digits;
+}
 
 enum ProfileGender { male, female }
 
@@ -37,6 +52,85 @@ class SettingProfile extends Equatable {
     this.logoPath,
   });
 
+  factory SettingProfile.fromGlobalProfile(SuperappProfileModel profile) {
+    final business = profile.businessProfile;
+    ProfileOption? option(String? label) => label == null || label.isEmpty
+        ? null
+        : ProfileOption(id: label, label: label);
+    return SettingProfile(
+      fullName: profile.fullName ?? '',
+      username: profile.username ?? '',
+      phone: profile.noHp ?? '',
+      email: profile.email ?? '',
+      address: profile.address ?? '',
+      gender: switch (profile.gender) {
+        1 => ProfileGender.male,
+        2 => ProfileGender.female,
+        _ => null,
+      },
+      businessName: business?.brandName ?? '',
+      businessPhone: business?.businessPhone ?? '',
+      location: option(business?.location),
+      businessSector: option(business?.businessSector),
+      logoUrl: business?.businessLogo,
+    );
+  }
+
+  SettingProfile withAccountFrom(SettingProfile account) => SettingProfile(
+        fullName: account.fullName,
+        username: account.username,
+        phone: account.phone,
+        email: account.email,
+        address: account.address,
+        gender: account.gender,
+        businessName: businessName,
+        businessPhone: businessPhone,
+        location: location,
+        businessSector: businessSector,
+        logoUrl: logoUrl,
+        logoPath: logoPath,
+      );
+
+  SettingProfile withBusinessFrom(SettingProfile business) =>
+      business.withAccountFrom(this);
+
+  SettingProfile withoutSelectedLogo() => SettingProfile(
+        fullName: fullName,
+        username: username,
+        phone: phone,
+        email: email,
+        address: address,
+        businessName: businessName,
+        businessPhone: businessPhone,
+        gender: gender,
+        location: location,
+        businessSector: businessSector,
+        logoUrl: logoUrl,
+      );
+
+  /// Keep edited fields while synchronizing untouched fields from global state.
+  SettingProfile mergeRefresh(SettingProfile fresh, SettingProfile baseline) {
+    T merge<T>(T current, T previous, T incoming) =>
+        current == previous ? incoming : current;
+    return SettingProfile(
+      fullName: merge(fullName, baseline.fullName, fresh.fullName),
+      username: merge(username, baseline.username, fresh.username),
+      phone: merge(phone, baseline.phone, fresh.phone),
+      email: merge(email, baseline.email, fresh.email),
+      address: merge(address, baseline.address, fresh.address),
+      gender: merge(gender, baseline.gender, fresh.gender),
+      businessName:
+          merge(businessName, baseline.businessName, fresh.businessName),
+      businessPhone:
+          merge(businessPhone, baseline.businessPhone, fresh.businessPhone),
+      location: merge(location, baseline.location, fresh.location),
+      businessSector:
+          merge(businessSector, baseline.businessSector, fresh.businessSector),
+      logoUrl: fresh.logoUrl,
+      logoPath: merge(logoPath, baseline.logoPath, fresh.logoPath),
+    );
+  }
+
   SettingProfile copyWith({
     String? fullName,
     String? username,
@@ -70,12 +164,12 @@ class SettingProfile extends Equatable {
       fullName.trim().isNotEmpty &&
       username.trim().isNotEmpty &&
       email.trim().isNotEmpty &&
-      phone.trim().isNotEmpty;
+      isValidPhoneNumber(phone);
 
   bool get isBusinessValid =>
       businessName.trim().isNotEmpty &&
       businessName.length <= 30 &&
-      RegExp(r'^\+?[0-9]{8,15}$').hasMatch(businessPhone.trim()) &&
+      isValidPhoneNumber(businessPhone) &&
       location != null;
 
   bool get isValid => isAccountValid && isBusinessValid;

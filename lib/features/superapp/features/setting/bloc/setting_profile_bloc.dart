@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart';
 import '../domain/entities/setting_profile.dart';
 import '../domain/repositories/setting_profile_repository.dart';
 import 'setting_profile_event.dart';
@@ -10,6 +12,7 @@ class SettingProfileBloc
     extends Bloc<SettingProfileEvent, SettingProfileState> {
   final SettingProfileRepository repository;
   Timer? _locationDebounce;
+  SuperappProfileModel? _pendingGlobalProfile;
   SettingProfileBloc({required this.repository})
       : super(const SettingProfileState.initial()) {
     on<SettingProfileFetchRequested>(_onFetch);
@@ -25,36 +28,26 @@ class SettingProfileBloc
 
   void _onGlobalLoaded(
       SettingProfileGlobalLoaded event, Emitter<SettingProfileState> emit) {
-    if (state.isDirty || state.saving) return;
     final profile = event.profile;
-    final business = profile.businessProfile;
-    final settingProfile = SettingProfile(
-      fullName: profile.fullName ?? '',
-      username: profile.username ?? '',
-      phone: profile.noHp ?? '',
-      email: profile.email ?? '',
-      address: profile.address ?? '',
-      gender: profile.gender == 1
-          ? ProfileGender.male
-          : profile.gender == 2
-              ? ProfileGender.female
-              : null,
-      businessName: business?.brandName ?? '',
-      businessPhone: business?.businessPhone ?? '',
-      location: business?.location == null
-          ? null
-          : ProfileOption(id: business!.location!, label: business.location!),
-      businessSector: business?.businessSector == null
-          ? null
-          : ProfileOption(
-              id: business!.businessSector!, label: business.businessSector!),
-      logoUrl: business?.businessLogo,
-    );
+    if (state.saving) {
+      _pendingGlobalProfile = profile;
+      emit(state.copyWith(accountReadOnly: profile.isKtpVerified == true));
+      return;
+    }
+    _syncGlobalProfile(profile, emit);
+  }
+
+  void _syncGlobalProfile(
+      SuperappProfileModel profile, Emitter<SettingProfileState> emit) {
+    final fresh = SettingProfile.fromGlobalProfile(profile);
+    var draft = state.draft.mergeRefresh(fresh, state.original);
+    final readOnly = profile.isKtpVerified == true;
+    if (readOnly) draft = draft.withAccountFrom(fresh);
     emit(state.copyWith(
-      original: settingProfile,
-      draft: settingProfile,
+      original: fresh,
+      draft: draft,
       loading: false,
-      accountReadOnly: profile.isKtpVerified == true,
+      accountReadOnly: readOnly,
       message: null,
     ));
   }
@@ -126,31 +119,50 @@ class SettingProfileBloc
   void _onChanged(
       SettingProfileChanged event, Emitter<SettingProfileState> emit) {
     if (state.saving || state.loading) return;
-    emit(state.copyWith(draft: event.draft));
+    emit(state.copyWith(
+        draft: state.accountReadOnly
+            ? event.draft.withAccountFrom(state.original)
+            : event.draft));
   }
 
   Future<void> _onSaveRequested(SettingProfileSaveRequested event,
       Emitter<SettingProfileState> emit) async {
     if (!state.canSave) return;
+    final draft = state.draft;
+    final saveAccount = state.isAccountDirty;
+    final saveBusiness = state.isBusinessDirty;
+    var updated = false;
     emit(state.copyWith(saving: true, message: null));
     try {
-      var saved = state.draft;
-      if (_accountChanged) saved = await repository.updateAccount(saved);
-      if (_businessChanged) {
-        saved = await repository.updateBusiness(state.draft);
+      if (saveAccount && !state.accountReadOnly) {
+        final saved = await repository.updateAccount(draft);
+        updated = true;
+        if (isClosed) return;
+        emit(state.copyWith(
+          original: state.original.withAccountFrom(saved),
+          draft: state.draft.withAccountFrom(saved),
+        ));
       }
-      repository.notifyProfileRefresh();
+      if (saveBusiness) {
+        final saved =
+            (await repository.updateBusiness(draft)).withoutSelectedLogo();
+        updated = true;
+        if (isClosed) return;
+        emit(state.copyWith(
+          original: state.original.withBusinessFrom(saved),
+          draft: state.draft.withBusinessFrom(saved),
+        ));
+      }
       if (!isClosed) {
         emit(state.copyWith(
-            original: saved,
-            draft: saved,
-            saving: false,
-            message: 'Profil berhasil disimpan.'));
+            saving: false, message: 'Profil berhasil disimpan.'));
       }
     } catch (error) {
       if (!isClosed) {
         emit(state.copyWith(saving: false, message: _saveErrorMessage(error)));
       }
+    } finally {
+      _finishSave(emit, updated);
     }
   }
 
@@ -166,16 +178,31 @@ class SettingProfileBloc
       Future<SettingProfile> Function(SettingProfile) update,
       bool account,
       Emitter<SettingProfileState> emit) async {
-    if (state.saving || state.loading) return;
+    if (state.saving ||
+        state.loading ||
+        (account && (state.accountReadOnly || !state.draft.isAccountValid)) ||
+        (!account && !state.draft.isBusinessValid)) {
+      return;
+    }
+    var updated = false;
     emit(state.copyWith(
-        savingAccount: account, savingBusiness: !account, message: null));
+        saving: true,
+        savingAccount: account,
+        savingBusiness: !account,
+        message: null));
     try {
-      final saved = await update(state.draft);
-      repository.notifyProfileRefresh();
+      final result = await update(state.draft);
+      final saved = account ? result : result.withoutSelectedLogo();
+      updated = true;
       if (!isClosed) {
         emit(state.copyWith(
-            original: saved,
-            draft: saved,
+            original: account
+                ? state.original.withAccountFrom(saved)
+                : state.original.withBusinessFrom(saved),
+            draft: account
+                ? state.draft.withAccountFrom(saved)
+                : state.draft.withBusinessFrom(saved),
+            saving: false,
             savingAccount: false,
             savingBusiness: false,
             message: 'Profil berhasil disimpan.'));
@@ -183,18 +210,27 @@ class SettingProfileBloc
     } catch (error) {
       if (!isClosed) {
         emit(state.copyWith(
+            saving: false,
             savingAccount: false,
             savingBusiness: false,
             message: _saveErrorMessage(error)));
       }
+    } finally {
+      _finishSave(emit, updated);
     }
   }
 
-  bool get _accountChanged => state.isAccountDirty;
-
-  bool get _businessChanged => state.isBusinessDirty;
+  void _finishSave(Emitter<SettingProfileState> emit, bool updated) {
+    final pending = _pendingGlobalProfile;
+    _pendingGlobalProfile = null;
+    if (!isClosed && pending != null) _syncGlobalProfile(pending, emit);
+    // One endpoint may succeed even when the second fails. Global consumers
+    // still need to fetch the committed server data in that case.
+    if (updated) repository.notifyProfileRefresh();
+  }
 
   String _saveErrorMessage(Object error) {
+    if (error is FileSystemException) return error.message;
     if (error is DioException) {
       final data = error.response?.data;
       if (data is Map<String, dynamic>) {
