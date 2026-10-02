@@ -322,7 +322,7 @@ lib/
 
 ---
 
-### 6.10 PIN Management (`features/pin/`)
+### 6.10 PIN Management (`features/superapp/features/pin/`)
 
 | Fitur | Deskripsi |
 |-------|-----------|

@@ -99,7 +99,7 @@ import 'package:komtim_partner/core/domain/usecases/update_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_otp_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
-import 'package:komtim_partner/features/pin/bloc/pin_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/pin/bloc/pin_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/bloc/attendance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';

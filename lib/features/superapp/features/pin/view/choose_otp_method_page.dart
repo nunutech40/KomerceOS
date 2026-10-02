@@ -8,7 +8,7 @@ import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/string.dart';
 import 'package:komtim_partner/common/styles.dart';
 import 'package:komtim_partner/common/utils/loading/loading_overlay.dart';
-import 'package:komtim_partner/features/pin/bloc/pin_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/pin/bloc/pin_bloc.dart';
 
 /// Halaman pemilih metode OTP untuk flow lupa PIN.
 /// Saat ini hanya email yang tersedia — kartu WA dinonaktifkan.

@@ -8,8 +8,8 @@ import 'package:komtim_partner/core/domain/entities/report_performance_monthly_m
 import 'package:komtim_partner/core/domain/entities/report_performance_model.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
 import 'package:komtim_partner/core/domain/usecases/reset_password_use_case.dart';
-import 'package:komtim_partner/features/pin/view/pin_page.dart';
-import 'package:komtim_partner/features/pin/view/verification_email_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/pin_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/verification_email_page.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/view/attendance_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_detail_pages.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/view/feed_pages.dart';

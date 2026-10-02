@@ -1,4 +1,4 @@
-import '../../../features/pin/view/pin_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/pin_page.dart';
 
 class SharedDataService {
   WithdrawalData? _data;

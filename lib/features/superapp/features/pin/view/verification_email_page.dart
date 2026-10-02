@@ -7,11 +7,11 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart'
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/string.dart';
-import 'package:komtim_partner/features/pin/bloc/pin_bloc.dart';
-import 'package:komtim_partner/features/pin/widget/count_down.dart';
+import 'package:komtim_partner/features/superapp/features/pin/bloc/pin_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/pin/widget/count_down.dart';
 
-import '../../../common/global/widgets/custom_button.dart';
-import '../../../common/styles.dart';
+import 'package:komtim_partner/common/global/widgets/custom_button.dart';
+import 'package:komtim_partner/common/styles.dart';
 
 class VerificationEmailPage extends StatefulWidget {
   final String? email;
@@ -234,4 +234,3 @@ class _verificationEmailPageState extends State<VerificationEmailPage> {
     );
   }
 }
-

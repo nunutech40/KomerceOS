@@ -10,10 +10,10 @@ import 'package:komtim_partner/core/domain/entities/report_performance_monthly_m
 import 'package:komtim_partner/core/domain/entities/report_performance_model.dart';
 import 'package:komtim_partner/core/domain/entities/talents_model.dart';
 import 'package:komtim_partner/core/domain/usecases/reset_password_use_case.dart';
-import 'package:komtim_partner/features/pin/view/choose_otp_method_page.dart';
-import 'package:komtim_partner/features/pin/view/pin_page.dart';
-import 'package:komtim_partner/features/pin/view/pin_success_page.dart';
-import 'package:komtim_partner/features/pin/view/verification_email_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/choose_otp_method_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/pin_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/pin_success_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/verification_email_page.dart';
 import 'package:komtim_partner/features/profile/view/profile_info_update_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/email_check_page.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/views/forgot_password.dart';

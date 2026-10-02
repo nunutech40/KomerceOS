@@ -21,7 +21,7 @@ import 'common/global/router/app_router.dart';
 import 'common/global/router/router_utils.dart';
 import 'common/global/widgets/connectivity_wrapper.dart';
 import 'core/services/deep_link_service.dart';
-import 'features/pin/bloc/pin_bloc.dart';
+import 'features/superapp/features/pin/bloc/pin_bloc.dart';
 import 'features/profile/bloc/profile_bloc.dart';
 import 'features/superapp/features/authentication/bloc/check_email_bloc.dart';
 import 'features/superapp/features/authentication/bloc/forgot_password_bloc.dart';
