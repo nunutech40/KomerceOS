@@ -25,6 +25,7 @@ class DsBottomSheet extends StatelessWidget {
   final VoidCallback? onClosePressed;
 
   final bool isDismissible;
+  final bool showPrimaryButton;
 
   const DsBottomSheet({
     super.key,
@@ -39,6 +40,7 @@ class DsBottomSheet extends StatelessWidget {
     this.secondaryButtonColor,
     this.onClosePressed, // Inject callback
     this.isDismissible = true,
+    this.showPrimaryButton = true,
   });
 
   // ---------------------------------------------------------------------------
@@ -148,14 +150,16 @@ class DsBottomSheet extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  description,
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodyMdRegular.copyWith(
-                    color: AppColors.grey700,
+                if (description.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodyMdRegular.copyWith(
+                      color: AppColors.grey700,
+                    ),
                   ),
-                ),
+                ],
                 if (image != null) ...[
                   const SizedBox(height: AppSpacing.lg),
                   image!,
@@ -176,11 +180,12 @@ class DsBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                 ],
-                DsButton(
-                  text: primaryButtonText,
-                  onPressed: onPrimaryPressed,
-                  state: primaryButtonState,
-                ),
+                if (showPrimaryButton)
+                  DsButton(
+                    text: primaryButtonText,
+                    onPressed: onPrimaryPressed,
+                    state: primaryButtonState,
+                  ),
               ],
             ),
           ),

@@ -21,6 +21,31 @@ class ProductMailVerificationModel extends Equatable {
   List<Object?> get props => [productName, isVerified];
 }
 
+class BusinessProfileModel extends Equatable {
+  final String? businessLogo;
+  final String? brandName;
+  final String? location;
+  final String? businessPhone;
+  final String? businessSector;
+
+  const BusinessProfileModel({
+    this.businessLogo,
+    this.brandName,
+    this.location,
+    this.businessPhone,
+    this.businessSector,
+  });
+
+  @override
+  List<Object?> get props => [
+        businessLogo,
+        brandName,
+        location,
+        businessPhone,
+        businessSector,
+      ];
+}
+
 /// Entity profile untuk Superapp (dari endpoint /api/v1/user/partner/get-profile-mobile)
 /// Balance (saldo) TIDAK di-cache — selalu fresh dari API.
 /// Data statis (nama, foto, email) di-cache lokal via SharedPref.
@@ -51,10 +76,12 @@ class SuperappProfileModel extends Equatable {
   final int? isKomchat;
   final int? isKomtim;
   final String? accountStatus;
+  final bool? isKtpVerified;
 
   // Sub-data
   final List<ProductMailVerificationModel> productMailVerifications;
   final List<UserLevelModel> userLevels;
+  final BusinessProfileModel? businessProfile;
 
   const SuperappProfileModel({
     this.id,
@@ -79,8 +106,10 @@ class SuperappProfileModel extends Equatable {
     this.isKomchat,
     this.isKomtim,
     this.accountStatus,
+    this.isKtpVerified,
     this.productMailVerifications = const [],
     this.userLevels = const [],
+    this.businessProfile,
   });
 
   @override
@@ -107,7 +136,9 @@ class SuperappProfileModel extends Equatable {
         isKomchat,
         isKomtim,
         accountStatus,
+        isKtpVerified,
         productMailVerifications,
         userLevels,
+        businessProfile,
       ];
 }
