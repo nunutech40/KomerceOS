@@ -19,4 +19,10 @@ class ProductionConfig implements Config {
 
   @override
   String get baseUrlKomship => 'https://api-komship.komerce.id';
+
+  @override
+  String get baseUrlKomshipHiring => 'https://app.komerce.id';
+
+  @override
+  String get baseUrlBusinessLogoStorage => '$baseUrlKomshipHiring/storage';
 }
