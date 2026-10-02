@@ -204,6 +204,10 @@ import '../features/superapp/features/topup/bloc/check_qrcode_bloc.dart';
 import '../features/superapp/features/topup/bloc/create_invoice_bloc.dart';
 import '../features/superapp/features/topup/bloc/create_qrcode_bloc.dart';
 import '../features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
+import '../features/superapp/features/setting/bloc/setting_profile_bloc.dart';
+import '../features/superapp/features/setting/data/datasources/setting_profile_remote_datasource.dart';
+import '../features/superapp/features/setting/data/repositories/setting_profile_repository_impl.dart';
+import '../features/superapp/features/setting/domain/repositories/setting_profile_repository.dart';
 
 final locator = GetIt.instance;
 
@@ -327,6 +331,7 @@ Future<void> initDependencies() async {
         getInternalTeamsUseCase: locator(),
         getKomtimTeamsUseCase: locator(),
       ));
+  locator.registerFactory(() => SettingProfileBloc(repository: locator()));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -489,9 +494,16 @@ Future<void> initDependencies() async {
             remoteDataSource: locator(),
             sharedPreferences: locator.getAsync<SharedPreferences>(),
           ));
+  locator.registerLazySingleton<SuperappProfileRepository>(
+      () => locator<SuperappProfileRepositoryImpl>());
 
   locator.registerLazySingleton<NotificationV2Repository>(
       () => NotificationV2RepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<SettingProfileRepository>(
+      () => SettingProfileRepositoryImpl(
+            remote: locator(),
+            superappProfileRepository: locator(),
+          ));
   locator.registerLazySingleton<TeamRepository>(
       () => TeamRepositoryImpl(remoteDataSource: locator()));
 
@@ -573,6 +585,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<NotificationV2RemoteDataSource>(() =>
       NotificationV2RemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<SettingProfileRemoteDataSource>(
+      () => SettingProfileRemoteDataSourceImpl(client: locator()));
   locator.registerLazySingleton<TeamRemoteDataSource>(() =>
       TeamRemoteDataSourceImpl(client: locator(), responseParser: locator()));
 

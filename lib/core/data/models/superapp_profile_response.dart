@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../config/config.dart';
+
 import '../../domain/entities/superapp_profile_model.dart';
 
 class UserLevelResponse extends Equatable {
@@ -58,6 +60,75 @@ class ProductMailVerificationResponse extends Equatable {
   List<Object?> get props => [productName, isVerified];
 }
 
+class BusinessProfileResponse extends Equatable {
+  final String? businessLogo;
+  final String? brandName;
+  final String? location;
+  final String? businessPhone;
+  final String? businessSector;
+
+  const BusinessProfileResponse({
+    this.businessLogo,
+    this.brandName,
+    this.location,
+    this.businessPhone,
+    this.businessSector,
+  });
+
+  factory BusinessProfileResponse.fromJson(Map<String, dynamic> json) {
+    String? firstValue(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) return value;
+      }
+      return null;
+    }
+
+    final logo = firstValue(['business_logo', 'logo']);
+    final logoUri = logo == null ? null : Uri.tryParse(logo);
+    // Auth may return either a relative storage key or an absolute URL.
+    // Resolve relative keys against the flavor's public business-logo origin.
+    final logoUrl = logo == null || logoUri?.hasScheme == true
+        ? logo
+        : Uri.parse('${Config.instance.baseUrlBusinessLogoStorage}/')
+            .resolve(logo.replaceFirst(RegExp(r'^/+'), ''))
+            .toString();
+    return BusinessProfileResponse(
+      businessLogo: logoUrl,
+      brandName: firstValue(['brand_name']),
+      location: firstValue(['location', 'business_location']),
+      businessPhone:
+          firstValue(['business_phone', 'no_hp_business', 'pic_phone']),
+      businessSector: firstValue(['business_sector', 'partner_category_name']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'business_logo': businessLogo,
+        'brand_name': brandName,
+        'location': location,
+        'business_phone': businessPhone,
+        'business_sector': businessSector,
+      };
+
+  BusinessProfileModel toEntity() => BusinessProfileModel(
+        businessLogo: businessLogo,
+        brandName: brandName,
+        location: location,
+        businessPhone: businessPhone,
+        businessSector: businessSector,
+      );
+
+  @override
+  List<Object?> get props => [
+        businessLogo,
+        brandName,
+        location,
+        businessPhone,
+        businessSector,
+      ];
+}
+
 class SuperappProfileResponse extends Equatable {
   final int? id;
   final String? roleName;
@@ -81,8 +152,10 @@ class SuperappProfileResponse extends Equatable {
   final int? isKomchat;
   final int? isKomtim;
   final String? accountStatus;
+  final bool? isKtpVerified;
   final List<ProductMailVerificationResponse> productMailVerifications;
   final List<UserLevelResponse> userLevels;
+  final BusinessProfileResponse? businessProfile;
 
   const SuperappProfileResponse({
     this.id,
@@ -107,8 +180,10 @@ class SuperappProfileResponse extends Equatable {
     this.isKomchat,
     this.isKomtim,
     this.accountStatus,
+    this.isKtpVerified,
     this.productMailVerifications = const [],
     this.userLevels = const [],
+    this.businessProfile,
   });
 
   factory SuperappProfileResponse.fromJson(Map<String, dynamic> json) {
@@ -135,15 +210,21 @@ class SuperappProfileResponse extends Equatable {
       isKomchat: json['is_komchat'],
       isKomtim: json['is_komtim'],
       accountStatus: json['account_status'],
+      isKtpVerified: json['is_ktp_verified'],
       productMailVerifications: (json['product_mail_verifications'] as List?)
-              ?.map((e) =>
-                  ProductMailVerificationResponse.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => ProductMailVerificationResponse.fromJson(
+                  e as Map<String, dynamic>))
               .toList() ??
           [],
       userLevels: (json['user_levels'] as List?)
-              ?.map((e) => UserLevelResponse.fromJson(e as Map<String, dynamic>))
+              ?.map(
+                  (e) => UserLevelResponse.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      businessProfile: json['business_profile'] is Map<String, dynamic>
+          ? BusinessProfileResponse.fromJson(
+              json['business_profile'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -170,9 +251,11 @@ class SuperappProfileResponse extends Equatable {
         'is_komchat': isKomchat,
         'is_komtim': isKomtim,
         'account_status': accountStatus,
+        'is_ktp_verified': isKtpVerified,
         'product_mail_verifications':
             productMailVerifications.map((e) => e.toJson()).toList(),
         'user_levels': userLevels.map((e) => e.toJson()).toList(),
+        'business_profile': businessProfile?.toJson(),
       };
 
   /// Parse dari cache lokal (saldo akan null — perlu di-fetch dari API)
@@ -200,15 +283,21 @@ class SuperappProfileResponse extends Equatable {
       isKomchat: json['is_komchat'],
       isKomtim: json['is_komtim'],
       accountStatus: json['account_status'],
+      isKtpVerified: json['is_ktp_verified'],
       productMailVerifications: (json['product_mail_verifications'] as List?)
-              ?.map((e) =>
-                  ProductMailVerificationResponse.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => ProductMailVerificationResponse.fromJson(
+                  e as Map<String, dynamic>))
               .toList() ??
           [],
       userLevels: (json['user_levels'] as List?)
-              ?.map((e) => UserLevelResponse.fromJson(e as Map<String, dynamic>))
+              ?.map(
+                  (e) => UserLevelResponse.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      businessProfile: json['business_profile'] is Map<String, dynamic>
+          ? BusinessProfileResponse.fromJson(
+              json['business_profile'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -236,9 +325,11 @@ class SuperappProfileResponse extends Equatable {
       isKomchat: isKomchat,
       isKomtim: isKomtim,
       accountStatus: accountStatus,
+      isKtpVerified: isKtpVerified,
       productMailVerifications:
           productMailVerifications.map((e) => e.toEntity()).toList(),
       userLevels: userLevels.map((e) => e.toEntity()).toList(),
+      businessProfile: businessProfile?.toEntity(),
     );
   }
 
@@ -266,7 +357,9 @@ class SuperappProfileResponse extends Equatable {
         isKomchat,
         isKomtim,
         accountStatus,
+        isKtpVerified,
         productMailVerifications,
         userLevels,
+        businessProfile,
       ];
 }
