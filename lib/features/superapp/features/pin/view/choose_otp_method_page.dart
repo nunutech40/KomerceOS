@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:komtim_partner/common/enum_status.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_button.dart';
 import 'package:komtim_partner/common/global/router/app_router.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 import 'package:komtim_partner/common/string.dart';
@@ -11,7 +12,7 @@ import 'package:komtim_partner/common/utils/loading/loading_overlay.dart';
 import 'package:komtim_partner/features/superapp/features/pin/bloc/pin_bloc.dart';
 
 /// Halaman pemilih metode OTP untuk flow lupa PIN.
-/// Saat ini hanya email yang tersedia — kartu WA dinonaktifkan.
+/// Saat ini metode verifikasi yang tersedia hanya email.
 class ChooseOtpMethodPage extends StatefulWidget {
   final String? email;
   final String? invoiceId;
@@ -124,8 +125,23 @@ class _ChooseOtpMethodPageState extends State<ChooseOtpMethodPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24.0),
-                    InkWell(onTap: _requestOtp, child: _buildEmailCard(email)),
+                    _buildEmailCard(email),
                   ],
+                ),
+              ),
+              bottomNavigationBar: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: DsButton(
+                    text: 'Kirim OTP',
+                    onPressed: _requestOtp,
+                    state: isLoading
+                        ? DsButtonState.loading
+                        : email.isEmpty
+                            ? DsButtonState.disabled
+                            : DsButtonState.enabled,
+                  ),
                 ),
               ),
             ),
@@ -163,40 +179,6 @@ class _ChooseOtpMethodPageState extends State<ChooseOtpMethodPage> {
                 const SizedBox(height: 4.0),
                 Text("${Strings.label_otp_via_email_desc} ${maskEmail(email)}",
                     style: AppTypography.regular12Grey737373),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWhatsappCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: lightGray,
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 40,
-            height: 40,
-            child: Icon(Icons.chat_bubble_outline, color: inActiveGray),
-          ),
-          const SizedBox(width: 12.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(Strings.label_via_whatsapp,
-                    style:
-                        AppTypography.semiBold14.copyWith(color: inActiveGray)),
-                const SizedBox(height: 4.0),
-                const Text(Strings.label_otp_via_wa_desc,
-                    style: AppTypography.regular12Grey),
               ],
             ),
           ),

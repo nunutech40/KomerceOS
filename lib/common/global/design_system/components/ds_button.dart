@@ -11,6 +11,7 @@ enum DsButtonState {
 class DsButton extends StatelessWidget {
   final String text;
   final String? loadingText;
+  final TextStyle? loadingTextStyle;
   final VoidCallback onPressed;
   final Widget? leftIcon;
   final bool colorIcon;
@@ -22,6 +23,7 @@ class DsButton extends StatelessWidget {
     required this.onPressed,
     this.state = DsButtonState.enabled,
     this.loadingText,
+    this.loadingTextStyle,
     this.leftIcon,
     this.colorIcon = true,
     super.key,
@@ -82,12 +84,17 @@ class DsButton extends StatelessWidget {
               // PERBAIKAN 2: Gunakan token AppSpacing
               const SizedBox(width: AppSpacing.sm), // Ganti angka 8
             ],
-            Text(
-              isLoading && loadingText != null ? loadingText! : text,
-              // PERBAIKAN 3: Gunakan token AppTypography
-              style: AppTypography.headingXxs.copyWith(
-                color: textColor,
-              ), // Ganti manual TextStyle
+            Flexible(
+              child: Text(
+                isLoading && loadingText != null ? loadingText! : text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                // PERBAIKAN 3: Gunakan token AppTypography
+                style: (isLoading && loadingTextStyle != null
+                        ? loadingTextStyle!
+                        : AppTypography.headingXxs)
+                    .copyWith(color: textColor),
+              ),
             ),
           ],
         ),

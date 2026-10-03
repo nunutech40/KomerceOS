@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -37,6 +39,7 @@ class DsOtpField extends StatefulWidget {
     this.isEnabled = true,
     this.autoFocus = false,
     this.obscureText = true,
+    this.centerInputGroups = false,
     this.length = 6,
   }) : assert(length == 6, 'DsOtpField currently only supports length = 6');
 
@@ -63,6 +66,10 @@ class DsOtpField extends StatefulWidget {
   /// Defaults to true (PIN-style, initially hidden).
   final bool obscureText;
 
+  /// Center the six boxes independently of the trailing visibility icon.
+  /// Useful when the entire field must align with centered headings.
+  final bool centerInputGroups;
+
   /// Number of OTP digits. Must be 6.
   final int length;
 
@@ -73,11 +80,12 @@ class DsOtpField extends StatefulWidget {
 class _DsOtpFieldState extends State<DsOtpField> {
   /// Natural digit-box size (width = height). The whole row is wrapped in a
   /// FittedBox so it scales down proportionally on narrow screens.
-  static const double _boxSize = 44.0;
+  static const double _boxSize = 32.0;
 
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
   late final List<FocusNode> _keyboardNodes;
+  Timer? _autofocusRetry;
 
   /// Internal show/hide state — only relevant when [DsOtpField.obscureText]
   /// is true. Defaults to hidden (masked).
@@ -100,10 +108,24 @@ class _DsOtpFieldState extends State<DsOtpField> {
     if (widget.controller != null && widget.controller!.text.isNotEmpty) {
       _syncFromParent();
     }
+
+    if (widget.autoFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _focusNodes.first.requestFocus();
+        // Route dari bottom sheet masih bertransisi pada frame pertama.
+        _autofocusRetry = Timer(const Duration(milliseconds: 350), () {
+          if (mounted && !_focusNodes.any((node) => node.hasFocus)) {
+            _focusNodes.first.requestFocus();
+          }
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
+    _autofocusRetry?.cancel();
     // Bersihkan listener saat komponen dihancurkan
     widget.controller?.removeListener(_syncFromParent);
 
@@ -214,49 +236,28 @@ class _DsOtpFieldState extends State<DsOtpField> {
         // saat layar terlalu sempit — menjamin tidak ada right overflow.
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // --- First group (indices 0, 1, 2) ---
-              _buildGroup(0, 3),
-
-              // --- Dash separator ---
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: SizedBox(
-                  width: 16,
-                  child: Divider(
-                    color: AppColors.grey400,
-                    thickness: 2,
+          child: widget.centerInputGroups && widget.obscureText
+              ? SizedBox(
+                  width: 316,
+                  height: _boxSize + 8,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      _buildInputGroups(),
+                      Positioned(right: 0, child: _buildVisibilityButton()),
+                    ],
                   ),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildInputGroups(),
+                    if (widget.obscureText) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      _buildVisibilityButton(),
+                    ],
+                  ],
                 ),
-              ),
-
-              // --- Second group (indices 3, 4, 5) ---
-              _buildGroup(3, 6),
-
-              // --- Show / hide toggle (eye icon) ---
-              if (widget.obscureText) ...[
-                const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  onPressed: widget.isEnabled ? _toggleObscure : null,
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 32, minHeight: 32),
-                  icon: Icon(
-                    _isObscured
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 24,
-                    color: widget.isEnabled
-                        ? AppColors.grey600
-                        : AppColors.grey400,
-                  ),
-                ),
-              ],
-            ],
-          ),
         ),
 
         // --- Error text ---
@@ -276,6 +277,35 @@ class _DsOtpFieldState extends State<DsOtpField> {
     );
   }
 
+  Widget _buildInputGroups() => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildGroup(0, 3),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            child: SizedBox(
+              width: 12,
+              child: Divider(color: AppColors.grey400, thickness: 2),
+            ),
+          ),
+          _buildGroup(3, 6),
+        ],
+      );
+
+  Widget _buildVisibilityButton() => IconButton(
+        onPressed: widget.isEnabled ? _toggleObscure : null,
+        visualDensity: VisualDensity.compact,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+        icon: Icon(
+          _isObscured
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          size: 20,
+          color: widget.isEnabled ? AppColors.grey600 : AppColors.grey400,
+        ),
+      );
+
   /// Builds a group of OTP digit boxes wrapped in a single rounded container.
   Widget _buildGroup(int startIndex, int endIndex) {
     return Container(
@@ -284,7 +314,7 @@ class _DsOtpFieldState extends State<DsOtpField> {
           color: AppColors.grey300,
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -330,13 +360,13 @@ class _DsOtpFieldState extends State<DsOtpField> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft:
-                  Radius.circular(isGroupStart ? AppRadius.lg : AppRadius.sm),
+                  Radius.circular(isGroupStart ? AppRadius.md : AppRadius.sm),
               bottomLeft:
-                  Radius.circular(isGroupStart ? AppRadius.lg : AppRadius.sm),
+                  Radius.circular(isGroupStart ? AppRadius.md : AppRadius.sm),
               topRight:
-                  Radius.circular(isGroupEnd ? AppRadius.lg : AppRadius.sm),
+                  Radius.circular(isGroupEnd ? AppRadius.md : AppRadius.sm),
               bottomRight:
-                  Radius.circular(isGroupEnd ? AppRadius.lg : AppRadius.sm),
+                  Radius.circular(isGroupEnd ? AppRadius.md : AppRadius.sm),
             ),
             border: Border.all(
               color: hasFocus ? AppColors.borderColor : AppColors.transparent,
