@@ -2,6 +2,19 @@ import 'package:equatable/equatable.dart';
 import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart';
 
 final RegExp _phoneNumberPattern = RegExp(r'^\+?[0-9]{8,15}$');
+final RegExp _fullNamePattern = RegExp(r'^[\p{L} ]+$', unicode: true);
+
+bool isValidProfileName(String value) {
+  final name = value.trim();
+  return name.length >= 3 &&
+      name.length <= 60 &&
+      _fullNamePattern.hasMatch(name);
+}
+
+bool isValidProfileAddress(String value) {
+  final address = value.trim();
+  return address.isNotEmpty && address.length <= 255;
+}
 
 /// API menerima nomor 8–15 digit, dengan awalan `+` opsional.
 bool isValidPhoneNumber(String value) =>
@@ -161,10 +174,7 @@ class SettingProfile extends Equatable {
       );
 
   bool get isAccountValid =>
-      fullName.trim().isNotEmpty &&
-      username.trim().isNotEmpty &&
-      email.trim().isNotEmpty &&
-      isValidPhoneNumber(phone);
+      isValidProfileName(fullName) && isValidProfileAddress(address);
 
   bool get isBusinessValid =>
       businessName.trim().isNotEmpty &&

@@ -34,7 +34,6 @@ class SettingProfileBloc
     final profile = event.profile;
     if (state.saving) {
       _pendingGlobalProfile = profile;
-      emit(state.copyWith(accountReadOnly: profile.isKtpVerified == true));
       return;
     }
     _syncGlobalProfile(profile, emit);
@@ -44,8 +43,11 @@ class SettingProfileBloc
       SuperappProfileModel profile, Emitter<SettingProfileState> emit) {
     final fresh = SettingProfile.fromGlobalProfile(profile);
     var draft = state.draft.mergeRefresh(fresh, state.original);
-    final readOnly = profile.isKtpVerified == true;
-    if (readOnly) draft = draft.withAccountFrom(fresh);
+    draft = draft.copyWith(
+      username: fresh.username,
+      phone: fresh.phone,
+      email: fresh.email,
+    );
     final logoChanged = state.logoStatus != BusinessLogoStatus.ready &&
         fresh.logoUrl != null &&
         fresh.logoUrl != _logoUrlBeforeUpload;
@@ -57,7 +59,6 @@ class SettingProfileBloc
       original: fresh,
       draft: draft,
       loading: false,
-      accountReadOnly: readOnly,
       logoStatus: logoChanged ? BusinessLogoStatus.ready : state.logoStatus,
       message: null,
     ));
@@ -152,9 +153,11 @@ class SettingProfileBloc
       _logoUrlBeforeUpload = null;
     }
     emit(state.copyWith(
-        draft: state.accountReadOnly
-            ? event.draft.withAccountFrom(state.original)
-            : event.draft,
+        draft: event.draft.copyWith(
+          username: state.original.username,
+          phone: state.original.phone,
+          email: state.original.email,
+        ),
         logoStatus:
             selectedAnotherLogo ? BusinessLogoStatus.ready : state.logoStatus));
   }
@@ -176,7 +179,7 @@ class SettingProfileBloc
             : state.logoStatus,
         message: null));
     try {
-      if (saveAccount && !state.accountReadOnly) {
+      if (saveAccount) {
         final saved = await repository.updateAccount(draft);
         updated = true;
         if (isClosed) return;
@@ -231,7 +234,7 @@ class SettingProfileBloc
       Emitter<SettingProfileState> emit) async {
     if (state.saving ||
         state.loading ||
-        (account && (state.accountReadOnly || !state.draft.isAccountValid)) ||
+        (account && !state.draft.isAccountValid) ||
         (!account && !state.draft.isBusinessValid)) {
       return;
     }

@@ -10,34 +10,29 @@ import 'profile_section_fields.dart';
 class SectionName extends StatelessWidget {
   final SettingProfile profile;
   final ValueChanged<String> onNameChanged;
-  final ValueChanged<String>? onUsernameChanged;
-  final bool readOnly;
+  final VoidCallback onReadOnlyTap;
   const SectionName(
       {super.key,
       required this.profile,
       required this.onNameChanged,
-      this.onUsernameChanged,
-      this.readOnly = false});
+      required this.onReadOnlyTap});
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const ProfileSectionHeading('Profile'),
         ProfileFormCard(children: [
-          readOnly
-              ? ProfileReadonlyField(
-                  label: 'Nama Lengkap', value: profile.fullName)
-              : ProfileTextField(
-                  label: 'Nama Lengkap',
-                  value: profile.fullName,
-                  hint: 'Nama Lengkap',
-                  onChanged: onNameChanged),
-          readOnly
-              ? ProfileReadonlyField(label: 'Username', value: profile.username)
-              : ProfileTextField(
-                  label: 'Username',
-                  value: profile.username,
-                  hint: 'Username',
-                  onChanged: onUsernameChanged ?? (_) {})
+          ProfileTextField(
+              label: 'Nama Lengkap',
+              value: profile.fullName,
+              hint: 'Nama Lengkap',
+              maxLength: 60,
+              requiredField: true,
+              validator: (value) => isValidProfileName(value ?? '')
+                  ? null
+                  : 'Nama harus 3–60 karakter dan hanya huruf',
+              onChanged: onNameChanged),
+          ProfileReadonlyField(
+              label: 'Username', value: profile.username, onTap: onReadOnlyTap)
         ])
       ]);
 }
@@ -65,57 +60,34 @@ class SectionGender extends StatelessWidget {
 class SectionContacts extends StatelessWidget {
   final SettingProfile profile;
   final VoidCallback onTap;
-  final bool readOnly;
-  final ValueChanged<String>? onPhoneChanged, onEmailChanged;
   const SectionContacts(
-      {super.key,
-      required this.profile,
-      required this.onTap,
-      this.onPhoneChanged,
-      this.onEmailChanged,
-      this.readOnly = false});
+      {super.key, required this.profile, required this.onTap});
   @override
   Widget build(BuildContext context) => ProfileFormCard(children: [
-        readOnly
-            ? ProfileReadonlyField(
-                label: 'No. HP', value: profile.phone, onTap: onTap)
-            : ProfileTextField(
-                label: 'No. HP',
-                value: profile.phone,
-                hint: 'No. HP',
-                phone: true,
-                onChanged: onPhoneChanged ?? (_) {}),
-        readOnly
-            ? ProfileReadonlyField(
-                label: 'Email', value: profile.email, onTap: onTap)
-            : ProfileTextField(
-                label: 'Email',
-                value: profile.email,
-                hint: 'Email',
-                onChanged: onEmailChanged ?? (_) {})
+        ProfileReadonlyField(
+            label: 'No. HP', value: profile.phone, onTap: onTap),
+        ProfileReadonlyField(label: 'Email', value: profile.email, onTap: onTap)
       ]);
 }
 
 class SectionAddress extends StatelessWidget {
   final SettingProfile profile;
   final ValueChanged<String> onChanged;
-  final bool readOnly;
   const SectionAddress(
-      {super.key,
-      required this.profile,
-      required this.onChanged,
-      this.readOnly = false});
+      {super.key, required this.profile, required this.onChanged});
   @override
   Widget build(BuildContext context) => ProfileFormCard(children: [
-        readOnly
-            ? ProfileReadonlyField(
-                label: 'Alamat Lengkap', value: profile.address)
-            : ProfileTextField(
-                label: 'Alamat Lengkap',
-                value: profile.address,
-                hint: 'Masukkan Alamat',
-                onChanged: onChanged,
-                lines: 4)
+        ProfileTextField(
+            label: 'Alamat Lengkap',
+            value: profile.address,
+            hint: 'Masukkan Alamat',
+            onChanged: onChanged,
+            maxLength: 255,
+            requiredField: true,
+            validator: (value) => isValidProfileAddress(value ?? '')
+                ? null
+                : 'Alamat harus 1–255 karakter',
+            lines: 4)
       ]);
 }
 

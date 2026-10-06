@@ -43,6 +43,7 @@ class DsTextField extends StatelessWidget {
         minLines: lines,
         maxLines: lines,
         decoration: InputDecoration(
+          counterText: maxLength == null ? null : '',
           hintText: hintText,
           hintStyle:
               AppTypography.bodySmRegular.copyWith(color: AppColors.grey600),

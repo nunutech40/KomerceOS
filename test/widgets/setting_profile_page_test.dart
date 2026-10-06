@@ -22,6 +22,7 @@ const profile = SettingProfile(
     username: 'partner',
     phone: '081234567890',
     email: 'partner@example.com',
+    address: 'Alamat lama',
     gender: ProfileGender.male,
     businessName: 'Toko',
     businessPhone: '081234567890',
@@ -32,6 +33,7 @@ const superappProfile = SuperappProfileModel(
   username: 'partner',
   noHp: '081234567890',
   email: 'partner@example.com',
+  address: 'Alamat lama',
   gender: 1,
   businessProfile: BusinessProfileModel(
     brandName: 'Toko',
@@ -87,6 +89,7 @@ void main() {
     email: 'partner@example.com',
     gender: 1,
     isKtpVerified: true,
+    address: 'Alamat lama',
     businessProfile: BusinessProfileModel(
         brandName: 'Toko fresh',
         businessPhone: '089999999999',
@@ -114,6 +117,34 @@ void main() {
     controller.selection = const TextSelection.collapsed(offset: 3);
     await tester.pumpWidget(form('089999999999'));
     expect(controller.selection.baseOffset, 3);
+  });
+
+  testWidgets('only name and address are editable in personal profile',
+      (tester) async {
+    var readOnlyTaps = 0;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ListView(children: [
+          SectionName(
+            profile: profile,
+            onNameChanged: (_) {},
+            onReadOnlyTap: () => readOnlyTaps++,
+          ),
+          SectionContacts(
+            profile: profile,
+            onTap: () => readOnlyTaps++,
+          ),
+          SectionAddress(profile: profile, onChanged: (_) {}),
+        ]),
+      ),
+    ));
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.byKey(const ValueKey('Username')), findsNothing);
+    expect(find.byKey(const ValueKey('No. HP')), findsNothing);
+    expect(find.byKey(const ValueKey('Email')), findsNothing);
+    await tester.tap(find.text('partner').last);
+    await tester.tap(find.text('partner@example.com').last);
+    expect(readOnlyTaps, 2);
   });
 
   test('global refresh syncs business while retaining account edits', () async {
@@ -275,7 +306,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('verification locks account while retaining editable business draft',
+  test('KYC keeps editable fields and protects immutable account data',
       () async {
     final bloc = SettingProfileBloc(repository: FakeSettingProfileRepository());
     bloc.add(const SettingProfileGlobalLoaded(superappProfile));
@@ -284,14 +315,23 @@ void main() {
         .copyWith(fullName: 'Draft account', businessName: 'Draft shop'));
     await bloc.stream.firstWhere((s) => s.isDirty);
     bloc.add(const SettingProfileGlobalLoaded(refreshed));
-    await bloc.stream.firstWhere((s) => s.accountReadOnly);
-    expect(bloc.state.draft.fullName, 'Partner');
+    await bloc.stream.firstWhere((s) =>
+        s.draft.businessName == 'Draft shop' &&
+        s.original.businessName == 'Toko fresh');
+    expect(bloc.state.draft.fullName, 'Draft account');
     expect(bloc.state.draft.businessName, 'Draft shop');
     expect(bloc.state.canSave, true);
-    bloc.update(bloc.state.draft
-        .copyWith(fullName: 'Forbidden', businessName: 'New shop'));
+    bloc.update(bloc.state.draft.copyWith(
+        fullName: 'Allowed Name',
+        username: 'forbidden',
+        phone: '00000000',
+        email: 'forbidden@example.com',
+        businessName: 'New shop'));
     await bloc.stream.firstWhere((s) => s.draft.businessName == 'New shop');
-    expect(bloc.state.draft.fullName, 'Partner');
+    expect(bloc.state.draft.fullName, 'Allowed Name');
+    expect(bloc.state.draft.username, 'partner');
+    expect(bloc.state.draft.phone, '081234567890');
+    expect(bloc.state.draft.email, 'partner@example.com');
     await bloc.close();
   });
 
@@ -330,7 +370,7 @@ void main() {
     bloc.save();
     await bloc.stream.firstWhere((s) => s.saving);
     bloc.add(const SettingProfileGlobalLoaded(refreshed));
-    await bloc.stream.firstWhere((s) => s.accountReadOnly);
+    await Future<void>.delayed(Duration.zero);
     gate.complete();
     await bloc.stream
         .firstWhere((s) => s.draft.businessName == 'Toko fresh' && !s.saving);
@@ -350,12 +390,13 @@ void main() {
     expect(normalizePhoneNumber('+62 812-3456-7890'), '+6281234567890');
   });
 
-  test('account phone must meet the same requirement as business phone', () {
+  test('read-only account phone does not block editable profile save', () {
     const invalidAccountPhone = SettingProfile(
-      fullName: 'Partner',
+      fullName: 'Partner Baru',
       username: 'partner',
       phone: 'invalid',
       email: 'partner@example.com',
+      address: 'Jl. Mawar 2',
     );
     const invalidBusinessPhone = SettingProfile(
       businessName: 'Toko',
@@ -363,8 +404,40 @@ void main() {
       location: ProfileOption(id: '1', label: 'Banyumas'),
     );
 
-    expect(invalidAccountPhone.isAccountValid, isFalse);
+    expect(invalidAccountPhone.isAccountValid, isTrue);
     expect(invalidBusinessPhone.isBusinessValid, isFalse);
+  });
+
+  test('nama dan alamat mengikuti batas acceptance criteria', () {
+    expect(isValidProfileName('An'), isFalse);
+    expect(isValidProfileName('Ana'), isTrue);
+    expect(isValidProfileName('Siti Nurmaliza'), isTrue);
+    expect(isValidProfileName('André'), isTrue);
+    expect(isValidProfileName('Nama2'), isFalse);
+    expect(isValidProfileName('Nama!'), isFalse);
+    expect(isValidProfileName('A' * 60), isTrue);
+    expect(isValidProfileName('A' * 61), isFalse);
+    expect(isValidProfileAddress('  '), isFalse);
+    expect(isValidProfileAddress('Jl. Mawar No. 2'), isTrue);
+    expect(isValidProfileAddress('A' * 255), isTrue);
+    expect(isValidProfileAddress('A' * 256), isFalse);
+  });
+
+  test('simpan nonaktif untuk nama atau alamat invalid', () async {
+    final bloc = SettingProfileBloc(repository: FakeSettingProfileRepository());
+    bloc.add(const SettingProfileGlobalLoaded(superappProfile));
+    await bloc.stream.firstWhere((s) => !s.loading);
+    bloc.update(bloc.state.draft.copyWith(fullName: 'A'));
+    await bloc.stream.firstWhere((s) => s.draft.fullName == 'A');
+    expect(bloc.state.canSave, isFalse);
+    bloc.update(
+        bloc.state.draft.copyWith(fullName: 'Nama Benar', address: ' '));
+    await bloc.stream.firstWhere((s) => s.draft.address == ' ');
+    expect(bloc.state.canSave, isFalse);
+    bloc.update(bloc.state.draft.copyWith(address: 'Alamat baru'));
+    await bloc.stream.firstWhere((s) => s.draft.address == 'Alamat baru');
+    expect(bloc.state.canSave, isTrue);
+    await bloc.close();
   });
 
   test('global refresh does not overwrite an unsaved draft', () async {

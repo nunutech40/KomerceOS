@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/DI/injection.dart';
 import '../data/services/profile_image_service.dart';
@@ -191,8 +192,19 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
             'Data ini hanya dapat diubah melalui Web Partner karena memerlukan verifikasi.',
         primaryButtonText: 'Buka Web Partner',
         onPrimaryPressed: () async {
-          Navigator.pop(context);
-          _message('Tautan Web Partner akan dihubungkan pada tahap integrasi.');
+          bool opened = false;
+          try {
+            opened = await launchUrl(Uri.parse('https://partner.komerce.id/'),
+                mode: LaunchMode.externalApplication);
+          } catch (_) {
+            // Keep the sheet open so the user can retry.
+          }
+          if (!mounted) return;
+          if (opened) {
+            Navigator.pop(context);
+          } else {
+            _message('Web Partner tidak dapat dibuka. Silakan coba lagi.');
+          }
         });
   }
 
@@ -225,30 +237,19 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                             children: [
                               SectionName(
                                   profile: p,
-                                  readOnly: state.accountReadOnly,
                                   onNameChanged: (v) => settingProfile
                                       .update(p.copyWith(fullName: v)),
-                                  onUsernameChanged: (v) => settingProfile
-                                      .update(p.copyWith(username: v))),
+                                  onReadOnlyTap: _contactInfo),
                               const SizedBox(height: AppSpacing.lg),
                               SectionGender(
                                   profile: p,
-                                  enabled:
-                                      !state.accountReadOnly && !_selecting,
+                                  enabled: !_selecting,
                                   onTap: () => _gender(p)),
                               const SizedBox(height: AppSpacing.lg),
-                              SectionContacts(
-                                  profile: p,
-                                  readOnly: state.accountReadOnly,
-                                  onTap: _contactInfo,
-                                  onPhoneChanged: (v) => settingProfile
-                                      .update(p.copyWith(phone: v)),
-                                  onEmailChanged: (v) => settingProfile
-                                      .update(p.copyWith(email: v))),
+                              SectionContacts(profile: p, onTap: _contactInfo),
                               const SizedBox(height: AppSpacing.lg),
                               SectionAddress(
                                   profile: p,
-                                  readOnly: state.accountReadOnly,
                                   onChanged: (v) => settingProfile
                                       .update(p.copyWith(address: v))),
                               const SizedBox(height: AppSpacing.xl),
