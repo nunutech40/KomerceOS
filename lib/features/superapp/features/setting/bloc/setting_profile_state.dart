@@ -10,8 +10,7 @@ class SettingProfileState extends Equatable {
       loadingSectors,
       saving,
       savingAccount,
-      savingBusiness,
-      accountReadOnly;
+      savingBusiness;
   final List<ProfileOption> locations, businessSectors;
   final BusinessLogoStatus logoStatus;
   final String? message;
@@ -24,7 +23,6 @@ class SettingProfileState extends Equatable {
       this.saving = false,
       this.savingAccount = false,
       this.savingBusiness = false,
-      this.accountReadOnly = false,
       this.locations = const [],
       this.businessSectors = const [],
       this.logoStatus = BusinessLogoStatus.ready,
@@ -38,7 +36,6 @@ class SettingProfileState extends Equatable {
         saving = false,
         savingAccount = false,
         savingBusiness = false,
-        accountReadOnly = false,
         locations = const [],
         businessSectors = const [],
         logoStatus = BusinessLogoStatus.ready,
@@ -46,9 +43,6 @@ class SettingProfileState extends Equatable {
   bool get isDirty => draft != original;
   bool get isAccountDirty =>
       original.fullName != draft.fullName ||
-      original.username != draft.username ||
-      original.phone != draft.phone ||
-      original.email != draft.email ||
       original.gender != draft.gender ||
       original.address != draft.address;
   bool get isBusinessDirty =>
@@ -59,7 +53,7 @@ class SettingProfileState extends Equatable {
       original.logoPath != draft.logoPath;
   bool get canSave =>
       isDirty &&
-      (!isAccountDirty || (!accountReadOnly && draft.isAccountValid)) &&
+      (!isAccountDirty || draft.isAccountValid) &&
       (!isBusinessDirty || draft.isBusinessValid) &&
       !saving &&
       !loading;
@@ -72,7 +66,6 @@ class SettingProfileState extends Equatable {
           bool? saving,
           bool? savingAccount,
           bool? savingBusiness,
-          bool? accountReadOnly,
           List<ProfileOption>? locations,
           List<ProfileOption>? businessSectors,
           BusinessLogoStatus? logoStatus,
@@ -86,7 +79,6 @@ class SettingProfileState extends Equatable {
           saving: saving ?? this.saving,
           savingAccount: savingAccount ?? this.savingAccount,
           savingBusiness: savingBusiness ?? this.savingBusiness,
-          accountReadOnly: accountReadOnly ?? this.accountReadOnly,
           locations: locations ?? this.locations,
           businessSectors: businessSectors ?? this.businessSectors,
           logoStatus: logoStatus ?? this.logoStatus,
@@ -101,7 +93,6 @@ class SettingProfileState extends Equatable {
         saving,
         savingAccount,
         savingBusiness,
-        accountReadOnly,
         locations,
         businessSectors,
         logoStatus,

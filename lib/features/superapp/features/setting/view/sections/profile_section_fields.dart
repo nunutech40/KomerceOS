@@ -10,6 +10,7 @@ class ProfileTextField extends StatefulWidget {
   final bool requiredField, phone, numeric;
   final int? maxLength;
   final int lines;
+  final String? Function(String?)? validator;
   const ProfileTextField(
       {super.key,
       required this.label,
@@ -20,7 +21,8 @@ class ProfileTextField extends StatefulWidget {
       this.maxLength,
       this.lines = 1,
       this.phone = false,
-      this.numeric = false});
+      this.numeric = false,
+      this.validator});
 
   @override
   State<ProfileTextField> createState() => _ProfileTextFieldState();
@@ -82,6 +84,8 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
                   : null,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (text) {
+            final fieldError = widget.validator?.call(text);
+            if (fieldError != null) return fieldError;
             if (widget.requiredField && (text == null || text.trim().isEmpty)) {
               return 'Wajib diisi';
             }

@@ -108,6 +108,24 @@ void main() {
     expect(result.logoUrl, 'https://example.com/logo.jpg');
   });
 
+  test('personal profile update uses the shared Super App endpoint', () async {
+    await repository.updateAccount(const SettingProfile(
+      fullName: 'Siti Nurmaliza',
+      username: 'siti',
+      phone: '081234567890',
+      email: 'siti@example.com',
+      address: 'Jl. Mawar No. 2',
+      gender: ProfileGender.female,
+    ));
+    final request = adapter.request!;
+    final body = latin1.decode(adapter.bytes);
+    expect(request.method, 'PUT');
+    expect(request.path, Endpoints.superappUpdateUserProfile);
+    expect(body, contains('name="full_name"\r\n\r\nSiti Nurmaliza'));
+    expect(body, contains('name="address"\r\n\r\nJl. Mawar No. 2'));
+    expect(body, contains('name="gender"\r\n\r\n2'));
+  });
+
   test('global parser supports the field names returned by the dev GET API',
       () {
     final globalProfile = SuperappProfileResponse.fromJson(const {
