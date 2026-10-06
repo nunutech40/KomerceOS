@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../features/pin/view/pop_up_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/view/pop_up_page.dart';
 
 mixin PopUpPin {
   void showPopUpNotYetSetPin(

@@ -14,20 +14,22 @@ class CreateQrcodeResponse {
   });
 
   factory CreateQrcodeResponse.fromJson(Map<String, dynamic> json) {
-    final dataJson = json['data'] as Map<String, dynamic>? ?? {};
+    // DioResponseParser may pass the full envelope or just the 'data' object.
+    // If json contains 'data' as a Map, use it; otherwise treat json itself as data.
+    final dataJson = (json['data'] is Map<String, dynamic>)
+        ? json['data'] as Map<String, dynamic>
+        : json;
     return CreateQrcodeResponse(
-      status: json['status'],
-      code: json['code'],
-      message: json['message'],
+      status: json['status']?.toString(),
+      code: json['code'] is int ? json['code'] : null,
+      message: json['message']?.toString(),
       data: CreateQrcodeModel(
         id: (dataJson['id'] ??
                 dataJson['qr_xendit_id'] ??
                 dataJson['xendit_id'] ??
                 dataJson['external_id'] ??
                 dataJson['qr_id'] ??
-                dataJson['reference_id'] ??
-                json['id'] ??
-                json['qr_xendit_id'])
+                dataJson['reference_id'])
             ?.toString(),
         channelCode: dataJson['channel_code']?.toString(),
         amount: dataJson['amount'] != null

@@ -14,7 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../myapp/view/my_app_page.dart';
 import '../widget/setting_menu_item.dart';
-import 'setting_profile_page.dart';
+import 'setting_account_page.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
@@ -156,7 +156,7 @@ class SettingPage extends StatelessWidget {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const SettingProfilePage()));
+                                  builder: (_) => const SettingAccountPage()));
                         },
                       ),
                       const Padding(

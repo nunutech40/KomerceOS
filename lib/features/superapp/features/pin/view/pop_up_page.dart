@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-import '../../../common/global/widgets/custom_button.dart';
-import '../../../common/styles.dart';
+import 'package:komtim_partner/common/global/widgets/custom_button.dart';
+import 'package:komtim_partner/common/styles.dart';
 
 void showBottomSheetCustomNotif({
   required BuildContext context,

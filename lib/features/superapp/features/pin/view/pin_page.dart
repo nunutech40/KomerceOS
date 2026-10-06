@@ -11,10 +11,10 @@ import 'package:komtim_partner/common/global/widgets/custom_toast.dart';
 import 'package:komtim_partner/common/string.dart';
 import 'package:komtim_partner/common/styles.dart';
 
-import '../../../DI/injection.dart';
-import '../../../common/enum_status.dart';
-import '../../../common/utils/loading/loading_overlay.dart';
-import '../../../core/data/shared/payload.dart';
+import 'package:komtim_partner/DI/injection.dart';
+import 'package:komtim_partner/common/enum_status.dart';
+import 'package:komtim_partner/common/utils/loading/loading_overlay.dart';
+import 'package:komtim_partner/core/data/shared/payload.dart';
 import '../bloc/pin_bloc.dart';
 
 enum PinPageType { setPin, confirmPin, verifyPin, updatePin }

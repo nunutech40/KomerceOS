@@ -6,7 +6,45 @@ import 'package:komtim_partner/common/global/design_system/components/ds_otp_fie
 
 void main() {
   group('DsOtpField Component Tests', () {
-    
+    testWidgets('Ukuran bawaan sesuai PIN dan autofocus membuka digit pertama',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(body: Center(child: DsOtpField(autoFocus: true))),
+      ));
+      await tester.pump();
+
+      expect(tester.getSize(find.byType(AnimatedContainer).first).width, 32);
+      expect(
+        tester
+            .widget<TextField>(find.byType(TextField).first)
+            .focusNode
+            ?.hasFocus,
+        isTrue,
+      );
+    });
+
+    testWidgets('enam kotak tetap di tengah saat ada ikon mata',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(720, 1600);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(const MaterialApp(
+        home:
+            Scaffold(body: Center(child: DsOtpField(centerInputGroups: true))),
+      ));
+      final digitBoxes = find.byType(AnimatedContainer);
+      final boxesCenter = (tester.getCenter(digitBoxes.first).dx +
+              tester.getCenter(digitBoxes.last).dx) /
+          2;
+      expect(boxesCenter, closeTo(180, 1));
+      expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+      final lastBoxRight = tester.getRect(digitBoxes.last).right;
+      final eyeLeft =
+          tester.getRect(find.byIcon(Icons.visibility_off_outlined)).left;
+      expect(eyeLeft - lastBoxRight, greaterThanOrEqualTo(12));
+    });
+
     Widget buildTestableWidget(Widget widget) {
       return MaterialApp(
         home: Scaffold(
@@ -15,7 +53,8 @@ void main() {
       );
     }
 
-    testWidgets('State Default: Harus merender 6 kotak input dan divider', (WidgetTester tester) async {
+    testWidgets('State Default: Harus merender 6 kotak input dan divider',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const DsOtpField(),
@@ -24,15 +63,17 @@ void main() {
 
       // Verifikasi terdapat 6 TextField yang melambangkan 6 digit OTP
       expect(find.byType(TextField), findsNWidgets(6));
-      
+
       // Verifikasi divider (pemisah 3-3) dirender
       expect(find.byType(Divider), findsOneWidget);
-      
+
       // Verifikasi tidak ada error di awal
       expect(find.text('OTP Salah'), findsNothing);
     });
 
-    testWidgets('Visual Error: Harus menampilkan pesan errorText jika parameter diisi', (WidgetTester tester) async {
+    testWidgets(
+        'Visual Error: Harus menampilkan pesan errorText jika parameter diisi',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const DsOtpField(
@@ -45,7 +86,9 @@ void main() {
       expect(find.text('Kode OTP tidak valid'), findsOneWidget);
     });
 
-    testWidgets('Interaksi Input: Ketikan harus berpindah fokus dan memicu onChanged & onCompleted', (WidgetTester tester) async {
+    testWidgets(
+        'Interaksi Input: Ketikan harus berpindah fokus dan memicu onChanged & onCompleted',
+        (WidgetTester tester) async {
       String lastChangedValue = '';
       String completedValue = '';
 
@@ -79,10 +122,13 @@ void main() {
 
       // Verifikasi hasil akhir
       expect(lastChangedValue, '123456');
-      expect(completedValue, '123456'); // onCompleted harus terpanggil karena sudah 6 digit
+      expect(completedValue,
+          '123456'); // onCompleted harus terpanggil karena sudah 6 digit
     });
 
-    testWidgets('Interaksi Paste: Paste 6 digit harus otomatis terdistribusi ke semua kotak', (WidgetTester tester) async {
+    testWidgets(
+        'Interaksi Paste: Paste 6 digit harus otomatis terdistribusi ke semua kotak',
+        (WidgetTester tester) async {
       String completedValue = '';
 
       await tester.pumpWidget(
@@ -99,13 +145,16 @@ void main() {
 
       // Verifikasi string terdistribusi dan memicu onCompleted
       expect(completedValue, '987654');
-      
+
       // Verifikasi kotak terakhir memegang angka '4'
-      final lastTextField = tester.widget<TextField>(find.byType(TextField).last);
+      final lastTextField =
+          tester.widget<TextField>(find.byType(TextField).last);
       expect(lastTextField.controller?.text, '4');
     });
 
-    testWidgets('Interaksi Backspace: Harus menghapus kotak sebelumnya dan mundur', (WidgetTester tester) async {
+    testWidgets(
+        'Interaksi Backspace: Harus menghapus kotak sebelumnya dan mundur',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const DsOtpField(),
@@ -132,7 +181,9 @@ void main() {
       expect(firstTextField.controller?.text, isEmpty);
     });
 
-    testWidgets('Sinkronisasi Parent (Controlled State): Clear controller dari luar harus mengosongkan semua kotak', (WidgetTester tester) async {
+    testWidgets(
+        'Sinkronisasi Parent (Controlled State): Clear controller dari luar harus mengosongkan semua kotak',
+        (WidgetTester tester) async {
       final parentController = TextEditingController(text: '123456');
 
       await tester.pumpWidget(
@@ -144,7 +195,8 @@ void main() {
       );
 
       // Pastikan data inisial dari parent masuk ke anak (kotak pertama harus '1')
-      var firstTextField = tester.widget<TextField>(find.byType(TextField).first);
+      var firstTextField =
+          tester.widget<TextField>(find.byType(TextField).first);
       expect(firstTextField.controller?.text, '1');
 
       // AKSI: Parent membersihkan input (seperti klik tombol "Kirim Ulang OTP")

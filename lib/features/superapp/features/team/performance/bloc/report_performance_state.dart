@@ -11,12 +11,16 @@ class ReportPerformanceState extends Equatable {
   final List<ReportPerformanceModel>? reportPerformance;
   final List<ReportPerformanceWeeklyModel>? reportPerformanceWeekly;
   final List<ReportPerformanceMonthlyModel> reportPerformanceMonthly;
+  final List<ReportPerformanceModel> reportPerformanceMonthlyDetail;
+  final bool reportPerformanceMonthlyDetailHasMore;
   final List<ReportPerformanceProductModel> reportPerformanceProduct;
   const ReportPerformanceState({
     this.status = RequestStatus.dataExhausted,
     this.reportPerformance = const [],
     this.reportPerformanceWeekly = const [],
     this.reportPerformanceMonthly = const [],
+    this.reportPerformanceMonthlyDetail = const [],
+    this.reportPerformanceMonthlyDetailHasMore = false,
     this.reportPerformanceProduct = const [],
     this.message = '',
   });
@@ -26,6 +30,8 @@ class ReportPerformanceState extends Equatable {
     List<ReportPerformanceModel>? reportPerformance,
     List<ReportPerformanceWeeklyModel>? reportPerformanceWeekly,
     List<ReportPerformanceMonthlyModel>? reportPerformanceMonthly,
+    List<ReportPerformanceModel>? reportPerformanceMonthlyDetail,
+    bool? reportPerformanceMonthlyDetailHasMore,
     List<ReportPerformanceProductModel>? reportPerformanceProduct,
     String? message,
   }) {
@@ -36,6 +42,11 @@ class ReportPerformanceState extends Equatable {
           reportPerformanceWeekly ?? this.reportPerformanceWeekly,
       reportPerformanceMonthly:
           reportPerformanceMonthly ?? this.reportPerformanceMonthly,
+      reportPerformanceMonthlyDetail:
+          reportPerformanceMonthlyDetail ?? this.reportPerformanceMonthlyDetail,
+      reportPerformanceMonthlyDetailHasMore:
+          reportPerformanceMonthlyDetailHasMore ??
+              this.reportPerformanceMonthlyDetailHasMore,
       reportPerformanceProduct:
           reportPerformanceProduct ?? this.reportPerformanceProduct,
       message: message ?? this.message,
@@ -48,6 +59,8 @@ class ReportPerformanceState extends Equatable {
         reportPerformance,
         reportPerformanceWeekly,
         reportPerformanceMonthly,
+        reportPerformanceMonthlyDetail,
+        reportPerformanceMonthlyDetailHasMore,
         reportPerformanceProduct,
         message,
       ];

@@ -92,12 +92,7 @@ class _TopupFlowManagerState extends State<TopupFlowManager> {
                   _showLoading();
                 } else if (expireState is ExpireQrcodeSuccess) {
                   _hideLoading();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TopupPage(),
-                    ),
-                  );
+                  Navigator.of(context).pop(); // Kembali ke Home
                 } else if (expireState is ExpireQrcodeError) {
                   _hideLoading();
                   if (!expireState.isServerError) {
@@ -114,12 +109,7 @@ class _TopupFlowManagerState extends State<TopupFlowManager> {
                   _showLoading();
                 } else if (expireState is ExpireInvoiceSuccess) {
                   _hideLoading();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TopupPage(),
-                    ),
-                  );
+                  Navigator.of(context).pop(); // Kembali ke Home
                 } else if (expireState is ExpireInvoiceError) {
                   _hideLoading();
                   if (!expireState.isServerError) {

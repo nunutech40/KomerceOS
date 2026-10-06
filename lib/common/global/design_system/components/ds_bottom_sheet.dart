@@ -10,6 +10,7 @@ import 'ds_button.dart';
 
 class DsBottomSheet extends StatelessWidget {
   final String title;
+  final TextStyle? titleStyle;
   final String description;
   final Widget? image;
   final String primaryButtonText;
@@ -30,6 +31,7 @@ class DsBottomSheet extends StatelessWidget {
   const DsBottomSheet({
     super.key,
     required this.title,
+    this.titleStyle,
     required this.description,
     required this.primaryButtonText,
     required this.onPrimaryPressed,
@@ -50,6 +52,7 @@ class DsBottomSheet extends StatelessWidget {
   static Future<T?> show<T>({
     required BuildContext context,
     required String title,
+    TextStyle? titleStyle,
     required String description,
     required String primaryButtonText,
     required VoidCallback onPrimaryPressed,
@@ -60,6 +63,7 @@ class DsBottomSheet extends StatelessWidget {
     Color? secondaryButtonColor,
     VoidCallback? onClosePressed,
     bool isDismissible = true,
+    Color barrierColor = Colors.transparent,
   }) {
     return showModalBottomSheet<T>(
       context: context,
@@ -67,9 +71,10 @@ class DsBottomSheet extends StatelessWidget {
       enableDrag: isDismissible,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      barrierColor: Colors.transparent,
+      barrierColor: barrierColor,
       builder: (_) => DsBottomSheet(
         title: title,
+        titleStyle: titleStyle,
         description: description,
         primaryButtonText: primaryButtonText,
         onPrimaryPressed: onPrimaryPressed,
@@ -123,11 +128,15 @@ class DsBottomSheet extends StatelessWidget {
                   children: [
                     Align(
                       alignment: Alignment.center,
-                      child: Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: AppTypography.headingMd.copyWith(
-                          color: AppColors.grey900,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isDismissible ? 40 : 0,
+                        ),
+                        child: Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          style: (titleStyle ?? AppTypography.headingMd)
+                              .copyWith(color: AppColors.grey900),
                         ),
                       ),
                     ),

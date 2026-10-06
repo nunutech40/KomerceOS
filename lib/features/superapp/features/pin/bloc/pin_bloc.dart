@@ -17,7 +17,7 @@ import 'package:komtim_partner/core/domain/usecases/verify_otp_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
 
-import '../../../common/failure.dart';
+import 'package:komtim_partner/common/failure.dart';
 
 part 'pin_event.dart';
 part 'pin_state.dart';

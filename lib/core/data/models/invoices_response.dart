@@ -79,11 +79,11 @@ class InvoicesResponseData extends Equatable {
       invoiceId: invoiceId,
       invoiceCode: invoiceCode,
       isPaid: isPaid,
+      transactionStatus: transactionStatus ?? (isPaid ? 'paid' : 'unpaid'),
       amountTotal: amountTotal,
       expiredAt: expiredAt,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      transactionStatus: transactionStatus,
     );
   }
 

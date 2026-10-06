@@ -1,13 +1,11 @@
 import 'dart:convert';
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komtim_partner/common/constants.dart';
 import 'package:komtim_partner/core/data/datasources/preferences/secure_storage_service.dart';
 import 'package:komtim_partner/core/data/datasources/preferences/shared_pref.dart';
 import 'package:komtim_partner/core/data/models/login_response.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../helpers/helpers.dart';
 
@@ -53,6 +51,40 @@ void main() {
       email: 'john@example.com',
     ),
   );
+
+  group('tantangan OTP aman', () {
+    test('token dan deadline tersimpan terpisah per tujuan', () async {
+      when(mockSecureStorage.write(
+              key: anyNamed('key'), value: anyNamed('value')))
+          .thenAnswer((_) async {});
+      final service = sharedPref.secureStorage;
+
+      await service.saveOtpChallenge('pin', {
+        'token': 'pin-token',
+        'next_request_at': '2026-10-05T12:00:00Z',
+      });
+      await service.saveOtpChallenge('rekening', {
+        'token': 'bank-token',
+        'next_request_at': '2026-10-05T12:01:00Z',
+      });
+
+      final pinJson = verify(mockSecureStorage.write(
+        key: 'otp_challenge_pin',
+        value: captureAnyNamed('value'),
+      )).captured.single as String;
+      final bankJson = verify(mockSecureStorage.write(
+        key: 'otp_challenge_rekening',
+        value: captureAnyNamed('value'),
+      )).captured.single as String;
+      expect(jsonDecode(pinJson)['token'], 'pin-token');
+      expect(jsonDecode(bankJson)['token'], 'bank-token');
+
+      when(mockSecureStorage.read(key: 'otp_challenge_pin'))
+          .thenAnswer((_) async => pinJson);
+      expect((await service.readOtpChallenge('pin'))?['next_request_at'],
+          '2026-10-05T12:00:00Z');
+    });
+  });
 
   // ── saveUserAndToken ──────────────────────────────────────────────────────
   group('saveUserAndToken', () {
@@ -275,6 +307,13 @@ void main() {
       verify(mockSecureStorage.delete(key: 'access_token')).called(1);
       verify(mockSecureStorage.delete(key: 'refresh_token')).called(1);
       verify(mockPrefs.clear()).called(1);
+    });
+
+    test('tantangan OTP PIN dan rekening ikut dihapus saat logout', () async {
+      await sharedPref.removeDataPref();
+
+      verify(mockSecureStorage.delete(key: 'otp_challenge_pin')).called(1);
+      verify(mockSecureStorage.delete(key: 'otp_challenge_rekening')).called(1);
     });
   });
 }

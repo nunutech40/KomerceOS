@@ -7,7 +7,7 @@ import '../../widget/profile_form_card.dart';
 class ProfileTextField extends StatefulWidget {
   final String label, value, hint;
   final ValueChanged<String> onChanged;
-  final bool requiredField, phone;
+  final bool requiredField, phone, numeric;
   final int? maxLength;
   final int lines;
   const ProfileTextField(
@@ -19,7 +19,8 @@ class ProfileTextField extends StatefulWidget {
       this.requiredField = false,
       this.maxLength,
       this.lines = 1,
-      this.phone = false});
+      this.phone = false,
+      this.numeric = false});
 
   @override
   State<ProfileTextField> createState() => _ProfileTextFieldState();
@@ -54,28 +55,31 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
   Widget build(BuildContext context) => ProfileFormRow(
       label: widget.label,
       requiredField: widget.requiredField,
-      child: TextFormField(
+      child: DsTextField(
           key: ValueKey(widget.label),
           controller: _controller,
-          style: AppTypography.bodySmRegular
-              .copyWith(color: AppColors.alwaysBlack),
+          hintText: widget.hint,
           maxLength: widget.maxLength,
-          minLines: widget.lines,
-          maxLines: widget.lines,
-          keyboardType: widget.phone
-              ? TextInputType.phone
-              : widget.lines > 1
-                  ? TextInputType.multiline
-                  : TextInputType.text,
-          inputFormatters: widget.phone
-              ? [
-                  TextInputFormatter.withFunction((oldValue, newValue) {
-                    return RegExp(r'^\+?[0-9]{0,15}$').hasMatch(newValue.text)
-                        ? newValue
-                        : oldValue;
-                  }),
-                ]
-              : null,
+          lines: widget.lines,
+          keyboardType: widget.numeric
+              ? TextInputType.number
+              : widget.phone
+                  ? TextInputType.phone
+                  : widget.lines > 1
+                      ? TextInputType.multiline
+                      : TextInputType.text,
+          inputFormatters: widget.numeric
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : widget.phone
+                  ? [
+                      TextInputFormatter.withFunction((oldValue, newValue) {
+                        return RegExp(r'^\+?[0-9]{0,15}$')
+                                .hasMatch(newValue.text)
+                            ? newValue
+                            : oldValue;
+                      }),
+                    ]
+                  : null,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (text) {
             if (widget.requiredField && (text == null || text.trim().isEmpty)) {
@@ -89,16 +93,6 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
             }
             return null;
           },
-          decoration: InputDecoration(
-              hintText: widget.hint,
-              hintStyle: AppTypography.bodySmRegular
-                  .copyWith(color: AppColors.grey600),
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              filled: false,
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12)),
           onChanged: widget.onChanged));
 }
 

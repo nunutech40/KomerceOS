@@ -300,7 +300,7 @@ class _TopupViewState extends State<TopupView> {
 
               final url = state.data.invoiceUrl;
               if (url != null && url.isNotEmpty) {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     // Teruskan callback ke WebViewPage agar bisa balik ke
@@ -332,14 +332,15 @@ class _TopupViewState extends State<TopupView> {
             } else if (state is CreateQrcodeSuccess) {
               _hideLoadingDialog();
 
-              final amountStr = (state.data.amount != null && state.data.amount! > 0)
-                  ? state.data.amount!
-                  : _getCleanedAmount();
+              final amountStr =
+                  (state.data.amount != null && state.data.amount! > 0)
+                      ? state.data.amount!
+                      : _getCleanedAmount();
               final qrString = state.data.qrString ?? '';
               final expiresAt = state.data.expiresAt ?? '';
               final qrId = state.data.id ?? '';
 
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   // Teruskan callback ke BarcodeQrisPage agar bisa balik ke

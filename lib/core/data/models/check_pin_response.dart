@@ -13,10 +13,15 @@ class CheckPinResponse extends Equatable {
         "is_exist": isExist,
       };
 
-  factory CheckPinResponse.fromJson(Map<String, dynamic> json) {
-    return CheckPinResponse(
-      isExist: json['is_set'] ?? json['is_exist'] ?? false,
-    );
+  factory CheckPinResponse.fromJson(dynamic json) {
+    if (json is! Map) {
+      throw const FormatException('Status PIN tidak valid');
+    }
+    final value = json['is_set'] ?? json['is_exist'];
+    if (value is! bool) {
+      throw const FormatException('Status PIN tidak valid');
+    }
+    return CheckPinResponse(isExist: value);
   }
 
   ChekPinModel toEntity() {

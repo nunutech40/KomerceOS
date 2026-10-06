@@ -28,4 +28,5 @@ export 'components/ds_otp_field.dart';
 export 'components/ds_password_field.dart';
 export 'components/ds_radio_button.dart';
 export 'components/ds_search_field.dart';
+export 'components/ds_text_field.dart';
 export 'components/ds_square_icon_button.dart';
