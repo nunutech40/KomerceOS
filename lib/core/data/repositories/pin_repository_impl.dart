@@ -54,13 +54,47 @@ class PinRepositoryImpl extends BaseRepository implements PinRepository {
   }
 
   @override
+  Future<Either<Failure, int>> getAttemptLeft() =>
+      executeEither(() => remoteDataSource.getAttemptLeft());
+
+  @override
+  Future<Either<Failure, bool>> changePin(
+          String pin, String oldPin, String token) =>
+      executeEither(() => remoteDataSource.changePin(pin, oldPin, token));
+
+  @override
   Future<Either<Failure, DataOtpModel>> forgetPin({String? purpose}) async {
     return executeEither(() async {
       final result = await remoteDataSource.forgetPin(purpose: purpose);
+      if (result.token != null && result.nextRequestAt != null) {
+        await sharedPref.secureStorage.saveOtpChallenge('pin', {
+          'token': result.token!,
+          'next_request_at': result.nextRequestAt!,
+          'expired_at': result.expiredAt,
+        });
+      }
       final otpModel = result.toEntity();
       return otpModel;
     });
   }
+
+  @override
+  Future<Either<Failure, DataOtpModel?>> restorePendingOtp() =>
+      executeEither(() async {
+        final stored = await sharedPref.secureStorage.readOtpChallenge('pin');
+        if (stored == null) return null;
+        return DataOtpModel(
+          token: stored['token'],
+          nextRequestAt: stored['next_request_at'],
+          expiredAt: stored['expired_at'] ?? '',
+        );
+      });
+
+  @override
+  Future<Either<Failure, bool>> clearPendingOtp() => executeEither(() async {
+        await sharedPref.secureStorage.clearOtpChallenge('pin');
+        return true;
+      });
 
   @override
   Future<Either<Failure, VerifyPinModel>> verifyOtp(String otp,
@@ -76,6 +110,13 @@ class PinRepositoryImpl extends BaseRepository implements PinRepository {
   Future<Either<Failure, bool>> updatePinSecured(String pin, String token) {
     return executeEither(() async {
       final result = await remoteDataSource.updatePinSecured(pin, token);
+      if (result) {
+        try {
+          await sharedPref.secureStorage.clearOtpChallenge('pin');
+        } catch (_) {
+          // PIN update succeeded remotely; avoid a duplicate update.
+        }
+      }
       return result;
     });
   }

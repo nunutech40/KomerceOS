@@ -71,6 +71,18 @@ class Endpoints {
 // topup
   static String get bankList =>
       '$_BaseURL/api/v1/mobile/transaction/bank_accounts';
+  static String get komshipBankAccounts =>
+      '$_BaseURLKomship/api/v1/bank-account';
+  static String get komshipAvailableBanks =>
+      '$_BaseURLKomshipHiring/api/xendit/disbursementbankAvailable';
+  static String get komshipCheckBankOwner =>
+      '$_BaseURLKomshipHiring/api/v1/bank/check-bank-owner';
+  static String get komshipCheckBankAlready =>
+      '$_BaseURLKomshipHiring/api/v1/bank/check';
+  static String get securedAddBankAccount =>
+      '$_BaseURLInternal/api/v1/otp/secured/user/add-rekening';
+  static String get otpRequestPhone =>
+      '$_BaseURLInternal/api/v1/otp/request-otp/phone';
   static String get topUpKompoin => '$_BaseURL/api/v1/mobile/transaction/topup';
   static String get withdrawalKompoin =>
       '$_BaseURL/api/v1/mobile/transaction/withdraw';
@@ -103,15 +115,18 @@ class Endpoints {
       '$_BaseURL/api/v1/mobile/pin/send_forgot_confirmation';
   static String get verifyOtp => '$_BaseURL/api/v1/mobile/otp/verify';
 
-  // PIN Setting (internal auth API — new)
-  static String get checkPinSetting =>
-      '$_BaseURLInternal/api/v1/user/setting/pin';
+  // Komship exposes PIN status here; the internal setting/pin GET does not exist.
+  static String get checkPinSetting => checkPinExisting;
   static String get storePinSetting =>
       '$_BaseURLInternal/api/v1/user/setting/pin/store';
 
   // PIN & OTP (internal auth API)
   static String get securedVerifyPin =>
       '$_BaseURLInternal/api/v1/user/secured/verify-pin';
+  static String get pinAttemptLeft =>
+      '$_BaseURLInternal/api/v1/user/secured/verify-pin/attempt-left';
+  static String get updatePinSetting =>
+      '$_BaseURLInternal/api/v1/user/setting/pin/update';
   static String get otpRequestEmail =>
       '$_BaseURLInternal/api/v1/otp/request-otp/email';
   static String get otpVerify => '$_BaseURLInternal/api/v1/otp/verify-otp';

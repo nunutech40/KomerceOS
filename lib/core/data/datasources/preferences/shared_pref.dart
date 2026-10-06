@@ -184,6 +184,7 @@ class SharedPref implements TokenProvider {
     final prefs = await sharedPreferences;
     await prefs.clear();
     await secureStorage.deleteTokens();
+    await secureStorage.clearAllOtpChallenges();
   }
 
   @override

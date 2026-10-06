@@ -63,6 +63,7 @@ class DsBottomSheet extends StatelessWidget {
     Color? secondaryButtonColor,
     VoidCallback? onClosePressed,
     bool isDismissible = true,
+    Color barrierColor = Colors.transparent,
   }) {
     return showModalBottomSheet<T>(
       context: context,
@@ -70,7 +71,7 @@ class DsBottomSheet extends StatelessWidget {
       enableDrag: isDismissible,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      barrierColor: Colors.transparent,
+      barrierColor: barrierColor,
       builder: (_) => DsBottomSheet(
         title: title,
         titleStyle: titleStyle,

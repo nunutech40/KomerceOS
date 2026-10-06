@@ -1,22 +1,35 @@
+import 'dart:async';
+
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_button.dart';
 import 'package:komtim_partner/features/superapp/features/pin/view/pin_flow_page.dart';
+import 'package:komtim_partner/features/superapp/features/pin/bloc/account_pin_cubit.dart';
+import 'package:komtim_partner/core/domain/entities/verify_pin_model.dart';
+import 'fake_pin_repository.dart';
 
 void main() {
-  Future<void> showFlow(WidgetTester tester, PinFlow flow) async {
+  Future<void> showFlow(WidgetTester tester, PinFlow flow,
+      {FakePinRepository? repository, DateTime Function()? now}) async {
     tester.view.physicalSize = const Size(720, 1600);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = AccountPinCubit(repository ?? FakePinRepository());
+    addTearDown(controller.close);
     await tester.pumpWidget(MaterialApp(
-      home: PinFlowPage(flow: flow, email: 'partner@example.com'),
+      home: PinFlowPage(
+          flow: flow, email: 'partner@example.com', controller: controller,
+          now: now),
     ));
   }
 
   testWidgets('buat PIN: input, konfirmasi tidak sama, lalu sukses',
       (tester) async {
-    await showFlow(tester, PinFlow.create);
+    final repository = FakePinRepository()..pendingSave = Completer();
+    await showFlow(tester, PinFlow.create, repository: repository);
     expect(find.text('Masukkan 6 Digit PIN Baru'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, '654321');
     await tester.pumpAndSettle();
@@ -31,14 +44,26 @@ void main() {
     expect(find.text('PIN yang kamu masukkan salah'), findsNothing);
     expect(tester.widget<DsButton>(find.byType(DsButton)).state,
         DsButtonState.enabled);
+    expect(
+      tester.widget<TextField>(find.byType(TextField).last).focusNode?.hasFocus,
+      isFalse,
+    );
     await tester.tap(find.text('Konfirmasi'));
     await tester.pump();
     expect(find.text('Memverifikasi PIN...'), findsOneWidget);
     expect(tester.widget<DsButton>(find.byType(DsButton)).state,
         DsButtonState.loading);
-    await tester.pump(const Duration(milliseconds: 700));
+    repository.pendingSave!.complete(const Right(true));
     await tester.pumpAndSettle();
     expect(find.text('PIN Kamu Berhasil Dibuat'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('PIN Kamu Berhasil Dibuat')).dy,
+      lessThan(tester.getTopLeft(find.byType(SvgPicture)).dy),
+    );
+    expect(
+      tester.getTopLeft(find.byType(SvgPicture)).dy,
+      lessThan(tester.getTopLeft(find.text('Kembali')).dy),
+    );
   });
 
   testWidgets('ubah PIN meminta PIN lama sebelum PIN baru', (tester) async {
@@ -109,44 +134,57 @@ void main() {
     expect(resend.onPressed, isNull);
   });
 
-  testWidgets('lima OTP salah menampilkan batas percobaan', (tester) async {
+  testWidgets('OTP salah tetap di halaman verifikasi', (tester) async {
     await showFlow(tester, PinFlow.forgot);
     await tester.tap(find.text('Kirim OTP'));
-    await tester.pump();
-    for (var i = 0; i < 5; i++) {
-      await tester.enterText(find.byType(TextField).first, '00000$i');
-      await tester.pump();
-      if (i < 4) {
-        expect(find.text('OTP yang kamu masukkan salah'), findsOneWidget);
-        expect(tester.widget<DsButton>(find.byType(DsButton)).state,
-            DsButtonState.disabled);
-      }
-    }
     await tester.pumpAndSettle();
-    expect(find.text('Terlalu Banyak Percobaan PIN'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, '000001');
+    await tester.pump();
+    expect(tester.widget<DsButton>(find.byType(DsButton)).state,
+        DsButtonState.enabled);
+    await tester.tap(find.text('Verifikasi'));
+    await tester.pumpAndSettle();
+    expect(find.text('OTP yang kamu masukkan salah'), findsOneWidget);
+    expect(find.text('Masukkan Kode OTP'), findsOneWidget);
   });
 
-  testWidgets('cooldown OTP bertambah hanya setelah Kirim Ulang',
+  testWidgets('cooldown OTP mengikuti deadline dari respons backend',
       (tester) async {
-    await showFlow(tester, PinFlow.forgot);
+    var now = DateTime.now();
+    final repository = FakePinRepository(now: () => now);
+    await showFlow(tester, PinFlow.forgot,
+        repository: repository, now: () => now);
     await tester.tap(find.text('Kirim OTP'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Kirim Ulang (60 detik)'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, '000000');
     await tester.pump();
+    await tester.pump();
     expect(find.text('Kirim Ulang (60 detik)'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 60));
+    now = now.add(const Duration(seconds: 61));
+    await tester.pump(const Duration(seconds: 1));
     expect(find.text('Kirim Ulang'), findsOneWidget);
     await tester.tap(find.text('Kirim Ulang'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Kirim Ulang (120 detik)'), findsOneWidget);
-    await tester.enterText(find.byType(TextField).first, '000001');
+    expect(repository.otpRequests, 2);
+  });
+
+  testWidgets('OTP tertunda dipulihkan tanpa mengirim kode baru',
+      (tester) async {
+    final now = DateTime.now();
+    final repository = FakePinRepository()..pendingOtp = DataOtpModel(
+      token: 'restored-token',
+      nextRequestAt: now.add(const Duration(seconds: 42)).toIso8601String(),
+      expiredAt: now.add(const Duration(minutes: 5)).toIso8601String(),
+    );
+    await showFlow(tester, PinFlow.forgot,
+        repository: repository, now: () => now);
     await tester.pump();
-    expect(find.text('Kirim Ulang (120 detik)'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 120));
-    await tester.tap(find.text('Kirim Ulang'));
-    await tester.pump();
-    expect(find.text('Kirim Ulang (240 detik)'), findsOneWidget);
+
+    expect(find.text('Masukkan Kode OTP'), findsOneWidget);
+    expect(find.text('Kirim Ulang (42 detik)'), findsOneWidget);
+    expect(repository.otpRequests, 0);
   });
 
   testWidgets('OTP valid mengaktifkan Verifikasi dan alur Ubah PIN selesai',
@@ -171,6 +209,10 @@ void main() {
     await tester.pump();
     await tester.enterText(find.byType(TextField).first, '000000');
     await tester.pump();
+    expect(tester.widget<DsButton>(find.byType(DsButton)).state,
+        DsButtonState.enabled);
+    await tester.tap(find.text('Verifikasi'));
+    await tester.pumpAndSettle();
     expect(find.text('OTP yang kamu masukkan salah'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, '123456');
     await tester.pump();

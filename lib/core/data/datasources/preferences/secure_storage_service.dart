@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Layanan untuk menyimpan data sensitif (seperti token akses) secara aman.
@@ -13,6 +15,38 @@ class SecureStorageService {
   // Kunci untuk penyimpanan
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
+  static const String _pinOtpKey = 'otp_challenge_pin';
+  static const String _bankOtpKey = 'otp_challenge_rekening';
+
+  String _otpKey(String purpose) => switch (purpose) {
+        'pin' => _pinOtpKey,
+        'rekening' => _bankOtpKey,
+        _ => throw ArgumentError.value(purpose, 'purpose'),
+      };
+
+  Future<void> saveOtpChallenge(String purpose, Map<String, String> value) =>
+      _storage.write(key: _otpKey(purpose), value: jsonEncode(value));
+
+  Future<Map<String, String>?> readOtpChallenge(String purpose) async {
+    final stored = await _storage.read(key: _otpKey(purpose));
+    if (stored == null) return null;
+    try {
+      final parsed = jsonDecode(stored);
+      if (parsed is! Map) return null;
+      return parsed.map<String, String>(
+          (key, value) => MapEntry(key.toString(), value.toString()));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> clearOtpChallenge(String purpose) =>
+      _storage.delete(key: _otpKey(purpose));
+
+  Future<void> clearAllOtpChallenges() async {
+    await _storage.delete(key: _pinOtpKey);
+    await _storage.delete(key: _bankOtpKey);
+  }
 
   /// Menyimpan Access Token dan Refresh Token secara aman.
   ///

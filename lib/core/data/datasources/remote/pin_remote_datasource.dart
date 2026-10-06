@@ -7,12 +7,13 @@ import 'package:komtim_partner/core/data/models/verify_pin_response.dart';
 import '../../apiservice/constat_endpoint.dart';
 import '../../apiservice/dio_client.dart';
 import '../../apiservice/dio_response_parser.dart';
-import '../preferences/shared_pref.dart';
 
 abstract class PinRemoteDataSource {
   Future<CheckPinResponse> checkPin();
   Future<CheckPinResponse> checkPinSetting();
   Future<VerifyPinResponse> verifyPin(String pin);
+  Future<int> getAttemptLeft();
+  Future<bool> changePin(String pin, String oldPin, String token);
   Future<bool> savePin(String pin);
   Future<ForgetPinResponse> forgetPin({String? purpose});
   Future<VerifyPinResponse> verifyOtp(String otp, {String? token});
@@ -22,19 +23,15 @@ abstract class PinRemoteDataSource {
 class PinRemoteDataSourceImpl implements PinRemoteDataSource {
   final DioClient client;
   final DioResponseParser responseParser;
-  final SharedPref sharedPref;
 
   PinRemoteDataSourceImpl({
-    required this.client, 
+    required this.client,
     required this.responseParser,
-    required this.sharedPref,
   });
 
   @override
   Future<CheckPinResponse> checkPin() async {
-    final profile = await sharedPref.getProfileResponse();
-    final partnerId = profile?.partnerId;
-    final response = await client.get('${Endpoints.checkPinExisting}?partner_id=$partnerId');
+    final response = await client.get(Endpoints.checkPinExisting);
     return responseParser.parseResponse<CheckPinResponse>(
         response, (json) => CheckPinResponse.fromJson(json));
   }
@@ -58,6 +55,26 @@ class PinRemoteDataSourceImpl implements PinRemoteDataSource {
     );
     return responseParser.parseResponse<VerifyPinResponse>(
         response, (json) => VerifyPinResponse.fromJson(json));
+  }
+
+  @override
+  Future<int> getAttemptLeft() async {
+    final response = await client.get(Endpoints.pinAttemptLeft);
+    return responseParser.parseResponse<int>(response, (data) {
+      final map =
+          data is Map<String, dynamic> ? data : const <String, dynamic>{};
+      return int.tryParse('${map['attempt_left'] ?? ''}') ?? 0;
+    });
+  }
+
+  @override
+  Future<bool> changePin(String pin, String oldPin, String token) async {
+    final response = await client.post(Endpoints.updatePinSetting, data: {
+      'pin': pin,
+      'old_pin': oldPin,
+      'token': base64Encode(utf8.encode(token)),
+    });
+    return responseParser.parseResponseMeta<bool>(response, (_) => true);
   }
 
   @override

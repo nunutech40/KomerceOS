@@ -45,6 +45,7 @@ import 'package:komtim_partner/core/domain/repositories/transaction_history_repo
 import 'package:komtim_partner/core/domain/repositories/withdrawal_kompay_repository.dart';
 import 'package:komtim_partner/core/domain/usecases/cancel_shopping_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/check_pin_use_case.dart';
+import 'package:komtim_partner/core/domain/usecases/check_pin_setting_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/check_talent_evaluation_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/delete_time_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/do_payment_kompay_use_case.dart';
@@ -100,6 +101,7 @@ import 'package:komtim_partner/core/domain/usecases/verify_otp_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/verify_pin_use_case.dart';
 import 'package:komtim_partner/core/domain/usecases/withdraw_kompoin_use_case.dart';
 import 'package:komtim_partner/features/superapp/features/pin/bloc/pin_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/pin/bloc/account_pin_cubit.dart';
 import 'package:komtim_partner/features/superapp/features/team/attendance/bloc/attendance_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/feed/bloc/feed_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/team/invoice/bloc/invoice_list_bloc.dart';
@@ -205,6 +207,10 @@ import '../features/superapp/features/topup/bloc/create_invoice_bloc.dart';
 import '../features/superapp/features/topup/bloc/create_qrcode_bloc.dart';
 import '../features/superapp/features/topup/bloc/expire_qrcode_bloc.dart';
 import '../features/superapp/features/setting/bloc/setting_profile_bloc.dart';
+import '../features/superapp/features/setting/bloc/bank_account_cubit.dart';
+import '../features/superapp/features/setting/data/datasources/bank_account_remote_datasource.dart';
+import '../features/superapp/features/setting/data/repositories/bank_account_repository_impl.dart';
+import '../features/superapp/features/setting/domain/repositories/bank_account_repository.dart';
 import '../features/superapp/features/setting/data/datasources/setting_profile_remote_datasource.dart';
 import '../features/superapp/features/setting/data/repositories/setting_profile_repository_impl.dart';
 import '../features/superapp/features/setting/domain/repositories/setting_profile_repository.dart';
@@ -260,6 +266,7 @@ Future<void> initDependencies() async {
         updatePinSecuredUseCase: locator(),
         getLocaleProfileUseCase: locator(),
       ));
+  locator.registerFactory(() => AccountPinCubit(locator<PinRepository>()));
   locator.registerFactory(() => TalentListBloc(
       getTalensUseCase: locator(), saveSelectedTalentUseCase: locator()));
   locator.registerFactory(() => TalentListSelectedBloc(
@@ -332,6 +339,7 @@ Future<void> initDependencies() async {
         getKomtimTeamsUseCase: locator(),
       ));
   locator.registerFactory(() => SettingProfileBloc(repository: locator()));
+  locator.registerFactory(() => BankAccountCubit(locator<BankAccountRepository>()));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -357,6 +365,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => DownloadInvoiceUseCase(locator()));
   locator.registerLazySingleton(() => GetBankListWithdrawalUseCase(locator()));
   locator.registerLazySingleton(() => CheckPinUseCase(locator()));
+  locator.registerLazySingleton(() => CheckPinSettingUseCase(locator()));
   locator.registerLazySingleton(() => VerifyPinUseCase(locator()));
   locator.registerLazySingleton(() => SavePinUseCase(locator()));
   locator.registerLazySingleton(() => UpdatePinUseCase(locator()));
@@ -504,6 +513,9 @@ Future<void> initDependencies() async {
             remote: locator(),
             superappProfileRepository: locator(),
           ));
+  locator.registerLazySingleton<BankAccountRepository>(
+      () => BankAccountRepositoryImpl(
+          locator<BankAccountRemoteDataSource>(), locator<SecureStorageService>()));
   locator.registerLazySingleton<TeamRepository>(
       () => TeamRepositoryImpl(remoteDataSource: locator()));
 
@@ -526,9 +538,13 @@ Future<void> initDependencies() async {
       InvoiceRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
   locator.registerLazySingleton<KompayRemoteDataSource>(() =>
-      KompayRemoteDataSourceImpl(client: locator(), responseParser: locator(), sharedPref: locator()));
+      KompayRemoteDataSourceImpl(
+          client: locator(), responseParser: locator(), sharedPref: locator()));
   locator.registerLazySingleton<PinRemoteDataSource>(() =>
-      PinRemoteDataSourceImpl(client: locator(), responseParser: locator(), sharedPref: locator()));
+      PinRemoteDataSourceImpl(
+          client: locator(), responseParser: locator()));
+  locator.registerLazySingleton<BankAccountRemoteDataSource>(
+      () => BankAccountRemoteDataSourceImpl(locator()));
   locator.registerLazySingleton<KompoinRemoteDataSource>(() =>
       KompoinRemoteDataSourceImpl(
           client: locator(), responseParser: locator()));
