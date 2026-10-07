@@ -55,8 +55,8 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
           prev.isKomshipVerified != curr.isKomshipVerified ||
           prev.unverifiedProducts.length != curr.unverifiedProducts.length,
       buildWhen: (prev, curr) =>
-          prev.displayProfile?.photoProfileUrl !=
-              curr.displayProfile?.photoProfileUrl ||
+          prev.displayProfile?.displayLogoUrl !=
+              curr.displayProfile?.displayLogoUrl ||
           prev.displayProfile?.fullName != curr.displayProfile?.fullName ||
           prev.displayProfile?.isKomship != curr.displayProfile?.isKomship,
       builder: (context, profileState) {
@@ -82,8 +82,7 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
           },
           builder: (context, savings) {
             return DsHomeHeader(
-              profileUrl:
-                  profileState.displayProfile?.photoProfileUrl ?? '',
+              profileUrl: profileState.displayProfile?.displayLogoUrl,
               partnerName: profileState.displayProfile?.fullName ?? '',
               type: isKomship ? PartnerType.komship : PartnerType.regular,
               savingsAmount: isKomship ? savings : null,

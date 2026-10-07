@@ -112,6 +112,25 @@ class SuperappProfileModel extends Equatable {
     this.businessProfile,
   });
 
+  /// Avatar pada Home dan Pengaturan menampilkan logo bisnis jika tersedia.
+  String? get displayLogoUrl {
+    final businessLogo = businessProfile?.businessLogo?.trim();
+    if (businessLogo != null &&
+        businessLogo.isNotEmpty &&
+        businessLogo != 'null' &&
+        businessLogo != '-') {
+      return businessLogo;
+    }
+    final profilePhoto = photoProfileUrl?.trim();
+    if (profilePhoto == null ||
+        profilePhoto.isEmpty ||
+        profilePhoto == 'null' ||
+        profilePhoto == '-') {
+      return null;
+    }
+    return profilePhoto;
+  }
+
   @override
   List<Object?> get props => [
         id,

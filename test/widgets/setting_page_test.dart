@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
@@ -14,7 +15,51 @@ class MockSuperappProfileBloc
 
 void main() {
   group('SettingPage Widget Tests', () {
-    testWidgets('menampilkan title, profil, dan daftar menu pengaturan dengan benar',
+    test('avatar memprioritaskan logo bisnis', () {
+      const profile = SuperappProfileModel(
+        photoProfileUrl: 'https://example.com/foto-pribadi.jpg',
+        businessProfile: BusinessProfileModel(
+          businessLogo: 'https://example.com/logo-bisnis.jpg',
+        ),
+      );
+      expect(profile.displayLogoUrl, 'https://example.com/logo-bisnis.jpg');
+      expect(
+        const SuperappProfileModel(
+                photoProfileUrl: 'https://example.com/foto.jpg')
+            .displayLogoUrl,
+        'https://example.com/foto.jpg',
+      );
+    });
+
+    testWidgets('Pengaturan memakai logo bisnis dari profil global',
+        (tester) async {
+      final profileBloc = MockSuperappProfileBloc();
+      whenListen(
+        profileBloc,
+        const Stream<SuperappProfileState>.empty(),
+        initialState: const SuperappProfileState(
+          status: SuperappProfileStatus.loaded,
+          freshProfile: SuperappProfileModel(
+            fullName: 'Partner',
+            email: 'partner@example.com',
+            photoProfileUrl: 'https://example.com/foto-pribadi.jpg',
+            businessProfile: BusinessProfileModel(
+              businessLogo: 'https://example.com/logo-bisnis.jpg',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(BlocProvider<SuperappProfileBloc>.value(
+        value: profileBloc,
+        child: TestHelper.wrapWithMaterialApp(const SettingPage()),
+      ));
+      final image = tester.widget<Image>(find.byType(Image).first);
+      expect((image.image as NetworkImage).url,
+          'https://example.com/logo-bisnis.jpg');
+    });
+
+    testWidgets(
+        'menampilkan title, profil, dan daftar menu pengaturan dengan benar',
         (WidgetTester tester) async {
       final profileBloc = MockSuperappProfileBloc();
       whenListen(

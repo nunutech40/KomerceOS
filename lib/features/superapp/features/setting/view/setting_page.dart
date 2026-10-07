@@ -43,13 +43,14 @@ class SettingPage extends StatelessWidget {
               // Centered Profile Section
               BlocBuilder<SuperappProfileBloc, SuperappProfileState>(
                 buildWhen: (prev, curr) =>
-                    prev.displayProfile?.photoProfileUrl !=
-                        curr.displayProfile?.photoProfileUrl ||
+                    prev.displayProfile?.displayLogoUrl !=
+                        curr.displayProfile?.displayLogoUrl ||
                     prev.displayProfile?.fullName !=
                         curr.displayProfile?.fullName ||
                     prev.displayProfile?.email != curr.displayProfile?.email,
                 builder: (context, profileState) {
                   final profile = profileState.displayProfile;
+                  final logoUrl = profile?.displayLogoUrl;
                   return Center(
                     child: Column(
                       children: [
@@ -59,25 +60,15 @@ class SettingPage extends StatelessWidget {
                           height: 90,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: (profile?.photoProfileUrl != null &&
-                                    profile!.photoProfileUrl!
-                                        .trim()
-                                        .isNotEmpty &&
-                                    profile.photoProfileUrl != 'null' &&
-                                    profile.photoProfileUrl != '-')
+                            color: logoUrl != null
                                 ? const Color(0xFFFFF0E6)
                                 : Colors.transparent,
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(45),
-                            child: (profile?.photoProfileUrl != null &&
-                                    profile!.photoProfileUrl!
-                                        .trim()
-                                        .isNotEmpty &&
-                                    profile.photoProfileUrl != 'null' &&
-                                    profile.photoProfileUrl != '-')
+                            child: logoUrl != null
                                 ? Image.network(
-                                    profile.photoProfileUrl!,
+                                    logoUrl,
                                     fit: BoxFit.cover,
                                     loadingBuilder:
                                         (context, child, loadingProgress) {

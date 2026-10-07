@@ -165,6 +165,7 @@ class SectionBusinessInfo extends StatelessWidget {
   final ValueChanged<String> onNameChanged, onPhoneChanged;
   final VoidCallback onLocationTap, onSectorTap;
   final bool enabled;
+  final bool showRequiredErrors;
   const SectionBusinessInfo(
       {super.key,
       required this.profile,
@@ -172,7 +173,8 @@ class SectionBusinessInfo extends StatelessWidget {
       required this.onPhoneChanged,
       required this.onLocationTap,
       required this.onSectorTap,
-      this.enabled = true});
+      this.enabled = true,
+      this.showRequiredErrors = false});
   @override
   Widget build(BuildContext context) => ProfileFormCard(children: [
         ProfileTextField(
@@ -181,6 +183,7 @@ class SectionBusinessInfo extends StatelessWidget {
             hint: 'Nama Bisnis',
             onChanged: onNameChanged,
             requiredField: true,
+            emptyErrorText: 'Nama Bisnis harus diisi',
             maxLength: 30),
         ProfileTextField(
             label: 'No. HP Bisnis',
@@ -188,6 +191,7 @@ class SectionBusinessInfo extends StatelessWidget {
             hint: 'No HP Bisnis',
             onChanged: onPhoneChanged,
             requiredField: true,
+            emptyErrorText: 'No. HP Bisnis harus diisi',
             phone: true),
         ProfilePickerField(
             label: 'Lokasi',
@@ -195,6 +199,12 @@ class SectionBusinessInfo extends StatelessWidget {
             hint: 'Masukkan Lokasi',
             onTap: onLocationTap,
             requiredField: true,
+            errorText: profile.location == null &&
+                    (showRequiredErrors ||
+                        profile.businessName.trim().isNotEmpty ||
+                        profile.businessPhone.trim().isNotEmpty)
+                ? 'Lokasi harus diisi'
+                : null,
             enabled: enabled),
         ProfilePickerField(
             label: 'Sektor Bisnis',
@@ -210,6 +220,7 @@ class SectionBusiness extends StatelessWidget {
   final ValueChanged<String> onNameChanged, onPhoneChanged;
   final VoidCallback onUpload, onLocationTap, onSectorTap;
   final bool enabled;
+  final bool showRequiredErrors;
   final BusinessLogoStatus logoStatus;
   const SectionBusiness(
       {super.key,
@@ -220,7 +231,8 @@ class SectionBusiness extends StatelessWidget {
       required this.onLocationTap,
       required this.onSectorTap,
       this.enabled = true,
-      this.logoStatus = BusinessLogoStatus.ready});
+      this.logoStatus = BusinessLogoStatus.ready,
+      this.showRequiredErrors = false});
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -234,6 +246,7 @@ class SectionBusiness extends StatelessWidget {
         SectionBusinessInfo(
             profile: profile,
             enabled: enabled,
+            showRequiredErrors: showRequiredErrors,
             onNameChanged: onNameChanged,
             onPhoneChanged: onPhoneChanged,
             onLocationTap: onLocationTap,

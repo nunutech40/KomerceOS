@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/DI/injection.dart';
@@ -208,6 +209,31 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
         });
   }
 
+  Future<void> _confirmSave() async {
+    if (!settingProfile.state.canSave || _selecting) return;
+    FocusScope.of(context).unfocus();
+    final confirmed = await DsBottomSheet.show<bool>(
+      context: context,
+      title: 'Simpan Perubahan?',
+      titleStyle: AppTypography.headingSm,
+      description:
+          'Pastikan semua data sudah sesuai sebelum menyimpan perubahan.',
+      image: SvgPicture.asset(
+        'assets/images/superapp/setting/illustration_profile_save_confirmation.svg',
+        width: 297,
+        height: 290,
+      ),
+      secondaryButtonText: 'Kembali',
+      onSecondaryPressed: () => Navigator.pop(context, false),
+      primaryButtonText: 'Simpan Perubahan',
+      onPrimaryPressed: () => Navigator.pop(context, true),
+      barrierColor: const Color(0x99000000),
+    );
+    if (mounted && confirmed == true && settingProfile.state.canSave) {
+      settingProfile.save();
+    }
+  }
+
   @override
   Widget build(BuildContext context) =>
       BlocConsumer<SettingProfileBloc, SettingProfileState>(
@@ -257,6 +283,7 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                                 profile: p,
                                 logoStatus: state.logoStatus,
                                 enabled: !_selecting,
+                                showRequiredErrors: state.isBusinessDirty,
                                 onUpload: _upload,
                                 onNameChanged: (v) => settingProfile
                                     .update(p.copyWith(businessName: v)),
@@ -275,7 +302,7 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                         child: DsButton(
                             text: 'Simpan',
                             loadingText: 'Menyimpan...',
-                            onPressed: settingProfile.save,
+                            onPressed: _confirmSave,
                             state: state.saving
                                 ? DsButtonState.loading
                                 : state.canSave && !_selecting

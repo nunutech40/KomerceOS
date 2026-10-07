@@ -42,6 +42,9 @@ const superappProfile = SuperappProfileModel(
   ),
 );
 
+void _ignoreProfileText(String _) {}
+void _ignoreProfileTap() {}
+
 class MockSuperappProfileBloc
     extends MockBloc<SuperappProfileEvent, SuperappProfileState>
     implements SuperappProfileBloc {}
@@ -145,6 +148,75 @@ void main() {
     await tester.tap(find.text('partner').last);
     await tester.tap(find.text('partner@example.com').last);
     expect(readOnlyTaps, 2);
+  });
+
+  testWidgets('business required-field messages match Figma', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: SectionBusinessInfo(
+            profile: SettingProfile(),
+            showRequiredErrors: true,
+            onNameChanged: _ignoreProfileText,
+            onPhoneChanged: _ignoreProfileText,
+            onLocationTap: _ignoreProfileTap,
+            onSectorTap: _ignoreProfileTap,
+          ),
+        ),
+      ),
+    ));
+    expect(find.text('Lokasi harus diisi'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('Nama Bisnis')), 'Toko');
+    await tester.enterText(find.byKey(const ValueKey('Nama Bisnis')), '');
+    await tester.enterText(
+        find.byKey(const ValueKey('No. HP Bisnis')), '081234567890');
+    await tester.enterText(find.byKey(const ValueKey('No. HP Bisnis')), '');
+    await tester.pump();
+    expect(find.text('Nama Bisnis harus diisi'), findsOneWidget);
+    expect(find.text('No. HP Bisnis harus diisi'), findsOneWidget);
+  });
+
+  testWidgets('profile save waits for confirmation and Kembali cancels it',
+      (tester) async {
+    if (locator.isRegistered<SettingProfileBloc>()) {
+      locator.unregister<SettingProfileBloc>();
+    }
+    final repository = FakeSettingProfileRepository();
+    locator.registerFactory(() => SettingProfileBloc(repository: repository));
+    addTearDown(() {
+      if (locator.isRegistered<SettingProfileBloc>()) {
+        locator.unregister<SettingProfileBloc>();
+      }
+    });
+    final globalProfile = MockSuperappProfileBloc();
+    whenListen(
+      globalProfile,
+      const Stream<SuperappProfileState>.empty(),
+      initialState: const SuperappProfileState(
+        status: SuperappProfileStatus.loaded,
+        freshProfile: superappProfile,
+      ),
+    );
+    await tester.pumpWidget(BlocProvider<SuperappProfileBloc>.value(
+      value: globalProfile,
+      child: const MaterialApp(home: SettingProfilePage()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('Nama Lengkap')), 'Partner Baru');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(DsButton, 'Simpan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Simpan Perubahan?'), findsOneWidget);
+    expect(repository.accountUpdates, 0);
+    await tester.tap(find.text('Kembali'));
+    await tester.pumpAndSettle();
+    expect(repository.accountUpdates, 0);
+    await tester.tap(find.widgetWithText(DsButton, 'Simpan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(DsButton, 'Simpan Perubahan'));
+    await tester.pumpAndSettle();
+    expect(repository.accountUpdates, 1);
   });
 
   test('global refresh syncs business while retaining account edits', () async {

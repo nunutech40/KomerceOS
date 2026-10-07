@@ -11,6 +11,7 @@ class ProfileTextField extends StatefulWidget {
   final int? maxLength;
   final int lines;
   final String? Function(String?)? validator;
+  final String? emptyErrorText;
   const ProfileTextField(
       {super.key,
       required this.label,
@@ -22,7 +23,8 @@ class ProfileTextField extends StatefulWidget {
       this.lines = 1,
       this.phone = false,
       this.numeric = false,
-      this.validator});
+      this.validator,
+      this.emptyErrorText});
 
   @override
   State<ProfileTextField> createState() => _ProfileTextFieldState();
@@ -84,6 +86,10 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
                   : null,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (text) {
+            if ((text == null || text.trim().isEmpty) &&
+                widget.emptyErrorText != null) {
+              return widget.emptyErrorText;
+            }
             final fieldError = widget.validator?.call(text);
             if (fieldError != null) return fieldError;
             if (widget.requiredField && (text == null || text.trim().isEmpty)) {
@@ -124,6 +130,7 @@ class ProfilePickerField extends StatelessWidget {
   final String hint;
   final VoidCallback onTap;
   final bool requiredField, enabled;
+  final String? errorText;
   const ProfilePickerField(
       {super.key,
       required this.label,
@@ -131,27 +138,40 @@ class ProfilePickerField extends StatelessWidget {
       required this.hint,
       required this.onTap,
       this.requiredField = false,
-      this.enabled = true});
+      this.enabled = true,
+      this.errorText});
   @override
-  Widget build(BuildContext context) => ProfileFormRow(
-      label: label,
-      requiredField: requiredField,
-      child: InkWell(
-          onTap: enabled ? onTap : null,
-          child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(children: [
-                Expanded(
-                    child: Text(value ?? hint,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodySmRegular.copyWith(
-                            color: value == null
-                                ? AppColors.grey600
-                                : AppColors.alwaysBlack))),
-                if (enabled)
-                  const Icon(Icons.keyboard_arrow_down,
-                      size: 18, color: AppColors.grey600)
-              ]))));
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ProfileFormRow(
+              label: label,
+              requiredField: requiredField,
+              child: InkWell(
+                  onTap: enabled ? onTap : null,
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(children: [
+                        Expanded(
+                            child: Text(value ?? hint,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.bodySmRegular.copyWith(
+                                    color: value == null
+                                        ? AppColors.grey600
+                                        : AppColors.alwaysBlack))),
+                        if (enabled)
+                          const Icon(Icons.keyboard_arrow_down,
+                              size: 18, color: AppColors.grey600)
+                      ])))),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+              child: Text(errorText!,
+                  style: AppTypography.bodySmRegular
+                      .copyWith(color: AppColors.errorBase)),
+            ),
+        ],
+      );
 }
 
 class ProfileSectionHeading extends StatelessWidget {
