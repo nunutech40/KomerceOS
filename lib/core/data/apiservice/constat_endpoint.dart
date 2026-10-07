@@ -79,6 +79,7 @@ class Endpoints {
       '$_BaseURLKomshipHiring/api/v1/bank/check-bank-owner';
   static String get komshipCheckBankAlready =>
       '$_BaseURLKomshipHiring/api/v1/bank/check';
+  static String get komshipCheckWhatsApp => '$_BaseURLKomship/api/v1/check-wa';
   static String get securedAddBankAccount =>
       '$_BaseURLInternal/api/v1/otp/secured/user/add-rekening';
   static String get otpRequestPhone =>
@@ -177,8 +178,7 @@ class Endpoints {
       '$_BaseURLSuperApp/komship/api/v1/notifications/$id/read';
 
   //paymentKompay
-  static String get paymentKompay =>
-      '$_BaseURL/api/v1/partner/invoices/pay';
+  static String get paymentKompay => '$_BaseURL/api/v1/partner/invoices/pay';
   static String get transactionBalance =>
       '$_BaseURLInternal/api/v1/kmpoin/balance_analytics';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/features/superapp/features/pin/view/pin_flow_page.dart';
@@ -35,6 +36,11 @@ class SettingPinPage extends StatelessWidget {
               children: [
                 AccountActionTile(
                   icon: Icons.person_search_outlined,
+                  leadingWidget: SvgPicture.asset(
+                    'assets/images/superapp/setting/ic_forgot_pin_figma.svg',
+                    width: AppSpacing.iconLg,
+                    height: AppSpacing.iconLg,
+                  ),
                   title: 'Lupa PIN',
                   subtitle: 'Atur ulang PIN kamu',
                   onTap: () => _openFlow(context, PinFlow.forgot),
@@ -42,6 +48,11 @@ class SettingPinPage extends StatelessWidget {
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 AccountActionTile(
                   icon: Icons.sync_outlined,
+                  leadingWidget: SvgPicture.asset(
+                    'assets/images/superapp/setting/ic_change_pin_figma.svg',
+                    width: AppSpacing.iconLg,
+                    height: AppSpacing.iconLg,
+                  ),
                   title: 'Ubah PIN',
                   subtitle: 'Buat PIN baru untuk keamanan akun',
                   onTap: () => _openFlow(context, PinFlow.change),

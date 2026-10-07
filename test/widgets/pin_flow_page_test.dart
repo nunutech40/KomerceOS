@@ -12,7 +12,9 @@ import 'fake_pin_repository.dart';
 
 void main() {
   Future<void> showFlow(WidgetTester tester, PinFlow flow,
-      {FakePinRepository? repository, DateTime Function()? now}) async {
+      {FakePinRepository? repository,
+      DateTime Function()? now,
+      VoidCallback? onLocked}) async {
     tester.view.physicalSize = const Size(720, 1600);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.resetPhysicalSize);
@@ -21,8 +23,11 @@ void main() {
     addTearDown(controller.close);
     await tester.pumpWidget(MaterialApp(
       home: PinFlowPage(
-          flow: flow, email: 'partner@example.com', controller: controller,
-          now: now),
+          flow: flow,
+          email: 'partner@example.com',
+          controller: controller,
+          now: now,
+          onLocked: onLocked ?? () {}),
     ));
   }
 
@@ -86,7 +91,8 @@ void main() {
 
   testWidgets('PIN lama salah dua kali lalu dibatasi pada kesalahan ketiga',
       (tester) async {
-    await showFlow(tester, PinFlow.change);
+    var logoutCount = 0;
+    await showFlow(tester, PinFlow.change, onLocked: () => logoutCount++);
     for (var i = 1; i <= 2; i++) {
       await tester.enterText(find.byType(TextField).first, '00000$i');
       await tester.pump();
@@ -97,6 +103,7 @@ void main() {
     }
     await tester.enterText(find.byType(TextField).first, '000003');
     await tester.pumpAndSettle();
+    expect(logoutCount, 1);
     expect(find.text('Terlalu Banyak Percobaan PIN'), findsOneWidget);
     expect(
         find.text('Kamu telah mencapai batas maksimal percobaan PIN. '
@@ -144,7 +151,9 @@ void main() {
         DsButtonState.enabled);
     await tester.tap(find.text('Verifikasi'));
     await tester.pumpAndSettle();
-    expect(find.text('OTP yang kamu masukkan salah'), findsOneWidget);
+    expect(
+        find.text('Kode OTP salah. Harap cek OTP pada email, lalu coba lagi.'),
+        findsOneWidget);
     expect(find.text('Masukkan Kode OTP'), findsOneWidget);
   });
 
@@ -173,11 +182,12 @@ void main() {
   testWidgets('OTP tertunda dipulihkan tanpa mengirim kode baru',
       (tester) async {
     final now = DateTime.now();
-    final repository = FakePinRepository()..pendingOtp = DataOtpModel(
-      token: 'restored-token',
-      nextRequestAt: now.add(const Duration(seconds: 42)).toIso8601String(),
-      expiredAt: now.add(const Duration(minutes: 5)).toIso8601String(),
-    );
+    final repository = FakePinRepository()
+      ..pendingOtp = DataOtpModel(
+        token: 'restored-token',
+        nextRequestAt: now.add(const Duration(seconds: 42)).toIso8601String(),
+        expiredAt: now.add(const Duration(minutes: 5)).toIso8601String(),
+      );
     await showFlow(tester, PinFlow.forgot,
         repository: repository, now: () => now);
     await tester.pump();
@@ -213,10 +223,14 @@ void main() {
         DsButtonState.enabled);
     await tester.tap(find.text('Verifikasi'));
     await tester.pumpAndSettle();
-    expect(find.text('OTP yang kamu masukkan salah'), findsOneWidget);
+    expect(
+        find.text('Kode OTP salah. Harap cek OTP pada email, lalu coba lagi.'),
+        findsOneWidget);
     await tester.enterText(find.byType(TextField).first, '123456');
     await tester.pump();
-    expect(find.text('OTP yang kamu masukkan salah'), findsNothing);
+    expect(
+        find.text('Kode OTP salah. Harap cek OTP pada email, lalu coba lagi.'),
+        findsNothing);
     expect(tester.widget<DsButton>(find.byType(DsButton)).state,
         DsButtonState.enabled);
   });

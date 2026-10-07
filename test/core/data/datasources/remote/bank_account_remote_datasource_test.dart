@@ -51,8 +51,8 @@ void main() {
   });
 
   test('status gagal dari host Komship tidak dianggap berhasil', () async {
-    when(client.get(Endpoints.komshipBankAccounts)).thenAnswer(
-        (_) async => response({'status': 'failed', 'data': [], 'message': 'Gagal'}));
+    when(client.get(Endpoints.komshipBankAccounts)).thenAnswer((_) async =>
+        response({'status': 'failed', 'data': [], 'message': 'Gagal'}));
 
     expect(datasource.accounts(), throwsA(isA<ServerException>()));
   });
@@ -117,7 +117,8 @@ void main() {
     });
   });
 
-  test('rekening duplikat menampilkan pesan BE tanpa membuka alur lain', () async {
+  test('rekening duplikat menampilkan pesan BE tanpa membuka alur lain',
+      () async {
     when(client.post(Endpoints.komshipCheckBankAlready,
             options: anyNamed('options'), data: anyNamed('data')))
         .thenAnswer((_) async => response({
@@ -152,6 +153,44 @@ void main() {
       throwsA(isA<ServerException>().having(
           (error) => error.message, 'message', 'Rekening sudah digunakan')),
     );
+  });
+
+  test('saldo minus kode 1002 dipisahkan dari error duplikat', () async {
+    when(client.post(Endpoints.komshipCheckBankAlready,
+            options: anyNamed('options'), data: anyNamed('data')))
+        .thenThrow(DioException(
+      requestOptions: RequestOptions(path: Endpoints.komshipCheckBankAlready),
+      type: DioExceptionType.badResponse,
+      response: response({
+        'status': 'error',
+        'code': 1002,
+        'data': [
+          {'id': 8, 'email': 's***@mail.com', 'saldo': -17000},
+          {'id': 9, 'email': 'a***@mail.com', 'saldo': -25000},
+        ],
+      }),
+    ));
+
+    final result = await datasource.checkDuplicate('BCA', 'Siti', '12345', 42);
+    expect(result.hasLiabilities, isTrue);
+    expect(result.liabilities, hasLength(2));
+    expect(result.liabilities.first.balance, -17000);
+  });
+
+  test('WhatsApp tidak aktif untuk nomor yang tidak terdaftar', () async {
+    when(client.post(Endpoints.komshipCheckWhatsApp,
+            queryParameters: anyNamed('queryParameters')))
+        .thenThrow(DioException(
+      requestOptions: RequestOptions(path: Endpoints.komshipCheckWhatsApp),
+      response: Response(
+        requestOptions: RequestOptions(path: Endpoints.komshipCheckWhatsApp),
+        statusCode: 400,
+      ),
+      type: DioExceptionType.badResponse,
+    ));
+    expect(await datasource.whatsappAvailable('08123456789'), isFalse);
+    verify(client.post(Endpoints.komshipCheckWhatsApp,
+        queryParameters: {'phone_no': '08123456789'})).called(1);
   });
 
   test('OTP divalidasi sebelum simpan, token konteks rekening konsisten',

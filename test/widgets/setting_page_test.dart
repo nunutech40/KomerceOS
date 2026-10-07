@@ -1,19 +1,37 @@
-import 'package:flutter/material.dart';
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
+import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart';
 import 'package:komtim_partner/features/superapp/features/setting/view/setting_page.dart';
 import 'package:komtim_partner/features/superapp/features/setting/widget/setting_menu_item.dart';
 
 import '../helpers/helpers.dart';
 
+class MockSuperappProfileBloc
+    extends MockBloc<SuperappProfileEvent, SuperappProfileState>
+    implements SuperappProfileBloc {}
+
 void main() {
   group('SettingPage Widget Tests', () {
     testWidgets('menampilkan title, profil, dan daftar menu pengaturan dengan benar',
         (WidgetTester tester) async {
-      await tester.pumpWidget(
-        TestHelper.wrapWithMaterialApp(
-          const SettingPage(),
+      final profileBloc = MockSuperappProfileBloc();
+      whenListen(
+        profileBloc,
+        const Stream<SuperappProfileState>.empty(),
+        initialState: const SuperappProfileState(
+          status: SuperappProfileStatus.loaded,
+          freshProfile: SuperappProfileModel(
+            fullName: 'John Doe Assegaf',
+            email: 'johndoe@gmail.com',
+          ),
         ),
       );
+      await tester.pumpWidget(BlocProvider<SuperappProfileBloc>.value(
+        value: profileBloc,
+        child: TestHelper.wrapWithMaterialApp(const SettingPage()),
+      ));
 
       // Verify page title is rendered
       expect(find.text('Pengaturan'), findsOneWidget);

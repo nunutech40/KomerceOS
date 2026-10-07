@@ -13,7 +13,7 @@ void main() {
       ));
       await tester.pump();
 
-      expect(tester.getSize(find.byType(AnimatedContainer).first).width, 32);
+      expect(tester.getSize(find.byType(AnimatedContainer).first).width, 36);
       expect(
         tester
             .widget<TextField>(find.byType(TextField).first)

@@ -27,12 +27,14 @@ class BankAccountRepositoryImpl extends BaseRepository
           () async => (await remote.owner(bankCode, accountNo)).accountName);
 
   @override
-  Future<Either<Failure, bool>> checkDuplicate(
+  Future<Either<Failure, BankAccountCheckResult>> checkDuplicate(
           String bankCode, String owner, String accountNo, int userId) =>
-      executeEither(() async {
-        await remote.checkDuplicate(bankCode, owner, accountNo, userId);
-        return true;
-      });
+      executeEither(
+          () => remote.checkDuplicate(bankCode, owner, accountNo, userId));
+
+  @override
+  Future<Either<Failure, bool>> whatsappAvailable(String phone) =>
+      executeEither(() => remote.whatsappAvailable(phone));
 
   @override
   Future<Either<Failure, BankOtpChallenge>> requestOtp(String method) =>

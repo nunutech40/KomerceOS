@@ -69,14 +69,14 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
       if (!mounted) return;
       final canContinue = remaining.fold<bool>(
         (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(failure.message)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(failure.message)));
           return false;
         },
         (count) => count > 0,
       );
       if (!canContinue) {
-        if (remaining.isRight()) await _showBankPinLock();
+        if (remaining.isRight()) await _showBankPinLock(autoLogout: true);
         return;
       }
     }
@@ -136,6 +136,12 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
 
   Future<void> _showBankPinLock({bool autoLogout = false}) async {
     if (!mounted) return;
+    if (autoLogout) {
+      context
+          .read<SuperappProfileBloc>()
+          .add(const ClearSuperappProfileEvent());
+      context.read<AuthBloc>().add(AuthLogoutRequested());
+    }
     await DsBottomSheet.show<void>(
       context: context,
       isDismissible: !autoLogout,
@@ -158,8 +164,6 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
       onPrimaryPressed: () {
         Navigator.of(context).pop();
         if (autoLogout) {
-          context.read<SuperappProfileBloc>().add(const ClearSuperappProfileEvent());
-          context.read<AuthBloc>().add(AuthLogoutRequested());
           return;
         }
         final email =
@@ -299,6 +303,11 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
               children: [
                 AccountActionTile(
                   icon: Icons.lock_outline,
+                  leadingWidget: SvgPicture.asset(
+                    'assets/images/superapp/setting/ic_account_pin_figma.svg',
+                    width: AppSpacing.iconLg,
+                    height: AppSpacing.iconLg,
+                  ),
                   title: 'PIN',
                   subtitle: 'PIN digunakan untuk melindungi akun kamu',
                   onTap: _openPin,
@@ -308,7 +317,7 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
                 AccountActionTile(
                   icon: Icons.account_balance_outlined,
                   leadingWidget: SvgPicture.asset(
-                    'assets/images/superapp/ic_bank.svg',
+                    'assets/images/superapp/setting/ic_account_bank_figma.svg',
                     width: AppSpacing.iconLg,
                     height: AppSpacing.iconLg,
                   ),
@@ -318,8 +327,13 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
                 ),
                 const Divider(
                     height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md),
-                const AccountActionTile(
+                AccountActionTile(
                   icon: Icons.lock_reset_outlined,
+                  leadingWidget: SvgPicture.asset(
+                    'assets/images/superapp/setting/ic_account_password_figma.svg',
+                    width: AppSpacing.iconLg,
+                    height: AppSpacing.iconLg,
+                  ),
                   title: 'Ubah Password',
                   subtitle: 'Belum tersedia di Superapp',
                 ),

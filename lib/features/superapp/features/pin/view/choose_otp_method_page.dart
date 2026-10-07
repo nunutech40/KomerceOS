@@ -163,11 +163,10 @@ class _ChooseOtpMethodPageState extends State<ChooseOtpMethodPage> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.email_outlined,
-            size: 22,
-            color: gray737373,
-            weight: 0.5,
+          SvgPicture.asset(
+            'assets/images/superapp/setting/ic_otp_email_figma.svg',
+            width: 24,
+            height: 24,
           ),
           const SizedBox(width: 12.0),
           Expanded(

@@ -43,7 +43,7 @@ class DsOtpField extends StatefulWidget {
     this.showVisibilityToggle = true,
     this.enableOneTimeCodeAutofill = false,
     this.grouped = true,
-    this.boxSize = 32,
+    this.boxSize = 36,
     this.length = 6,
   }) : assert(length == 6, 'DsOtpField currently only supports length = 6');
 
@@ -255,7 +255,9 @@ class _DsOtpFieldState extends State<DsOtpField> {
                   widget.obscureText &&
                   widget.showVisibilityToggle
               ? SizedBox(
-                  width: 316,
+                  // Keep the 3-3 groups centered while reserving a separate
+                  // 16px gap for the visibility action at the trailing edge.
+                  width: 354,
                   height: widget.boxSize + 8,
                   child: Stack(
                     alignment: Alignment.center,
@@ -300,9 +302,9 @@ class _DsOtpFieldState extends State<DsOtpField> {
           children: [
             _buildGroup(0, 3),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md3),
               child: SizedBox(
-                width: 12,
+                width: 16,
                 child: Divider(color: AppColors.grey400, thickness: 2),
               ),
             ),

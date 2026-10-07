@@ -9,6 +9,7 @@ import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/core/domain/entities/bank_accounts_model.dart';
 import '../bloc/bank_account_cubit.dart';
 import '../domain/entities/bank_account_entry.dart';
+import '../widget/bank_liability_sheet.dart';
 
 import '../widget/profile_form_card.dart';
 import '../widget/profile_option_sheet.dart';
@@ -56,6 +57,9 @@ class _BankAccountPageState extends State<BankAccountPage> {
   bool _checkingOwner = false;
   bool _loadingAccounts = true;
   bool _working = false;
+  bool _whatsappAvailable = false;
+  bool _checkingWhatsApp = false;
+  List<BankLiability> _liabilities = const [];
   int _resendSeconds = 0;
   List<AvailableBank> _availableBanks = [];
   Timer? _resendTimer;
@@ -141,7 +145,126 @@ class _BankAccountPageState extends State<BankAccountPage> {
       _bankCode != null &&
       _accountNumber.trim().length >= 5 &&
       _ownerName?.trim().isNotEmpty == true &&
-      !_ownerNotFound && _error == null && !_working;
+      !_ownerNotFound &&
+      _error == null &&
+      !_working;
+
+  Future<void> _showLiabilitySheet() async {
+    if (_liabilities.isEmpty || !mounted) return;
+    final note = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: BankLiabilitySheet(liabilities: _liabilities),
+      ),
+    );
+    if (!mounted || note == null) return;
+    // No confirmed endpoint records the reason yet. Keep this case fail-closed:
+    // never advance to OTP or save the bank account on a local-only reason.
+    await DsBottomSheet.show<void>(
+      context: context,
+      title: 'Pengajuan Belum Dapat Diproses',
+      description:
+          'Alasan belum dapat dikirim karena layanan pengajuan tanggungan belum tersedia. Rekening belum ditambahkan.',
+      primaryButtonText: 'Mengerti',
+      onPrimaryPressed: () => Navigator.of(context).pop(),
+    );
+  }
+
+  Future<void> _enterForm() async {
+    if (widget.loadAccounts != null) {
+      setState(() => _step = _BankAccountStep.form);
+      return;
+    }
+    final globalProfile = context.read<SuperappProfileBloc>();
+    final profile = globalProfile.state.displayProfile;
+    if (profile == null) {
+      globalProfile.add(const FetchSuperappProfileEvent());
+      await _showErrorSheet(_enterForm);
+      return;
+    }
+    if (SettingProfile.fromGlobalProfile(profile).isCompleteForBankAccount) {
+      setState(() => _step = _BankAccountStep.form);
+      return;
+    }
+    await DsBottomSheet.show<void>(
+      context: context,
+      title: 'Profil Belum Lengkap Nih',
+      description: 'Untuk melanjutkan, silakan lengkapi profil Anda.',
+      primaryButtonText: 'Lengkapi Profil',
+      onPrimaryPressed: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) => const SettingProfilePage(),
+        ));
+      },
+    );
+  }
+
+  Future<void> _enterMethod() async {
+    if (!_canConfirm) return;
+    if (widget.loadAccounts == null) {
+      final userId =
+          context.read<SuperappProfileBloc>().state.displayProfile?.id;
+      if (userId == null) {
+        setState(() => _error = 'ID pengguna belum tersedia');
+        return;
+      }
+      final bankCode = _bankCode!;
+      final owner = _ownerName!;
+      final number = _accountNumber.trim();
+      setState(() => _working = true);
+      final result =
+          await _cubit.checkDuplicate(bankCode, owner, number, userId);
+      if (!mounted || _step != _BankAccountStep.form) return;
+      if (_bankCode != bankCode ||
+          _ownerName != owner ||
+          _accountNumber.trim() != number) {
+        setState(() => _working = false);
+        return;
+      }
+      final check = result.fold<BankAccountCheckResult?>(
+        (failure) {
+          setState(() => _error = failure.message);
+          return null;
+        },
+        (value) => value,
+      );
+      setState(() => _working = false);
+      if (check == null) return;
+      setState(() {
+        _liabilities = check.liabilities;
+      });
+      if (check.hasLiabilities) {
+        await _showLiabilitySheet();
+        return;
+      }
+    }
+    setState(() {
+      _step = _BankAccountStep.method;
+      _checkingWhatsApp = widget.loadAccounts == null;
+      _whatsappAvailable = false;
+    });
+    if (widget.loadAccounts != null) return;
+    final phone =
+        context.read<SuperappProfileBloc>().state.displayProfile?.noHp ?? '';
+    final result = await _cubit.whatsappAvailable(phone);
+    if (!mounted || _step != _BankAccountStep.method) return;
+    result.fold(
+      (failure) => setState(() {
+        _error =
+            'Status WhatsApp belum dapat diperiksa. Gunakan SMS atau coba lagi.';
+        _checkingWhatsApp = false;
+      }),
+      (available) => setState(() {
+        _whatsappAvailable = available;
+        _checkingWhatsApp = false;
+      }),
+    );
+  }
 
   void _back() {
     if (_step == _BankAccountStep.list) {
@@ -188,19 +311,10 @@ class _BankAccountPageState extends State<BankAccountPage> {
           : await widget.lookupOwner!(bank, number);
       if (!mounted) return;
       if (_bankCode != bank || _accountNumber.trim() != number) return;
-      if (owner != null && widget.lookupOwner == null) {
-        final userId = context.read<SuperappProfileBloc>().state.displayProfile?.id;
-        if (userId == null) throw StateError('ID pengguna belum tersedia');
-        final duplicate = await _cubit.checkDuplicate(bank, owner, number, userId);
-        duplicate.fold(
-          (failure) => throw StateError(failure.message),
-          (_) {},
-        );
-        if (!mounted || _bankCode != bank || _accountNumber.trim() != number) return;
-      }
       setState(() {
         _ownerName = owner?.trim().isNotEmpty == true ? owner!.trim() : null;
         _ownerNotFound = owner == null || owner.isEmpty;
+        _liabilities = const [];
         _error = null;
       });
     } catch (error) {
@@ -224,9 +338,13 @@ class _BankAccountPageState extends State<BankAccountPage> {
           : (remaining.inMicroseconds / Duration.microsecondsPerSecond).ceil());
       if (_resendSeconds == 0) _resendTimer?.cancel();
     }
+
     tick();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) { timer.cancel(); return; }
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       tick();
     });
   }
@@ -242,7 +360,9 @@ class _BankAccountPageState extends State<BankAccountPage> {
       if (_availableBanks.isEmpty) return;
     }
     final options = widget.lookupOwner == null
-        ? _availableBanks.map((bank) => ProfileOption(id: bank.code, label: bank.name)).toList()
+        ? _availableBanks
+            .map((bank) => ProfileOption(id: bank.code, label: bank.name))
+            .toList()
         : _banks.map((bank) => ProfileOption(id: bank, label: bank)).toList();
     final selected = await showModalBottomSheet<ProfileOption>(
       context: context,
@@ -259,6 +379,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
       _bank = selected.label;
       _bankCode = selected.id;
       _ownerName = null;
+      _liabilities = const [];
       _ownerNotFound = false;
       _error = null;
     });
@@ -280,19 +401,24 @@ class _BankAccountPageState extends State<BankAccountPage> {
         },
       );
     }
-    if (_otpMethod == method && _otpToken != null &&
+    if (_otpMethod == method &&
+        _otpToken != null &&
         _otpNextRequestAt != null &&
         _otpNextRequestAt!.isAfter(DateTime.now())) {
       setState(() {
         _step = _BankAccountStep.otp;
-        _error = _otpExpiresAt != null && _otpExpiresAt!.isBefore(DateTime.now())
-            ? 'Kode OTP kedaluwarsa. Tunggu hingga Kirim Ulang tersedia.'
-            : null;
+        _error =
+            _otpExpiresAt != null && _otpExpiresAt!.isBefore(DateTime.now())
+                ? 'Kode OTP kedaluwarsa. Tunggu hingga Kirim Ulang tersedia.'
+                : null;
       });
       _startResendCountdown(_otpNextRequestAt!);
       return;
     }
-    setState(() { _working = true; _error = null; });
+    setState(() {
+      _working = true;
+      _error = null;
+    });
     final result = await _cubit.requestOtp(method);
     if (!mounted) return;
     result.fold(
@@ -310,19 +436,30 @@ class _BankAccountPageState extends State<BankAccountPage> {
   }
 
   Future<void> _verifyOtp() async {
-    if (_otpController.text.length != 6 || _working || _otpToken == null) return;
+    if (_otpController.text.length != 6 || _working || _otpToken == null) {
+      return;
+    }
     if (_otpExpiresAt != null && _otpExpiresAt!.isBefore(DateTime.now())) {
       setState(() => _error = 'Kode OTP kedaluwarsa. Kirim ulang kode OTP.');
       return;
     }
-    setState(() { _working = true; _error = null; });
+    setState(() {
+      _working = true;
+      _error = null;
+    });
     final verified = await _cubit.verifyOtp(_otpController.text, _otpToken!);
     if (!mounted) return;
     final valid = verified.fold<bool>(
-      (failure) { setState(() => _error = failure.message); return false; },
+      (failure) {
+        setState(() => _error = failure.message);
+        return false;
+      },
       (value) => value,
     );
-    if (!valid) { setState(() => _working = false); return; }
+    if (!valid) {
+      setState(() => _working = false);
+      return;
+    }
     final saved = await _cubit.addAccount(
         _otpToken!, _bankCode!, _accountNumber.trim(), _ownerName!);
     if (!mounted) return;
@@ -335,6 +472,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
         _otpNextRequestAt = null;
         _otpExpiresAt = null;
         _otpMethod = null;
+        _liabilities = const [];
         _step = _BankAccountStep.list;
         _loadAccounts();
         _showSuccess();
@@ -351,7 +489,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
       builder: (context) => Container(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
         decoration: const BoxDecoration(
           color: AppColors.bgPopup,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -360,21 +498,29 @@ class _BankAccountPageState extends State<BankAccountPage> {
           top: false,
           child: SizedBox(
             height:
-                (MediaQuery.sizeOf(context).height * .72).clamp(420.0, 650.0),
+                (MediaQuery.sizeOf(context).height * .75).clamp(420.0, 680.0),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded,
-                        color: AppColors.grey600),
-                  ),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 48),
+                      child: Text('Rekening Berhasil\nDitambahkan',
+                          style: AppTypography.headingXs,
+                          textAlign: TextAlign.center),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded,
+                            color: AppColors.grey600),
+                      ),
+                    ),
+                  ],
                 ),
-                const Text('Rekening Berhasil\nDitambahkan',
-                    style: AppTypography.headingXs,
-                    textAlign: TextAlign.center),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                     'Selamat! Nomor rekening berhasil\nditambahkan di akun kamu',
                     style: AppTypography.bodySmRegular
@@ -422,43 +568,27 @@ class _BankAccountPageState extends State<BankAccountPage> {
                   _BankAccountStep.otp => 'Verifikasi',
                   _BankAccountStep.method => '',
                 },
-                loadingText: _step == _BankAccountStep.otp
-                    ? 'Memverifikasi OTP...'
-                    : null,
+                loadingText: switch (_step) {
+                  _BankAccountStep.form => 'Memverifikasi rekening...',
+                  _BankAccountStep.list => null,
+                  _BankAccountStep.otp => 'Memverifikasi OTP...',
+                  _BankAccountStep.method => null,
+                },
                 state: _working
                     ? DsButtonState.loading
                     : _step == _BankAccountStep.list &&
-                            _accounts.length >= _maxAccounts ||
-                        _step == _BankAccountStep.form && !_canConfirm ||
-                        _step == _BankAccountStep.otp &&
-                            _otpController.text.length != 6
-                    ? DsButtonState.disabled
-                    : DsButtonState.enabled,
+                                _accounts.length >= _maxAccounts ||
+                            _step == _BankAccountStep.form && !_canConfirm ||
+                            _step == _BankAccountStep.otp &&
+                                _otpController.text.length != 6
+                        ? DsButtonState.disabled
+                        : DsButtonState.enabled,
                 onPressed: () {
                   switch (_step) {
                     case _BankAccountStep.list:
-                      if (widget.loadAccounts == null) {
-                        final profile = context.read<SuperappProfileBloc>().state.displayProfile;
-                        if (profile?.address?.trim().isNotEmpty != true ||
-                            profile?.gender == null) {
-                          DsBottomSheet.show<void>(
-                            context: context,
-                            title: 'Profil Belum Lengkap Nih',
-                            description: 'Untuk melanjutkan, silakan lengkapi profil Anda.',
-                            primaryButtonText: 'Lengkapi Profil',
-                            onPrimaryPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).push(MaterialPageRoute<void>(
-                                builder: (_) => const SettingProfilePage(),
-                              ));
-                            },
-                          );
-                          return;
-                        }
-                      }
-                      setState(() => _step = _BankAccountStep.form);
+                      _enterForm();
                     case _BankAccountStep.form:
-                      setState(() => _step = _BankAccountStep.method);
+                      _enterMethod();
                     case _BankAccountStep.otp:
                       _verifyOtp();
                     case _BankAccountStep.method:
@@ -543,6 +673,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
                 _accountNumber = value;
                 _ownerName = null;
                 _ownerNotFound = false;
+                _liabilities = const [];
                 _error = null;
               }),
             ),
@@ -630,7 +761,8 @@ class _BankAccountPageState extends State<BankAccountPage> {
 
   String get _maskedPhone {
     if (widget.loadAccounts != null) return '+62 *** ****899';
-    final phone = context.read<SuperappProfileBloc>().state.displayProfile?.noHp ?? '';
+    final phone =
+        context.read<SuperappProfileBloc>().state.displayProfile?.noHp ?? '';
     if (phone.length < 4) return 'nomor terdaftar';
     return '${phone.substring(0, phone.length > 6 ? 3 : 1)} *** ****${phone.substring(phone.length - 3)}';
   }
@@ -647,6 +779,11 @@ class _BankAccountPageState extends State<BankAccountPage> {
                   .copyWith(color: AppColors.grey600),
               textAlign: TextAlign.center),
           const SizedBox(height: AppSpacing.xl),
+          if (_checkingWhatsApp)
+            const Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.md),
+              child: CircularProgressIndicator(color: AppColors.primaryBase),
+            ),
           _methodTile(
               Icons.chat_bubble_outline_rounded,
               'WhatsApp OTP',
@@ -665,14 +802,22 @@ class _BankAccountPageState extends State<BankAccountPage> {
         borderRadius: BorderRadius.circular(15),
         child: InkWell(
           borderRadius: BorderRadius.circular(15),
-          onTap: _working ? null : () => _requestOtp(method),
+          onTap: _working ||
+                  (method == 'whatsapp' &&
+                      (_checkingWhatsApp || !_whatsappAvailable))
+              ? null
+              : () => _requestOtp(method),
           child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Row(children: [
                 Icon(icon, color: AppColors.grey600),
                 const SizedBox(width: AppSpacing.md),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(title, style: AppTypography.bodyMdMedium),
+                  Text(title,
+                      style: AppTypography.bodyMdMedium.copyWith(
+                          color: method == 'whatsapp' && !_whatsappAvailable
+                              ? AppColors.grey600
+                              : AppColors.alwaysBlack)),
                   Text(subtitle,
                       style: AppTypography.bodySmRegular
                           .copyWith(color: AppColors.grey600))
@@ -736,12 +881,18 @@ class _BankAccountPageState extends State<BankAccountPage> {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(children: [
           Container(
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                   color: AppColors.background,
                   borderRadius: BorderRadius.circular(13)),
-              child: const Icon(Icons.account_balance_outlined)),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/superapp/setting/ic_bank_list_figma.svg',
+                  width: 22,
+                  height: 22,
+                ),
+              )),
           const SizedBox(width: AppSpacing.md),
           Expanded(
               child: Column(

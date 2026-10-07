@@ -50,6 +50,15 @@ class SettingProfile extends Equatable {
   final ProfileOption? location, businessSector;
   final String? logoUrl, logoPath;
 
+  /// Gatekeeper tambah rekening: keenam field profil pribadi wajib terisi.
+  bool get isCompleteForBankAccount =>
+      fullName.trim().isNotEmpty &&
+      username.trim().isNotEmpty &&
+      phone.trim().isNotEmpty &&
+      email.trim().isNotEmpty &&
+      gender != null &&
+      address.trim().isNotEmpty;
+
   const SettingProfile({
     this.fullName = '',
     this.username = '',

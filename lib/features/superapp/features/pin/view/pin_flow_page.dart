@@ -23,6 +23,7 @@ class PinFlowPage extends StatefulWidget {
     this.onCompleted,
     this.controller,
     this.now,
+    this.onLocked,
   });
 
   final PinFlow flow;
@@ -30,6 +31,7 @@ class PinFlowPage extends StatefulWidget {
   final VoidCallback? onCompleted;
   final AccountPinCubit? controller;
   final DateTime Function()? now;
+  final VoidCallback? onLocked;
 
   @override
   State<PinFlowPage> createState() => _PinFlowPageState();
@@ -50,6 +52,7 @@ class _PinFlowPageState extends State<PinFlowPage> {
   int _fieldEpoch = 0;
   Timer? _timer;
   bool _isConfirming = false;
+  bool _lockHandled = false;
 
   @override
   void initState() {
@@ -77,11 +80,14 @@ class _PinFlowPageState extends State<PinFlowPage> {
         if (challenge == null || (challenge.token ?? '').isEmpty) return;
         final deadline = challenge.nextRequestAt == null
             ? null
-            : DateTime.tryParse(challenge.nextRequestAt!.replaceFirst(' ', 'T'));
+            : DateTime.tryParse(
+                challenge.nextRequestAt!.replaceFirst(' ', 'T'));
         if (deadline == null) return;
         final now = widget.now?.call() ?? DateTime.now();
-        final expiry = DateTime.tryParse(challenge.expiredAt.replaceFirst(' ', 'T'));
-        if (deadline.isBefore(now) && (expiry == null || expiry.isBefore(now))) {
+        final expiry =
+            DateTime.tryParse(challenge.expiredAt.replaceFirst(' ', 'T'));
+        if (deadline.isBefore(now) &&
+            (expiry == null || expiry.isBefore(now))) {
           _controller.clearPendingOtp();
           return;
         }
@@ -152,9 +158,13 @@ class _PinFlowPageState extends State<PinFlowPage> {
           : (remaining.inMicroseconds / Duration.microsecondsPerSecond).ceil());
       if (_resendSeconds == 0) _timer?.cancel();
     }
+
     tick();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) { timer.cancel(); return; }
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       tick();
     });
   }
@@ -169,8 +179,10 @@ class _PinFlowPageState extends State<PinFlowPage> {
       (data) {
         if ((data.token ?? '').isEmpty ||
             data.nextRequestAt == null ||
-            DateTime.tryParse(data.nextRequestAt!.replaceFirst(' ', 'T')) == null) {
-          setState(() => _error = 'Waktu kirim ulang OTP tidak tersedia. Coba lagi.');
+            DateTime.tryParse(data.nextRequestAt!.replaceFirst(' ', 'T')) ==
+                null) {
+          setState(() =>
+              _error = 'Waktu kirim ulang OTP tidak tersedia. Coba lagi.');
           return;
         }
         _otpToken = data.token!;
@@ -191,8 +203,9 @@ class _PinFlowPageState extends State<PinFlowPage> {
         if (!mounted) return;
         result.fold(
           (failure) {
-            final remaining = RegExp(r'Sisa percobaan:\s*(\d+)', caseSensitive: false)
-                .firstMatch(failure.message);
+            final remaining =
+                RegExp(r'Sisa percobaan:\s*(\d+)', caseSensitive: false)
+                    .firstMatch(failure.message);
             final attempts = int.tryParse(remaining?.group(1) ?? '');
             if (attempts == 0 ||
                 RegExp(r'lock:\s*(true|1)', caseSensitive: false)
@@ -207,7 +220,8 @@ class _PinFlowPageState extends State<PinFlowPage> {
           (data) {
             if (data.isValid) {
               if ((data.usableToken ?? '').isEmpty) {
-                setState(() => _error = 'Token verifikasi PIN tidak tersedia. Coba lagi.');
+                setState(() =>
+                    _error = 'Token verifikasi PIN tidak tersedia. Coba lagi.');
                 return;
               }
               _verifiedOldPin = enteredPin;
@@ -233,7 +247,8 @@ class _PinFlowPageState extends State<PinFlowPage> {
             if (data.isValid) {
               _go(_PinStep.newPin);
             } else {
-              setState(() => _error = 'OTP yang kamu masukkan salah');
+              setState(() => _error =
+                  'Kode OTP salah. Harap cek OTP pada email, lalu coba lagi.');
             }
           },
         );
@@ -278,6 +293,16 @@ class _PinFlowPageState extends State<PinFlowPage> {
   }
 
   void _showLockSheet() {
+    if (_lockHandled) return;
+    _lockHandled = true;
+    if (widget.onLocked != null) {
+      widget.onLocked!();
+    } else {
+      context
+          .read<SuperappProfileBloc>()
+          .add(const ClearSuperappProfileEvent());
+      context.read<AuthBloc>().add(AuthLogoutRequested());
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       DsBottomSheet.show<void>(
@@ -292,8 +317,6 @@ class _PinFlowPageState extends State<PinFlowPage> {
           _timer?.cancel();
           _verifiedOldPin = '';
           _go(_PinStep.login);
-          context.read<SuperappProfileBloc>().add(const ClearSuperappProfileEvent());
-          context.read<AuthBloc>().add(AuthLogoutRequested());
         },
       );
     });
@@ -338,7 +361,8 @@ class _PinFlowPageState extends State<PinFlowPage> {
                       : null,
                   state: _isConfirming
                       ? DsButtonState.loading
-                      : (_step == _PinStep.chooseEmail && _resendSeconds == 0) ||
+                      : (_step == _PinStep.chooseEmail &&
+                                  _resendSeconds == 0) ||
                               (_input.length == 6 &&
                                   !(_step == _PinStep.otp && _error != null) &&
                                   (_step != _PinStep.confirmPin ||
@@ -365,19 +389,19 @@ class _PinFlowPageState extends State<PinFlowPage> {
       final isChoosingEmail = _step == _PinStep.chooseEmail;
       return Column(
         children: [
-          const SizedBox(height: AppSpacing.xl2),
+          const SizedBox(height: 88),
           SvgPicture.asset(
             'assets/images/superapp/auth/verify_code_email.svg',
             width: 112,
             height: 112,
           ),
-          const SizedBox(height: AppSpacing.md3),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             isChoosingEmail ? 'Pilih Metode Verifikasi' : 'Masukkan Kode OTP',
             style: AppTypography.headingXxs,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
           Text(
             isChoosingEmail
                 ? 'Pilih metode OTP untuk memverifikasi akunmu. Pastikan data kontak yang kamu pilih sudah benar'
@@ -405,8 +429,11 @@ class _PinFlowPageState extends State<PinFlowPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.mail_outline,
-                      size: AppSpacing.iconMd, color: AppColors.grey600),
+                  SvgPicture.asset(
+                    'assets/images/superapp/setting/ic_otp_email_figma.svg',
+                    width: AppSpacing.iconMd,
+                    height: AppSpacing.iconMd,
+                  ),
                   const SizedBox(width: AppSpacing.md3),
                   Expanded(
                     child: Column(
@@ -455,7 +482,7 @@ class _PinFlowPageState extends State<PinFlowPage> {
 
     return Column(
       children: [
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: 88),
         Text(
           switch (_step) {
             _PinStep.oldPin => 'Masukkan 6 Digit PIN Kamu',
@@ -556,48 +583,55 @@ class _PinFlowPageState extends State<PinFlowPage> {
             child: Column(
               children: [
                 Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_step == _PinStep.login) ...[
-                          const Icon(Icons.lock_clock_outlined,
-                              size: 180, color: AppColors.primaryBase),
-                          const SizedBox(height: AppSpacing.lg),
-                        ],
-                        Text(
-                          _step == _PinStep.success
-                              ? 'PIN Kamu Berhasil ${widget.flow == PinFlow.change && !_isRecovery ? 'Diubah' : 'Dibuat'}'
-                              : 'Masuk ke Akun Kamu',
-                          style: AppTypography.bodyLgBold,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          _step == _PinStep.success
-                              ? widget.flow == PinFlow.change && !_isRecovery
-                                  ? 'PIN baru kamu telah diubah dan dapat digunakan untuk proses verifikasi akun.'
-                                  : 'PIN baru kamu telah dibuat dan dapat digunakan untuk proses verifikasi akun.'
-                              : 'Sesi berakhir. Silakan masuk kembali.',
-                          textAlign: TextAlign.center,
-                        ),
-                        if (_step == _PinStep.success) ...[
-                          const SizedBox(height: AppSpacing.lg),
-                          SvgPicture.asset(
-                            'assets/images/superapp/auth/success_reset_password.svg',
-                            height: 220,
+                  child: Column(
+                    children: [
+                      if (_step == _PinStep.success)
+                        const Spacer(flex: 2)
+                      else
+                        const Spacer(),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_step == _PinStep.login) ...[
+                            const Icon(Icons.lock_clock_outlined,
+                                size: 180, color: AppColors.primaryBase),
+                            const SizedBox(height: AppSpacing.lg),
+                          ],
+                          Text(
+                            _step == _PinStep.success
+                                ? 'PIN Kamu Berhasil ${widget.flow == PinFlow.change && !_isRecovery ? 'Diubah' : 'Dibuat'}'
+                                : 'Masuk ke Akun Kamu',
+                            style: AppTypography.bodyLgBold,
+                            textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-                          DsButton(
-                            text: 'Kembali',
-                            onPressed: () {
-                              widget.onCompleted?.call();
-                              Navigator.of(context).pop();
-                            },
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            _step == _PinStep.success
+                                ? widget.flow == PinFlow.change && !_isRecovery
+                                    ? 'PIN baru kamu telah diubah dan dapat digunakan untuk proses verifikasi akun.'
+                                    : 'PIN baru kamu telah dibuat dan dapat digunakan untuk proses verifikasi akun.'
+                                : 'Sesi berakhir. Silakan masuk kembali.',
+                            textAlign: TextAlign.center,
                           ),
+                          if (_step == _PinStep.success) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            SvgPicture.asset(
+                              'assets/images/superapp/auth/success_reset_password.svg',
+                              height: 220,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            DsButton(
+                              text: 'Kembali',
+                              onPressed: () {
+                                widget.onCompleted?.call();
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
+                      ),
+                      const Spacer(),
+                    ],
                   ),
                 ),
                 if (_step == _PinStep.login)

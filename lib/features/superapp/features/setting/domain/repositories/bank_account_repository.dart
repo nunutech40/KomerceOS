@@ -6,8 +6,9 @@ abstract class BankAccountRepository {
   Future<Either<Failure, List<BankAccountEntry>>> accounts();
   Future<Either<Failure, List<AvailableBank>>> banks();
   Future<Either<Failure, String?>> owner(String bankCode, String accountNo);
-  Future<Either<Failure, bool>> checkDuplicate(
+  Future<Either<Failure, BankAccountCheckResult>> checkDuplicate(
       String bankCode, String owner, String accountNo, int userId);
+  Future<Either<Failure, bool>> whatsappAvailable(String phone);
   Future<Either<Failure, BankOtpChallenge>> requestOtp(String method);
   Future<Either<Failure, BankOtpChallenge?>> restorePendingOtp(String method);
   Future<Either<Failure, bool>> clearPendingOtp();

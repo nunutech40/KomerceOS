@@ -20,6 +20,7 @@ class FakePinRepository implements PinRepository {
   @override
   Future<Either<Failure, VerifyPinModel>> verifyPin(String pin) async {
     if (pin == '123456') {
+      attemptLeft = 3;
       return const Right(VerifyPinModel(
           isValid: true, usableToken: 'usable-token', attemptLeft: 3));
     }

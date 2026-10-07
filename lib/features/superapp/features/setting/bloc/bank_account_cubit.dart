@@ -30,9 +30,11 @@ class BankAccountCubit extends Cubit<BankAccountState> {
       _run(_repository.banks());
   Future<Either<Failure, String?>> owner(String bankCode, String accountNo) =>
       _run(_repository.owner(bankCode, accountNo));
-  Future<Either<Failure, bool>> checkDuplicate(
+  Future<Either<Failure, BankAccountCheckResult>> checkDuplicate(
           String bankCode, String owner, String accountNo, int userId) =>
       _run(_repository.checkDuplicate(bankCode, owner, accountNo, userId));
+  Future<Either<Failure, bool>> whatsappAvailable(String phone) =>
+      _run(_repository.whatsappAvailable(phone));
   Future<Either<Failure, BankOtpChallenge>> requestOtp(String method) =>
       _run(_repository.requestOtp(method));
   Future<Either<Failure, BankOtpChallenge?>> restorePendingOtp(String method) =>

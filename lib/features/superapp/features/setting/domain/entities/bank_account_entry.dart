@@ -28,3 +28,18 @@ class BankOtpChallenge {
   final DateTime nextRequestAt;
   final DateTime? expiredAt;
 }
+
+class BankLiability {
+  const BankLiability(
+      {required this.email, required this.balance, this.userId});
+  final String email;
+  final int balance;
+  final int? userId;
+}
+
+class BankAccountCheckResult {
+  const BankAccountCheckResult.clear() : liabilities = const [];
+  const BankAccountCheckResult.liabilities(this.liabilities);
+  final List<BankLiability> liabilities;
+  bool get hasLiabilities => liabilities.isNotEmpty;
+}

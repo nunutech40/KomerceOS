@@ -24,8 +24,6 @@ class DioClient {
       ),
     );
 
-    authInterceptor.setDio(_dio);
-
     _dio.interceptors.addAll([
       authInterceptor,
       ChuckerDioInterceptor(),
