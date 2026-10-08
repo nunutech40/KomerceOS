@@ -18,6 +18,7 @@ class DsTextField extends StatelessWidget {
     this.autovalidateMode,
     this.maxLength,
     this.lines = 1,
+    this.enabled = true,
   });
 
   final TextEditingController controller;
@@ -29,10 +30,12 @@ class DsTextField extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final int? maxLength;
   final int lines;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) => TextFormField(
         controller: controller,
+        enabled: enabled,
         style:
             AppTypography.bodySmRegular.copyWith(color: AppColors.alwaysBlack),
         keyboardType: keyboardType,

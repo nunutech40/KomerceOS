@@ -176,6 +176,41 @@ void main() {
     expect(find.text('No. HP Bisnis harus diisi'), findsOneWidget);
   });
 
+  testWidgets('edit nama, alamat, dan nomor bisnis memicu validasi langsung',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(children: [
+            SectionName(
+              profile: profile,
+              onNameChanged: _ignoreProfileText,
+              onReadOnlyTap: _ignoreProfileTap,
+            ),
+            SectionAddress(profile: profile, onChanged: _ignoreProfileText),
+            SectionBusinessInfo(
+              profile: profile,
+              onNameChanged: _ignoreProfileText,
+              onPhoneChanged: _ignoreProfileText,
+              onLocationTap: _ignoreProfileTap,
+              onSectorTap: _ignoreProfileTap,
+            ),
+          ]),
+        ),
+      ),
+    ));
+    await tester.enterText(find.byKey(const ValueKey('Nama Lengkap')), 'Nama2');
+    await tester.pump();
+    expect(
+        find.text('Nama harus 3–60 karakter dan hanya huruf'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('Alamat Lengkap')), '');
+    await tester.pump();
+    expect(find.text('Alamat harus 1–255 karakter'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('No. HP Bisnis')), '123');
+    await tester.pump();
+    expect(find.text('Masukkan 8–15 digit nomor HP'), findsOneWidget);
+  });
+
   testWidgets('profile save waits for confirmation and Kembali cancels it',
       (tester) async {
     if (locator.isRegistered<SettingProfileBloc>()) {
@@ -217,6 +252,123 @@ void main() {
     await tester.tap(find.widgetWithText(DsButton, 'Simpan Perubahan'));
     await tester.pumpAndSettle();
     expect(repository.accountUpdates, 1);
+  });
+
+  testWidgets('menghapus sebagian nama valid mengaktifkan Simpan',
+      (tester) async {
+    if (locator.isRegistered<SettingProfileBloc>()) {
+      locator.unregister<SettingProfileBloc>();
+    }
+    locator.registerFactory(
+        () => SettingProfileBloc(repository: FakeSettingProfileRepository()));
+    addTearDown(() {
+      if (locator.isRegistered<SettingProfileBloc>()) {
+        locator.unregister<SettingProfileBloc>();
+      }
+    });
+    final globalProfile = MockSuperappProfileBloc();
+    whenListen(
+      globalProfile,
+      const Stream<SuperappProfileState>.empty(),
+      initialState: const SuperappProfileState(
+        status: SuperappProfileStatus.loaded,
+        freshProfile: superappProfile,
+      ),
+    );
+    await tester.pumpWidget(BlocProvider<SuperappProfileBloc>.value(
+      value: globalProfile,
+      child: const MaterialApp(home: SettingProfilePage()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('Nama Lengkap')), 'Partne');
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DsButton>(find.widgetWithText(DsButton, 'Simpan')).state,
+      DsButtonState.enabled,
+    );
+    await tester.enterText(find.byKey(const ValueKey('Nama Lengkap')), 'Pa');
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DsButton>(find.widgetWithText(DsButton, 'Simpan')).state,
+      DsButtonState.disabled,
+    );
+    expect(find.text('Nama Lengkap harus 3–60 karakter dan hanya huruf.'),
+        findsOneWidget);
+  });
+
+  test('validasi simpan hanya memeriksa field yang diubah', () {
+    const original = SettingProfile(
+      fullName: 'Partner',
+      address: '',
+      businessName: 'Toko',
+      businessPhone: '081234567890',
+      location: ProfileOption(id: '1', label: 'Banyumas'),
+    );
+    final nameEdit = SettingProfileState(
+      original: original,
+      draft: original.copyWith(fullName: 'Partne'),
+    );
+    expect(nameEdit.isAccountDirty, isTrue);
+    expect(nameEdit.isBusinessDirty, isFalse);
+    expect(nameEdit.canSave, isTrue);
+
+    final invalidName = SettingProfileState(
+      original: original,
+      draft: original.copyWith(fullName: 'Pa'),
+    );
+    expect(invalidName.canSave, isFalse);
+    expect(invalidName.saveValidationMessage, contains('Nama Lengkap'));
+
+    final addressEdit = SettingProfileState(
+      original: original,
+      draft: original.copyWith(address: 'Jl. Mawar 1'),
+    );
+    expect(addressEdit.canSave, isTrue);
+
+    final genderEdit = SettingProfileState(
+      original: original,
+      draft: original.copyWith(gender: ProfileGender.female),
+    );
+    expect(genderEdit.canSave, isTrue);
+
+    final invalidPhone = SettingProfileState(
+      original: original,
+      draft: original.copyWith(businessPhone: 'abc'),
+    );
+    expect(invalidPhone.canSave, isFalse);
+    expect(invalidPhone.saveValidationMessage, contains('No. HP Bisnis'));
+
+    final businessNameEdit = SettingProfileState(
+      original: original,
+      draft: original.copyWith(businessName: 'Toko Baru'),
+    );
+    expect(businessNameEdit.canSave, isTrue);
+
+    const incompleteBusiness = SettingProfile(
+      fullName: 'Partner',
+      businessName: 'Toko',
+    );
+    final incompleteBusinessEdit = SettingProfileState(
+      original: incompleteBusiness,
+      draft: incompleteBusiness.copyWith(businessName: 'Toko Baru'),
+    );
+    expect(incompleteBusinessEdit.canSave, isFalse);
+    expect(incompleteBusinessEdit.saveValidationMessage,
+        contains('No. HP Bisnis'));
+
+    final logoEdit = SettingProfileState(
+      original: original,
+      draft: original.copyWith(logoPath: '/tmp/selected-logo.jpg'),
+    );
+    expect(logoEdit.canSave, isTrue);
+
+    final logoRefresh = SettingProfileState(
+      original: original,
+      draft: original.copyWith(logoUrl: 'https://example.com/logo.jpg'),
+    );
+    expect(logoRefresh.isDirty, isFalse);
+    expect(logoRefresh.canSave, isFalse);
   });
 
   test('global refresh syncs business while retaining account edits', () async {
@@ -378,8 +530,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('KYC keeps editable fields and protects immutable account data',
-      () async {
+  test('KYC locks personal edits while preserving business edits', () async {
     final bloc = SettingProfileBloc(repository: FakeSettingProfileRepository());
     bloc.add(const SettingProfileGlobalLoaded(superappProfile));
     await bloc.stream.firstWhere((s) => !s.loading);
@@ -390,7 +541,8 @@ void main() {
     await bloc.stream.firstWhere((s) =>
         s.draft.businessName == 'Draft shop' &&
         s.original.businessName == 'Toko fresh');
-    expect(bloc.state.draft.fullName, 'Draft account');
+    expect(bloc.state.personalProfileVerified, isTrue);
+    expect(bloc.state.draft.fullName, 'Partner');
     expect(bloc.state.draft.businessName, 'Draft shop');
     expect(bloc.state.canSave, true);
     bloc.update(bloc.state.draft.copyWith(
@@ -400,11 +552,63 @@ void main() {
         email: 'forbidden@example.com',
         businessName: 'New shop'));
     await bloc.stream.firstWhere((s) => s.draft.businessName == 'New shop');
-    expect(bloc.state.draft.fullName, 'Allowed Name');
+    expect(bloc.state.draft.fullName, 'Partner');
     expect(bloc.state.draft.username, 'partner');
     expect(bloc.state.draft.phone, '081234567890');
     expect(bloc.state.draft.email, 'partner@example.com');
     await bloc.close();
+  });
+
+  testWidgets('KYC verified mengunci pribadi tetapi edit bisnis aktif',
+      (tester) async {
+    if (locator.isRegistered<SettingProfileBloc>()) {
+      locator.unregister<SettingProfileBloc>();
+    }
+    locator.registerFactory(
+        () => SettingProfileBloc(repository: FakeSettingProfileRepository()));
+    addTearDown(() {
+      if (locator.isRegistered<SettingProfileBloc>()) {
+        locator.unregister<SettingProfileBloc>();
+      }
+    });
+    final globalProfile = MockSuperappProfileBloc();
+    whenListen(
+      globalProfile,
+      const Stream<SuperappProfileState>.empty(),
+      initialState: const SuperappProfileState(
+        status: SuperappProfileStatus.loaded,
+        freshProfile: refreshed,
+      ),
+    );
+    await tester.pumpWidget(BlocProvider<SuperappProfileBloc>.value(
+      value: globalProfile,
+      child: const MaterialApp(home: SettingProfilePage()),
+    ));
+    await tester.pumpAndSettle();
+    expect(
+        tester
+            .widget<DsTextField>(find.byKey(const ValueKey('Nama Lengkap')))
+            .enabled,
+        isFalse);
+    expect(
+        tester
+            .widget<DsTextField>(find.byKey(const ValueKey('Alamat Lengkap')))
+            .enabled,
+        isFalse);
+    expect(
+        tester
+            .widget<ProfilePickerField>(find.byWidgetPredicate((widget) =>
+                widget is ProfilePickerField &&
+                widget.label == 'Jenis Kelamin'))
+            .enabled,
+        isFalse);
+    await tester.enterText(
+        find.byKey(const ValueKey('Nama Bisnis')), 'Toko Baru');
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DsButton>(find.widgetWithText(DsButton, 'Simpan')).state,
+      DsButtonState.enabled,
+    );
   });
 
   test(

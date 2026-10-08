@@ -11,11 +11,13 @@ class SectionName extends StatelessWidget {
   final SettingProfile profile;
   final ValueChanged<String> onNameChanged;
   final VoidCallback onReadOnlyTap;
+  final bool enabled;
   const SectionName(
       {super.key,
       required this.profile,
       required this.onNameChanged,
-      required this.onReadOnlyTap});
+      required this.onReadOnlyTap,
+      this.enabled = true});
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -26,6 +28,7 @@ class SectionName extends StatelessWidget {
               value: profile.fullName,
               hint: 'Nama Lengkap',
               maxLength: 60,
+              enabled: enabled,
               requiredField: true,
               validator: (value) => isValidProfileName(value ?? '')
                   ? null
@@ -73,8 +76,12 @@ class SectionContacts extends StatelessWidget {
 class SectionAddress extends StatelessWidget {
   final SettingProfile profile;
   final ValueChanged<String> onChanged;
+  final bool enabled;
   const SectionAddress(
-      {super.key, required this.profile, required this.onChanged});
+      {super.key,
+      required this.profile,
+      required this.onChanged,
+      this.enabled = true});
   @override
   Widget build(BuildContext context) => ProfileFormCard(children: [
         ProfileTextField(
@@ -83,6 +90,7 @@ class SectionAddress extends StatelessWidget {
             hint: 'Masukkan Alamat',
             onChanged: onChanged,
             maxLength: 255,
+            enabled: enabled,
             requiredField: true,
             validator: (value) => isValidProfileAddress(value ?? '')
                 ? null

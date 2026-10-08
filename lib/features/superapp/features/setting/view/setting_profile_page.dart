@@ -263,21 +263,26 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                             children: [
                               SectionName(
                                   profile: p,
-                                  onNameChanged: (v) => settingProfile
-                                      .update(p.copyWith(fullName: v)),
+                                  enabled: !state.personalProfileVerified,
+                                  onNameChanged: (v) => settingProfile.update(
+                                      settingProfile.state.draft
+                                          .copyWith(fullName: v)),
                                   onReadOnlyTap: _contactInfo),
                               const SizedBox(height: AppSpacing.lg),
                               SectionGender(
                                   profile: p,
-                                  enabled: !_selecting,
+                                  enabled: !_selecting &&
+                                      !state.personalProfileVerified,
                                   onTap: () => _gender(p)),
                               const SizedBox(height: AppSpacing.lg),
                               SectionContacts(profile: p, onTap: _contactInfo),
                               const SizedBox(height: AppSpacing.lg),
                               SectionAddress(
                                   profile: p,
-                                  onChanged: (v) => settingProfile
-                                      .update(p.copyWith(address: v))),
+                                  enabled: !state.personalProfileVerified,
+                                  onChanged: (v) => settingProfile.update(
+                                      settingProfile.state.draft
+                                          .copyWith(address: v))),
                               const SizedBox(height: AppSpacing.xl),
                               SectionBusiness(
                                 profile: p,
@@ -285,10 +290,12 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                                 enabled: !_selecting,
                                 showRequiredErrors: state.isBusinessDirty,
                                 onUpload: _upload,
-                                onNameChanged: (v) => settingProfile
-                                    .update(p.copyWith(businessName: v)),
-                                onPhoneChanged: (v) => settingProfile
-                                    .update(p.copyWith(businessPhone: v)),
+                                onNameChanged: (v) => settingProfile.update(
+                                    settingProfile.state.draft
+                                        .copyWith(businessName: v)),
+                                onPhoneChanged: (v) => settingProfile.update(
+                                    settingProfile.state.draft
+                                        .copyWith(businessPhone: v)),
                                 onLocationTap: () => _businessLocation(p),
                                 onSectorTap: () => _businessSector(p),
                               ),
@@ -299,15 +306,31 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                     top: false,
                     child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.md),
-                        child: DsButton(
-                            text: 'Simpan',
-                            loadingText: 'Menyimpan...',
-                            onPressed: _confirmSave,
-                            state: state.saving
-                                ? DsButtonState.loading
-                                : state.canSave && !_selecting
-                                    ? DsButtonState.enabled
-                                    : DsButtonState.disabled)))),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (state.isDirty &&
+                                state.saveValidationMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: AppSpacing.sm),
+                                child: Text(
+                                  state.saveValidationMessage!,
+                                  style: AppTypography.bodySmRegular
+                                      .copyWith(color: AppColors.errorBase),
+                                ),
+                              ),
+                            DsButton(
+                                text: 'Simpan',
+                                loadingText: 'Menyimpan...',
+                                onPressed: _confirmSave,
+                                state: state.saving
+                                    ? DsButtonState.loading
+                                    : state.canSave && !_selecting
+                                        ? DsButtonState.enabled
+                                        : DsButtonState.disabled),
+                          ],
+                        )))),
           );
         },
       );

@@ -7,7 +7,7 @@ import '../../widget/profile_form_card.dart';
 class ProfileTextField extends StatefulWidget {
   final String label, value, hint;
   final ValueChanged<String> onChanged;
-  final bool requiredField, phone, numeric;
+  final bool requiredField, phone, numeric, enabled;
   final int? maxLength;
   final int lines;
   final String? Function(String?)? validator;
@@ -23,6 +23,7 @@ class ProfileTextField extends StatefulWidget {
       this.lines = 1,
       this.phone = false,
       this.numeric = false,
+      this.enabled = true,
       this.validator,
       this.emptyErrorText});
 
@@ -64,6 +65,7 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
           controller: _controller,
           hintText: widget.hint,
           maxLength: widget.maxLength,
+          enabled: widget.enabled,
           lines: widget.lines,
           keyboardType: widget.numeric
               ? TextInputType.number
@@ -103,7 +105,7 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
             }
             return null;
           },
-          onChanged: widget.onChanged));
+          onChanged: widget.enabled ? widget.onChanged : null));
 }
 
 class ProfileReadonlyField extends StatelessWidget {

@@ -48,6 +48,9 @@ class SettingProfileBloc
       phone: fresh.phone,
       email: fresh.email,
     );
+    if (profile.isKtpVerified == true) {
+      draft = draft.withAccountFrom(fresh);
+    }
     final logoChanged = state.logoStatus != BusinessLogoStatus.ready &&
         fresh.logoUrl != null &&
         fresh.logoUrl != _logoUrlBeforeUpload;
@@ -59,6 +62,7 @@ class SettingProfileBloc
       original: fresh,
       draft: draft,
       loading: false,
+      personalProfileVerified: profile.isKtpVerified == true,
       logoStatus: logoChanged ? BusinessLogoStatus.ready : state.logoStatus,
       message: null,
     ));
@@ -152,8 +156,11 @@ class SettingProfileBloc
       _logoRefreshTimer?.cancel();
       _logoUrlBeforeUpload = null;
     }
+    final updatedDraft = state.personalProfileVerified
+        ? event.draft.withAccountFrom(state.original)
+        : event.draft;
     emit(state.copyWith(
-        draft: event.draft.copyWith(
+        draft: updatedDraft.copyWith(
           username: state.original.username,
           phone: state.original.phone,
           email: state.original.email,
@@ -234,8 +241,8 @@ class SettingProfileBloc
       Emitter<SettingProfileState> emit) async {
     if (state.saving ||
         state.loading ||
-        (account && !state.draft.isAccountValid) ||
-        (!account && !state.draft.isBusinessValid)) {
+        state.saveValidationMessage != null ||
+        (account ? !state.isAccountDirty : !state.isBusinessDirty)) {
       return;
     }
     var updated = false;

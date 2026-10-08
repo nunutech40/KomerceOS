@@ -13,6 +13,7 @@ class SettingProfileState extends Equatable {
       savingBusiness;
   final List<ProfileOption> locations, businessSectors;
   final BusinessLogoStatus logoStatus;
+  final bool personalProfileVerified;
   final String? message;
   const SettingProfileState(
       {required this.original,
@@ -26,6 +27,7 @@ class SettingProfileState extends Equatable {
       this.locations = const [],
       this.businessSectors = const [],
       this.logoStatus = BusinessLogoStatus.ready,
+      this.personalProfileVerified = false,
       this.message});
   const SettingProfileState.initial()
       : original = const SettingProfile(),
@@ -39,24 +41,45 @@ class SettingProfileState extends Equatable {
         locations = const [],
         businessSectors = const [],
         logoStatus = BusinessLogoStatus.ready,
+        personalProfileVerified = false,
         message = null;
-  bool get isDirty => draft != original;
+  // URL logo datang dari refresh server, bukan perubahan yang perlu disimpan.
+  bool get isDirty => isAccountDirty || isBusinessDirty;
   bool get isAccountDirty =>
-      original.fullName != draft.fullName ||
-      original.gender != draft.gender ||
-      original.address != draft.address;
+      !personalProfileVerified &&
+      (original.fullName != draft.fullName ||
+          original.gender != draft.gender ||
+          original.address != draft.address);
   bool get isBusinessDirty =>
       original.businessName != draft.businessName ||
       original.businessPhone != draft.businessPhone ||
       original.location != draft.location ||
       original.businessSector != draft.businessSector ||
       original.logoPath != draft.logoPath;
+  String? get saveValidationMessage {
+    if (original.fullName != draft.fullName &&
+        !isValidProfileName(draft.fullName)) {
+      return 'Nama Lengkap harus 3–60 karakter dan hanya huruf.';
+    }
+    if (original.address != draft.address &&
+        !isValidProfileAddress(draft.address)) {
+      return 'Alamat Lengkap harus 1–255 karakter.';
+    }
+    // PUT bisnis mengirim semua field; jangan kirim data bisnis yang belum lengkap.
+    if (isBusinessDirty) {
+      if (draft.businessName.trim().isEmpty || draft.businessName.length > 30) {
+        return 'Nama Bisnis harus 1–30 karakter.';
+      }
+      if (!isValidPhoneNumber(draft.businessPhone)) {
+        return 'No. HP Bisnis harus 8–15 digit angka.';
+      }
+      if (draft.location == null) return 'Lokasi harus diisi.';
+    }
+    return null;
+  }
+
   bool get canSave =>
-      isDirty &&
-      (!isAccountDirty || draft.isAccountValid) &&
-      (!isBusinessDirty || draft.isBusinessValid) &&
-      !saving &&
-      !loading;
+      isDirty && saveValidationMessage == null && !saving && !loading;
   SettingProfileState copyWith(
           {SettingProfile? original,
           SettingProfile? draft,
@@ -69,6 +92,7 @@ class SettingProfileState extends Equatable {
           List<ProfileOption>? locations,
           List<ProfileOption>? businessSectors,
           BusinessLogoStatus? logoStatus,
+          bool? personalProfileVerified,
           String? message}) =>
       SettingProfileState(
           original: original ?? this.original,
@@ -82,6 +106,8 @@ class SettingProfileState extends Equatable {
           locations: locations ?? this.locations,
           businessSectors: businessSectors ?? this.businessSectors,
           logoStatus: logoStatus ?? this.logoStatus,
+          personalProfileVerified:
+              personalProfileVerified ?? this.personalProfileVerified,
           message: message);
   @override
   List<Object?> get props => [
@@ -96,6 +122,7 @@ class SettingProfileState extends Equatable {
         locations,
         businessSectors,
         logoStatus,
+        personalProfileVerified,
         message
       ];
 }
