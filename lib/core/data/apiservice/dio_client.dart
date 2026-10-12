@@ -1,8 +1,9 @@
-import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
 
+import 'package:komtim_partner/config/chucker_config.dart';
 import '../datasources/preferences/shared_pref.dart';
 import 'interceptors/auth_interceptor.dart';
+import 'interceptors/safe_chucker_interceptor.dart';
 
 class DioClient {
   final SharedPref sharedPref;
@@ -24,10 +25,10 @@ class DioClient {
       ),
     );
 
-    _dio.interceptors.addAll([
-      authInterceptor,
-      ChuckerDioInterceptor(),
-    ]);
+    _dio.interceptors.add(authInterceptor);
+    if (ChuckerConfig.enabled) {
+      _dio.interceptors.add(SafeChuckerInterceptor());
+    }
   }
 
   Dio get dio => _dio;

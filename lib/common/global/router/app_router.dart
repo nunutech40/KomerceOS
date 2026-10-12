@@ -1,4 +1,5 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
+import 'package:komtim_partner/config/chucker_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -56,7 +57,10 @@ import '../pages/not_found_page.dart';
 import 'router_utils.dart';
 
 class AppRouter {
-  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> _rootNavigatorKey =
+      ChuckerConfig.enabled
+          ? ChuckerFlutter.navigatorKey
+          : GlobalKey<NavigatorState>();
   static final AuthBloc _authBloc = di.locator<AuthBloc>();
 
   /// Route yang hanya pantas dibuka saat user belum login.
@@ -110,7 +114,6 @@ class AppRouter {
 
       return null;
     },
-    observers: [ChuckerFlutter.navigatorObserver],
     routes: [
       // ── Splash ──────────────────────────────────────────────────────────────
       GoRoute(

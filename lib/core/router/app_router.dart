@@ -1,4 +1,5 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
+import 'package:komtim_partner/config/chucker_config.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:komtim_partner/DI/injection.dart' as di;
@@ -50,7 +51,9 @@ class AppRouter {
   /// fungsi utilitas seperti `UIHelpers.showNetworkBottomSheet` bisa memunculkan
   /// UI overlay (Alert/BottomSheet) dari mana saja tanpa butuh BuildContext spesifik halaman.
   static final GlobalKey<NavigatorState> rootNavigatorKey =
-      GlobalKey<NavigatorState>();
+      ChuckerConfig.enabled
+          ? ChuckerFlutter.navigatorKey
+          : GlobalKey<NavigatorState>();
 
   AppRouter({required this.authBloc});
 
@@ -121,7 +124,6 @@ class AppRouter {
     },
     // Merubah Stream (dari AuthBloc) menjadi tipe Listenable yang bisa dibaca GoRouter
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
-    observers: [ChuckerFlutter.navigatorObserver],
     routes: [
       // -----------------------------------------------------------------------
       // STARTUP

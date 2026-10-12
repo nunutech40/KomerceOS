@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,7 @@ import 'common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'common/global/router/app_router.dart';
 import 'common/global/router/router_utils.dart';
 import 'common/global/widgets/connectivity_wrapper.dart';
+import 'config/chucker_config.dart';
 import 'core/services/deep_link_service.dart';
 import 'features/superapp/features/pin/bloc/pin_bloc.dart';
 import 'features/profile/bloc/profile_bloc.dart';
@@ -47,6 +49,11 @@ bool _isServerErrorShowing = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ChuckerFlutter.configure(
+    showOnRelease: ChuckerConfig.enabled,
+    showNotification: ChuckerConfig.enabled,
+  );
 
   // Check if Firebase is already initialized to prevent duplicate app error
   try {
