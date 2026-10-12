@@ -50,6 +50,9 @@ class SettingProfile extends Equatable {
   final ProfileOption? location, businessSector;
   final String? logoUrl, logoPath;
 
+  bool get hasValidBusinessLocation =>
+      location != null && location!.label.trim().isNotEmpty;
+
   /// Gatekeeper tambah rekening: keenam field profil pribadi wajib terisi.
   bool get isCompleteForBankAccount =>
       fullName.trim().isNotEmpty &&
@@ -76,9 +79,10 @@ class SettingProfile extends Equatable {
 
   factory SettingProfile.fromGlobalProfile(SuperappProfileModel profile) {
     final business = profile.businessProfile;
-    ProfileOption? option(String? label) => label == null || label.isEmpty
-        ? null
-        : ProfileOption(id: label, label: label);
+    ProfileOption? option(String? label) =>
+        label == null || label.trim().isEmpty
+            ? null
+            : ProfileOption(id: label, label: label);
     return SettingProfile(
       fullName: profile.fullName ?? '',
       username: profile.username ?? '',
@@ -189,7 +193,7 @@ class SettingProfile extends Equatable {
       businessName.trim().isNotEmpty &&
       businessName.length <= 30 &&
       isValidPhoneNumber(businessPhone) &&
-      location != null;
+      hasValidBusinessLocation;
 
   bool get isValid => isAccountValid && isBusinessValid;
 

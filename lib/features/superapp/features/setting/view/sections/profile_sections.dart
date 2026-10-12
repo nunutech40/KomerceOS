@@ -207,7 +207,7 @@ class SectionBusinessInfo extends StatelessWidget {
             hint: 'Masukkan Lokasi',
             onTap: onLocationTap,
             requiredField: true,
-            errorText: profile.location == null &&
+            errorText: !profile.hasValidBusinessLocation &&
                     (showRequiredErrors ||
                         profile.businessName.trim().isNotEmpty ||
                         profile.businessPhone.trim().isNotEmpty)

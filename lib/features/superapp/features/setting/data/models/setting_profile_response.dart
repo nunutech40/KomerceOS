@@ -50,7 +50,7 @@ class SettingProfileResponse {
 
   SettingProfile toEntity() {
     ProfileOption? option(String? id, String? label) =>
-        label == null || label.isEmpty
+        label == null || label.trim().isEmpty
             ? null
             : ProfileOption(id: id ?? label, label: label);
     final normalizedGender = gender?.toLowerCase();

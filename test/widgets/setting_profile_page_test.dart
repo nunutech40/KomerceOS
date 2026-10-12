@@ -176,6 +176,25 @@ void main() {
     expect(find.text('No. HP Bisnis harus diisi'), findsOneWidget);
   });
 
+  testWidgets('lokasi yang belum pernah diisi terlihat invalid pada bisnis',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: SectionBusinessInfo(
+          profile: SettingProfile(
+            businessName: 'Toko',
+            businessPhone: '081234567890',
+          ),
+          onNameChanged: _ignoreProfileText,
+          onPhoneChanged: _ignoreProfileText,
+          onLocationTap: _ignoreProfileTap,
+          onSectorTap: _ignoreProfileTap,
+        ),
+      ),
+    ));
+    expect(find.text('Lokasi harus diisi'), findsOneWidget);
+  });
+
   testWidgets('edit nama, alamat, dan nomor bisnis memicu validasi langsung',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
@@ -369,6 +388,68 @@ void main() {
     );
     expect(logoRefresh.isDirty, isFalse);
     expect(logoRefresh.canSave, isFalse);
+  });
+
+  test('lokasi kosong atau hanya spasi tetap tidak valid', () {
+    const blankLocation = ProfileOption(id: ' ', label: '   ');
+    const original = SettingProfile(
+      businessName: 'Toko',
+      businessPhone: '081234567890',
+      location: blankLocation,
+    );
+    expect(original.hasValidBusinessLocation, isFalse);
+    expect(original.isBusinessValid, isFalse);
+    final edited = SettingProfileState(
+      original: original,
+      draft: original.copyWith(businessName: 'Toko Baru'),
+    );
+    expect(edited.canSave, isFalse);
+    expect(edited.saveValidationMessage, 'Lokasi harus diisi.');
+  });
+
+  testWidgets('menutup pemilih lokasi tanpa memilih menampilkan error',
+      (tester) async {
+    if (locator.isRegistered<SettingProfileBloc>()) {
+      locator.unregister<SettingProfileBloc>();
+    }
+    locator.registerFactory(
+        () => SettingProfileBloc(repository: FakeSettingProfileRepository()));
+    addTearDown(() {
+      if (locator.isRegistered<SettingProfileBloc>()) {
+        locator.unregister<SettingProfileBloc>();
+      }
+    });
+    final globalProfile = MockSuperappProfileBloc();
+    whenListen(
+      globalProfile,
+      const Stream<SuperappProfileState>.empty(),
+      initialState: const SuperappProfileState(
+        status: SuperappProfileStatus.loaded,
+        freshProfile: SuperappProfileModel(
+          fullName: 'Partner',
+          businessProfile: BusinessProfileModel(),
+        ),
+      ),
+    );
+    await tester.pumpWidget(BlocProvider<SuperappProfileBloc>.value(
+      value: globalProfile,
+      child: const MaterialApp(home: SettingProfilePage()),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Lokasi harus diisi'), findsNothing);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    expect(find.text('Masukkan Lokasi', skipOffstage: false), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Masukkan Lokasi'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('Masukkan Lokasi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kembali').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Lokasi harus diisi'), findsOneWidget);
+    expect(
+      tester.widget<DsButton>(find.widgetWithText(DsButton, 'Simpan')).state,
+      DsButtonState.disabled,
+    );
   });
 
   test('global refresh syncs business while retaining account edits', () async {

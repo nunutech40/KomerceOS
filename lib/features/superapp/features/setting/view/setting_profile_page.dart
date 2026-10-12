@@ -70,6 +70,7 @@ class _SettingProfileForm extends StatefulWidget {
 class _SettingProfileFormState extends State<_SettingProfileForm> {
   final ProfileImageService _imageService = ProfileImageService();
   bool _selecting = false;
+  bool _locationTouched = false;
   SettingProfileBloc get settingProfile => context.read<SettingProfileBloc>();
 
   void _message(String message) => ScaffoldMessenger.of(context)
@@ -153,7 +154,8 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
             title: 'Masukkan Lokasi',
             options: state.locations,
             loading: state.loadingLocations,
-            selectedId: profile.location?.id,
+            selectedId:
+                profile.hasValidBusinessLocation ? profile.location?.id : null,
             searchable: true,
             showSelectionIndicator: true,
             onSearchChanged: (keyword) =>
@@ -162,9 +164,12 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
         ),
       ),
     );
-    if (mounted && result != null) {
+    if (!mounted) return;
+    if (result != null) {
       settingProfile
           .update(settingProfile.state.draft.copyWith(location: result));
+    } else if (!settingProfile.state.draft.hasValidBusinessLocation) {
+      setState(() => _locationTouched = true);
     }
   }
 
@@ -288,7 +293,8 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                                 profile: p,
                                 logoStatus: state.logoStatus,
                                 enabled: !_selecting,
-                                showRequiredErrors: state.isBusinessDirty,
+                                showRequiredErrors:
+                                    state.isBusinessDirty || _locationTouched,
                                 onUpload: _upload,
                                 onNameChanged: (v) => settingProfile.update(
                                     settingProfile.state.draft

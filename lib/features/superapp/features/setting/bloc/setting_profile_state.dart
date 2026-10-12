@@ -73,7 +73,7 @@ class SettingProfileState extends Equatable {
       if (!isValidPhoneNumber(draft.businessPhone)) {
         return 'No. HP Bisnis harus 8–15 digit angka.';
       }
-      if (draft.location == null) return 'Lokasi harus diisi.';
+      if (!draft.hasValidBusinessLocation) return 'Lokasi harus diisi.';
     }
     return null;
   }
