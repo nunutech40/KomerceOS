@@ -166,7 +166,7 @@ void main() {
       'business_logo': '/photo_profile_partner/dev/saved-logo.jpg',
     });
     expect(profile.businessLogo,
-        '${Config.instance.baseUrlBusinessLogoStorage}/photo_profile_partner/dev/saved-logo.jpg');
+        '${Config.instance.baseUrlBusinessLogoStorage}/${Config.instance.profileImageStoragePath}/saved-logo.jpg');
     expect(BusinessProfileResponse.fromJson(profile.toJson()), profile);
   });
 

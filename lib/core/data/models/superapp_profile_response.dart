@@ -1,8 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../config/config.dart';
-
 import '../../domain/entities/superapp_profile_model.dart';
+import 'profile_image_url.dart';
 
 class UserLevelResponse extends Equatable {
   final String? level;
@@ -84,15 +83,8 @@ class BusinessProfileResponse extends Equatable {
       return null;
     }
 
-    final logo = firstValue(['business_logo', 'logo']);
-    final logoUri = logo == null ? null : Uri.tryParse(logo);
-    // Auth may return either a relative storage key or an absolute URL.
-    // Resolve relative keys against the flavor's public business-logo origin.
-    final logoUrl = logo == null || logoUri?.hasScheme == true
-        ? logo
-        : Uri.parse('${Config.instance.baseUrlBusinessLogoStorage}/')
-            .resolve(logo.replaceFirst(RegExp(r'^/+'), ''))
-            .toString();
+    final logoUrl =
+        resolveProfileImageUrl(firstValue(['business_logo', 'logo']));
     return BusinessProfileResponse(
       businessLogo: logoUrl,
       brandName: firstValue(['brand_name']),
@@ -197,7 +189,8 @@ class SuperappProfileResponse extends Equatable {
       fullName: json['full_name'],
       noHp: json['no_hp'],
       address: json['address'],
-      photoProfileUrl: json['photo_profile_url'],
+      photoProfileUrl:
+          resolveProfileImageUrl(json['photo_profile_url']?.toString()),
       birthDate: json['birth_date'],
       gender: json['gender'],
       saldo: json['saldo'],
@@ -270,7 +263,8 @@ class SuperappProfileResponse extends Equatable {
       fullName: json['full_name'],
       noHp: json['no_hp'],
       address: json['address'],
-      photoProfileUrl: json['photo_profile_url'],
+      photoProfileUrl:
+          resolveProfileImageUrl(json['photo_profile_url']?.toString()),
       birthDate: json['birth_date'],
       gender: json['gender'],
       saldo: null, // saldo tidak pernah di-cache

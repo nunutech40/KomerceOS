@@ -1,7 +1,10 @@
+import 'dart:io' show Platform;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komtim_partner/core/data/apiservice/constat_endpoint.dart';
 import 'package:komtim_partner/core/data/datasources/remote/auth_remote_datasource.dart';
+import 'package:komtim_partner/core/data/models/check_email_response.dart';
 import 'package:komtim_partner/core/data/models/login_response.dart';
 import 'package:mockito/mockito.dart';
 
@@ -35,6 +38,9 @@ void main() {
       tokenType: 'dummy',
       data: null,
     ));
+    provideDummy<CheckEmailResponse>(
+      const CheckEmailResponse(allowedLogin: true),
+    );
   });
 
   final tDioResponse = Response(
@@ -46,6 +52,31 @@ void main() {
     },
     statusCode: 200,
   );
+
+  group('checkEmailLogin', () {
+    const email = 'john@example.com';
+    const recaptchaToken = 'recaptcha-test';
+
+    test('mengirim identitas app dan token reCAPTCHA ke check-login', () async {
+      when(mockClient.post(Endpoints.checkEmail, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<CheckEmailResponse>(any, any))
+          .thenReturn(const CheckEmailResponse(allowedLogin: true));
+
+      final result = await dataSource.checkEmailLogin(
+        email,
+        recaptchaToken: recaptchaToken,
+      );
+
+      expect(result.allowedLogin, true);
+      verify(mockClient.post(Endpoints.checkEmail, data: {
+        'email': email,
+        'app': 'komerceOS',
+        'recaptcha_token': recaptchaToken,
+        'device': Platform.isAndroid ? 'android' : 'ios',
+      })).called(1);
+    });
+  });
 
   // ── doLogout ──────────────────────────────────────────────────────────────
   group('doLogout', () {
@@ -96,11 +127,12 @@ void main() {
     const tUser = 'john_doe';
     const tPass = 'secret123';
 
-    // Body sesuai API baru: username_email + password + device
+    // Body login Superapp, termasuk identitas aplikasi untuk auth backend.
     final tBody = {
       'username_email': tUser,
       'password': tPass,
-      'device': 'android',
+      'app': 'komerceOS',
+      'device': Platform.isAndroid ? 'android' : 'ios',
     };
 
     const tLoginResponse = LoginResponse(

@@ -24,5 +24,9 @@ class ProductionConfig implements Config {
   String get baseUrlKomshipHiring => 'https://app.komerce.id';
 
   @override
-  String get baseUrlBusinessLogoStorage => '$baseUrlKomshipHiring/storage';
+  String get baseUrlBusinessLogoStorage =>
+      'https://storage.googleapis.com/komerce-dev-auth';
+
+  @override
+  String get profileImageStoragePath => 'photo_profile_partner';
 }

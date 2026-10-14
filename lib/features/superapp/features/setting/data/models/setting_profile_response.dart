@@ -1,3 +1,5 @@
+import 'package:komtim_partner/core/data/models/profile_image_url.dart';
+
 import '../../domain/entities/setting_profile.dart';
 
 class SettingProfileResponse {
@@ -73,7 +75,7 @@ class SettingProfileResponse {
       businessPhone: businessPhone,
       location: option(cityCode, businessLocation),
       businessSector: option(businessSectorId, businessSectorName),
-      logoUrl: businessLogo,
+      logoUrl: resolveProfileImageUrl(businessLogo),
     );
   }
 }

@@ -27,4 +27,7 @@ class DevConfig implements Config {
   @override
   String get baseUrlBusinessLogoStorage =>
       'https://storage.googleapis.com/komerce-dev-auth';
+
+  @override
+  String get profileImageStoragePath => 'photo_profile_partner/dev';
 }

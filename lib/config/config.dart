@@ -12,8 +12,9 @@ abstract class Config {
   String get baseUrlKomship;
   String get baseUrlKomshipHiring;
 
-  /// Public origin for relative `business_logo` paths from the auth profile.
+  /// Public bucket for relative personal photos and business logos.
   String get baseUrlBusinessLogoStorage;
+  String get profileImageStoragePath;
 
   static Config? _instance;
 

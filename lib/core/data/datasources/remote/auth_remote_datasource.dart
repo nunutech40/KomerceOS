@@ -33,6 +33,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       Endpoints.checkEmail,
       data: {
         'email': email,
+        'app': 'komerceOS',
         if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
         'device': Platform.isAndroid ? 'android' : 'ios'
       },
@@ -56,6 +57,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final data = {
       'username_email': username,
       'password': password,
+      'app': 'komerceOS',
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
       'device': Platform.isAndroid ? 'android' : 'ios'
     };
