@@ -78,8 +78,8 @@ android {
         production {
             dimension "version"
             applicationId "id.android.komerceos"
-            versionName "1.0.1"
-            versionCode 1
+            versionName "1.1.1"
+            versionCode 3
             resValue "string", "app_name", "Komerce OS"
         }
     }
