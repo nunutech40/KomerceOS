@@ -4,7 +4,8 @@ class AppRecaptchaConfig {
   AppRecaptchaConfig(this.androidSiteKey, this.iosSiteKey);
 
   static Future<AppRecaptchaConfig> forEnvironment(String? env) async {
-    const String flavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
+    final flavor =
+        env ?? const String.fromEnvironment('FLAVOR', defaultValue: 'dev');
 
     if (flavor == 'production') {
       return AppRecaptchaConfig(
@@ -13,7 +14,8 @@ class AppRecaptchaConfig {
       );
     } else if (flavor == 'staging') {
       return AppRecaptchaConfig(
-        "6Lf-J0wtAAAAAKb1A7msYBRbJICXYQ1qkBTWpjdT",
+        // Staging temporarily shares the dev key to match BE validation.
+        "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx",
         "YOUR_IOS_SITE_KEY",
       );
     }
