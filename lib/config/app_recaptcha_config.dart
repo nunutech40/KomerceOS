@@ -14,7 +14,6 @@ class AppRecaptchaConfig {
       );
     } else if (flavor == 'staging') {
       return AppRecaptchaConfig(
-        // Staging temporarily shares the dev key to match BE validation.
         "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx",
         "YOUR_IOS_SITE_KEY",
       );

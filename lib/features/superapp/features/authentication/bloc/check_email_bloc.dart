@@ -59,12 +59,18 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
       }
     }
 
-    String recaptchaToken = '';
+    String? recaptchaToken;
     try {
       recaptchaToken = await recaptchaUseCase.getToken(RecaptchaAction.LOGIN());
     } catch (e) {
       emit(CheckEmailFailure(
           message: 'reCAPTCHA token failed: ${e.toString()}'));
+      return;
+    }
+
+    if (recaptchaToken.isEmpty) {
+      emit(const CheckEmailFailure(
+          message: 'Verifikasi keamanan gagal. Silakan coba lagi.'));
       return;
     }
 

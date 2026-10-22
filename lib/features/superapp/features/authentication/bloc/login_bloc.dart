@@ -127,11 +127,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       debugPrint("reCAPTCHA failed: $e");
     }
 
+    if (recaptchaToken == null || recaptchaToken.isEmpty) {
+      emit(state.copyWith(
+        status: RequestStatus.failure,
+        usernameErrorMessage: 'Verifikasi keamanan gagal. Silakan coba lagi.',
+        passwordErrorMessage: '',
+      ));
+      return;
+    }
+
     if (!state.isEmailChecked) {
       // 1. Check Email Status
       final checkResult = await checkEmailLoginUseCase.call(
         state.username,
-        recaptchaToken: recaptchaToken ?? '',
+        recaptchaToken: recaptchaToken,
       );
 
       checkResult.fold(
@@ -197,7 +206,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           status:
               isIdentifiedError ? RequestStatus.empty : RequestStatus.failure,
           usernameErrorMessage: '',
-          passwordErrorMessage: newMessageError, // Show error mostly on password
+          passwordErrorMessage:
+              newMessageError, // Show error mostly on password
         ));
       },
       (loginData) {
