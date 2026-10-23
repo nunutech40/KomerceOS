@@ -227,11 +227,12 @@ class _PinFlowPageState extends State<PinFlowPage> {
               _verifiedOldPin = enteredPin;
               _verifiedOldToken = data.usableToken!;
               _go(_PinStep.newPin);
-            } else if (data.attemptLeft <= 0) {
+            } else if (data.attemptLeft == 0) {
               _showLockSheet();
             } else {
-              setState(() => _error =
-                  'PIN salah. Kamu memiliki ${data.attemptLeft} percobaan lagi sebelum akun kamu logout secara otomatis');
+              setState(() => _error = data.attemptLeft == null
+                  ? 'PIN salah. Coba lagi.'
+                  : 'PIN salah. Kamu memiliki ${data.attemptLeft} percobaan lagi sebelum akun kamu logout secara otomatis');
             }
           },
         );

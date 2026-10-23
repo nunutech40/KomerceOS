@@ -206,9 +206,9 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
       description:
           'PIN digunakan untuk melindungi akun kamu.\nYuk buat sekarang',
       image: SvgPicture.asset(
-        'assets/images/ilustrated-setpin.svg',
-        width: 237,
-        height: 218,
+        'assets/images/superapp/team/ilustration_forgot_pin.svg',
+        width: 359,
+        height: 326,
       ),
       secondaryButtonText: 'Kembali',
       secondaryButtonColor: AppColors.errorBase,

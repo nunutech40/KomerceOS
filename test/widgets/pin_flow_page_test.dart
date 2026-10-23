@@ -111,6 +111,19 @@ void main() {
         findsOneWidget);
   });
 
+  testWidgets('PIN salah tanpa jumlah percobaan tidak langsung logout',
+      (tester) async {
+    var logoutCount = 0;
+    await showFlow(tester, PinFlow.change,
+        repository: FakePinRepository()..omitAttemptLeftOnInvalid = true,
+        onLocked: () => logoutCount++);
+    await tester.enterText(find.byType(TextField).first, '000001');
+    await tester.pump();
+    expect(find.text('PIN salah. Coba lagi.'), findsOneWidget);
+    expect(logoutCount, 0);
+    expect(find.text('Terlalu Banyak Percobaan PIN'), findsNothing);
+  });
+
   testWidgets('lupa PIN dari input PIN lama berpindah ke OTP dan Buat PIN',
       (tester) async {
     await showFlow(tester, PinFlow.change);

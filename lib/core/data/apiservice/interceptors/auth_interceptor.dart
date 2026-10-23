@@ -104,6 +104,13 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
       return handler.next(err);
     }
 
+    // The PIN verification endpoint can use HTTP 401 for a wrong PIN while
+    // keeping the login session valid. Let the PIN flow show the remaining
+    // attempts; only a genuine authentication failure should log out.
+    if (_isPinVerificationError(err)) {
+      return handler.next(err);
+    }
+
     final requestAuthorization =
         err.requestOptions.headers['Authorization']?.toString();
     final requestToken = requestAuthorization?.startsWith('Bearer ') == true
@@ -125,6 +132,24 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     }
     _invalidatedToken = requestToken ?? currentToken;
     return _handleLogout(handler, err);
+  }
+
+  bool _isPinVerificationError(DioException err) {
+    if (err.requestOptions.path != Endpoints.securedVerifyPin) return false;
+    final body = err.response?.data;
+    if (body is! Map) return false;
+    final data = body['data'];
+    if (data is Map &&
+        (data.containsKey('attempt_left') || data.containsKey('lock'))) {
+      return true;
+    }
+    final meta = body['meta'];
+    final message =
+        meta is Map ? meta['message']?.toString().toLowerCase() : null;
+    return message != null &&
+        (message.contains('pin salah') ||
+            message.contains('incorrect pin') ||
+            message.contains('invalid pin'));
   }
 
   /// Menangani sesi tidak sah dari endpoint terproteksi.

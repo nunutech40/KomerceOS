@@ -29,11 +29,10 @@ class RecaptchaUseCase {
     try {
       _client = await Recaptcha.fetchClient(siteKey);
       _isInitialized = true;
-    } on PlatformException {
-      _isInitialized = true;
-      rethrow;
-    } catch (err) {
-      _isInitialized = true;
+    } catch (_) {
+      // A failed fetchClient must be retried on the next attempt.
+      _client = null;
+      _isInitialized = false;
       rethrow;
     }
   }
@@ -45,6 +44,8 @@ class RecaptchaUseCase {
     }
 
     try {
+      // Log the action only; the token must never appear in device logs.
+      debugPrint('RECAPTCHA_DEBUG: Executing action ${action.action}');
       final token = await _client!.execute(action);
       return token;
     } on PlatformException {

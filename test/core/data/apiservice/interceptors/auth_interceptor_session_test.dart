@@ -26,13 +26,15 @@ class _ErrorHandler extends ErrorInterceptorHandler {
 
 DioException _error(String path, int status,
     {String? requestToken,
+    Object? responseData,
     DioExceptionType type = DioExceptionType.badResponse}) {
   final request = RequestOptions(path: path, headers: {
     if (requestToken != null) 'Authorization': 'Bearer $requestToken',
   });
   return DioException(
     requestOptions: request,
-    response: Response(requestOptions: request, statusCode: status),
+    response: Response(
+        requestOptions: request, statusCode: status, data: responseData),
     type: type,
   );
 }
@@ -81,6 +83,20 @@ void main() {
     await unauthenticated;
     expect(handler.rejected, isTrue);
     verify(prefs.removeDataPref()).called(1);
+  });
+
+  test('401 PIN salah dengan sisa percobaan tidak menghapus sesi', () async {
+    final handler = _ErrorHandler();
+    await interceptor.onError(
+        _error(Endpoints.securedVerifyPin, 401,
+            requestToken: 'active',
+            responseData: {
+              'meta': {'status': 'failed', 'message': 'PIN salah'},
+              'data': {'attempt_left': 2, 'lock': false},
+            }),
+        handler);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
   });
 
   test('dua respons 401 serentak hanya memicu satu logout', () async {

@@ -150,9 +150,13 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
 
   void _onBlocStateChanged(BuildContext context, CheckEmailState state) {
     if (state is CheckEmailFailure) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(state.message)));
+      if (LoginErrorPopups.isOtherRoleError(state.message)) {
+        LoginErrorPopups.showOtherRole(context);
+      } else {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(state.message)));
+      }
     }
 
     if (state is CheckEmailFound) {

@@ -63,7 +63,11 @@ class PinRemoteDataSourceImpl implements PinRemoteDataSource {
     return responseParser.parseResponse<int>(response, (data) {
       final map =
           data is Map<String, dynamic> ? data : const <String, dynamic>{};
-      return int.tryParse('${map['attempt_left'] ?? ''}') ?? 0;
+      final attempts = int.tryParse('${map['attempt_left'] ?? ''}');
+      if (attempts == null) {
+        throw const FormatException('Sisa percobaan PIN tidak tersedia');
+      }
+      return attempts;
     });
   }
 

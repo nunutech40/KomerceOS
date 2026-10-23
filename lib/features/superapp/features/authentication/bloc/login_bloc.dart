@@ -122,7 +122,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (!recaptchaUseCase.isInitialized) {
         await recaptchaUseCase.initializeClient();
       }
-      recaptchaToken = await recaptchaUseCase.getToken(RecaptchaAction.LOGIN());
+      // Both /auth/check-login and /komship/login expect CHECK_LOGIN.
+      recaptchaToken = await recaptchaUseCase
+          .getToken(RecaptchaAction.custom('CHECK_LOGIN'));
     } catch (e) {
       debugPrint("reCAPTCHA failed: $e");
     }
