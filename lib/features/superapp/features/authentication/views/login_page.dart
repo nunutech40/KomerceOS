@@ -182,18 +182,18 @@ class _LoginPageState extends State<LoginPage> {
           : state.usernameErrorMessage;
 
       final lowerError = errorMsg.toLowerCase();
+      final isOtherRoleError = LoginErrorPopups.isOtherRoleError(errorMsg);
 
       // Saat fase check email (sebelum password dimasukkan), abaikan error yang
       // hanya relevan di fase login (login_attempt, lock, dsb.).
-      // Error lain (user not registered, user is non partner) tetap tampilkan via bottom sheet.
+      // Error akun tanpa produk dan peran lain tetap tampil lewat bottom sheet.
       final isCheckEmailPhase =
           !state.isEmailChecked && state.passwordErrorMessage.isEmpty;
 
       // Saat fase check email, error ditampilkan INLINE di bawah TextField.
-      // Kecuali error khusus yang butuh Bottom Sheet (seperti user not registered), kita abaikan SnackBar.
+      // Error khusus yang butuh bottom sheet tetap diteruskan ke handler di bawah.
       if (isCheckEmailPhase) {
-        if (!lowerError.contains('user not registered') &&
-            !lowerError.contains('user is non partner')) {
+        if (!lowerError.contains('user not registered') && !isOtherRoleError) {
           // Reset status agar tidak terus-terusan trigger failure state, tapi biarkan usernameErrorMessage
           context.read<LoginBloc>().add(LoginStatusResetEvent());
           return;
@@ -296,31 +296,10 @@ class _LoginPageState extends State<LoginPage> {
           },
           isDismissible: true,
         );
-      } else if (lowerError.contains('user is non partner')) {
-        DsBottomSheet.show(
-          context: context,
-          title: 'Akun Terdaftar di Peran Lain',
-          description:
-              'Akun kamu terdaftar di peran lain.\nTenang, kamu bisa menanyakan hal ini\nke live chat Customer Support.',
-          image: SvgPicture.asset(
-            'assets/images/superapp/auth/account_not_active.svg',
-            height: 200,
-          ),
-          secondaryButtonText: 'Kembali',
-          onSecondaryPressed: () {
-            Navigator.pop(context);
-            context.read<LoginBloc>().add(LoginStatusResetEvent());
-          },
-          primaryButtonText: 'Hubungi Customer Support',
-          onPrimaryPressed: () async {
-            Navigator.pop(context);
-            context.read<LoginBloc>().add(LoginStatusResetEvent());
-            final Uri url = Uri.parse('https://partner.komerce.id/');
-            if (!await launchUrl(url)) {
-              debugPrint('Could not launch \$url');
-            }
-          },
-          isDismissible: true,
+      } else if (isOtherRoleError) {
+        LoginErrorPopups.showOtherRole(
+          context,
+          onClose: () => context.read<LoginBloc>().add(LoginStatusResetEvent()),
         );
       } else {
         // Tampilkan error umum
@@ -397,10 +376,12 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               // --- Header ---
                               AuthHeader(
-                                title: (!state.isEmailChecked || _showSuccessAnim)
-                                    ? 'Masukkan Email Kamu'
-                                    : 'Masuk ke Akun Kamu',
-                                subtitle: (!state.isEmailChecked || _showSuccessAnim)
+                                title:
+                                    (!state.isEmailChecked || _showSuccessAnim)
+                                        ? 'Masukkan Email Kamu'
+                                        : 'Masuk ke Akun Kamu',
+                                subtitle: (!state.isEmailChecked ||
+                                        _showSuccessAnim)
                                     ? 'Masukkan email akun kamu\nuntuk melanjutkan proses login'
                                     : 'Pantau transaksi bisnis kamu kapan aja,\nlangsung dari aplikasi',
                               ),

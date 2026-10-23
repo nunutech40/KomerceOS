@@ -10,6 +10,7 @@ class FakePinRepository implements PinRepository {
   final DateTime Function() now;
   bool hasPin = false;
   int attemptLeft = 3;
+  bool omitAttemptLeftOnInvalid = false;
   int otpRequests = 0;
   Completer<Either<Failure, bool>>? pendingSave;
   DataOtpModel? pendingOtp;
@@ -25,6 +26,9 @@ class FakePinRepository implements PinRepository {
           isValid: true, usableToken: 'usable-token', attemptLeft: 3));
     }
     attemptLeft--;
+    if (omitAttemptLeftOnInvalid) {
+      return const Right(VerifyPinModel(isValid: false));
+    }
     return Right(VerifyPinModel(isValid: false, attemptLeft: attemptLeft));
   }
 

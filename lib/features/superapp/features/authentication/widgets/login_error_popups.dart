@@ -1,8 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginErrorPopups {
+  static bool isOtherRoleError(String message) {
+    final error = message.toLowerCase();
+    return error.contains('user is non partner') ||
+        error.contains('user is not partner') ||
+        error.contains('non partner') ||
+        error.contains('non-partner') ||
+        error.contains('talent internal') ||
+        error.contains('internal talent') ||
+        error.contains('team internal') ||
+        error.contains('role internal');
+  }
+
+  static void showOtherRole(BuildContext context, {VoidCallback? onClose}) {
+    DsBottomSheet.show(
+      context: context,
+      title: 'Akun Terdaftar di Peran Lain',
+      description:
+          'Akun kamu terdaftar di peran lain.\nTenang, kamu bisa menanyakan hal ini\nke live chat Customer Support.',
+      image: SvgPicture.asset(
+        'assets/images/superapp/auth/account_not_active.svg',
+        height: 200,
+      ),
+      secondaryButtonText: 'Kembali',
+      onSecondaryPressed: () {
+        Navigator.pop(context);
+        onClose?.call();
+      },
+      onClosePressed: () {
+        Navigator.pop(context);
+        onClose?.call();
+      },
+      primaryButtonText: 'Hubungi Customer Support',
+      onPrimaryPressed: () async {
+        Navigator.pop(context);
+        onClose?.call();
+        final url = Uri.parse('https://partner.komerce.id/');
+        if (!await launchUrl(url)) {
+          debugPrint('Could not launch $url');
+        }
+      },
+      isDismissible: true,
+    );
+  }
+
   static void showAccountNotActive(
       BuildContext context, VoidCallback onHubungiAdmin) {
     DsBottomSheet.show(

@@ -4,12 +4,12 @@ import 'package:komtim_partner/core/domain/entities/verify_pin_model.dart';
 class VerifyPinResponse extends Equatable {
   final bool isValid;
   final String? usableToken;
-  final int attemptLeft;
+  final int? attemptLeft;
 
   const VerifyPinResponse({
     required this.isValid,
     this.usableToken,
-    this.attemptLeft = 0,
+    this.attemptLeft,
   });
 
   Map<String, dynamic> toJson() => {
@@ -24,7 +24,7 @@ class VerifyPinResponse extends Equatable {
       usableToken: json['usable_token']?.toString(),
       attemptLeft: json['attempt_left'] is int
           ? json['attempt_left'] as int
-          : int.tryParse('${json['attempt_left'] ?? ''}') ?? 0,
+          : int.tryParse('${json['attempt_left'] ?? ''}'),
     );
   }
 
@@ -39,7 +39,7 @@ class VerifyPinResponse extends Equatable {
       usableToken: map['usable_token']?.toString(),
       attemptLeft: map['attempt_left'] is int
           ? map['attempt_left'] as int
-          : int.tryParse('${map['attempt_left'] ?? ''}') ?? 0,
+          : int.tryParse('${map['attempt_left'] ?? ''}'),
     );
   }
 

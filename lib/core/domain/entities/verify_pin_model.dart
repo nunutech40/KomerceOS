@@ -3,12 +3,12 @@ import 'package:equatable/equatable.dart';
 class VerifyPinModel extends Equatable {
   final bool isValid;
   final String? usableToken;
-  final int attemptLeft;
+  final int? attemptLeft;
 
   const VerifyPinModel({
     required this.isValid,
     this.usableToken,
-    this.attemptLeft = 0,
+    this.attemptLeft,
   });
 
   @override

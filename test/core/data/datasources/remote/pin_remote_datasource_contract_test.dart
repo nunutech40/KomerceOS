@@ -98,4 +98,25 @@ void main() {
             }));
     expect(await datasource.getAttemptLeft(), 2);
   });
+
+  test('respons sisa percobaan tanpa nilai tidak dianggap terkunci', () async {
+    when(client.get(Endpoints.pinAttemptLeft))
+        .thenAnswer((_) async => response({
+              'meta': {'status': 'success'},
+              'data': {},
+            }));
+    expect(datasource.getAttemptLeft(), throwsA(isA<FormatException>()));
+  });
+
+  test('respons PIN salah tanpa attempt_left tidak dianggap terkunci',
+      () async {
+    when(client.post(Endpoints.securedVerifyPin, data: {'pin': '000001'}))
+        .thenAnswer((_) async => response({
+              'meta': {'status': 'success'},
+              'data': {'is_valid': false},
+            }));
+    final result = await datasource.verifyPin('000001');
+    expect(result.isValid, isFalse);
+    expect(result.attemptLeft, isNull);
+  });
 }
