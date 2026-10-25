@@ -43,7 +43,7 @@ void main() {
         )));
   });
 
-  test('halaman email membuat token CHECK_LOGIN untuk endpoint check-login',
+  test('halaman email membuat token CHECK_EMAIL untuk endpoint check-login',
       () async {
     final bloc = CheckEmailBloc(
       checkEmailLoginUseCase: checkEmail,
@@ -56,7 +56,7 @@ void main() {
     bloc.add(const CheckEmailSubmitted('user@example.com'));
     await completed;
 
-    expect(recaptcha.actions, ['CHECK_LOGIN']);
+    expect(recaptcha.actions, ['CHECK_EMAIL']);
     verify(repository.checkEmailLogin(
       'user@example.com',
       recaptchaToken: 'test-token',
@@ -83,6 +83,7 @@ void main() {
         .firstWhere((state) => state.username == 'user@example.com');
     bloc.add(const LoginButtonPressedEvent());
     await bloc.stream.firstWhere((state) => state.isEmailChecked);
+    expect(recaptcha.actions, ['CHECK_EMAIL']);
     // Tahap email hanya menyiapkan state LoginBloc; periksa submit password
     // secara terpisah karena inilah request yang gagal di perangkat.
     recaptcha.actions.clear();

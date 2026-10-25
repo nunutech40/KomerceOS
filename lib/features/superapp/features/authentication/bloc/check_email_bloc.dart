@@ -61,9 +61,9 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
 
     String? recaptchaToken;
     try {
-      // /auth/check-login expects CHECK_LOGIN, not CHECK_EMAIL or login.
+      // /auth/check-login validates the CHECK_EMAIL action.
       recaptchaToken = await recaptchaUseCase
-          .getToken(RecaptchaAction.custom('CHECK_LOGIN'));
+          .getToken(RecaptchaAction.custom('CHECK_EMAIL'));
     } catch (e) {
       emit(CheckEmailFailure(
           message: 'reCAPTCHA token failed: ${e.toString()}'));
