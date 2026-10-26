@@ -14,6 +14,9 @@ class BankLiabilitySheet extends StatefulWidget {
 class _BankLiabilitySheetState extends State<BankLiabilitySheet> {
   final _reason = TextEditingController();
 
+  bool get _hasReasonInput => _reason.text.trim().isNotEmpty;
+  bool get _isReasonValid => _reason.text.trim().length >= 10;
+
   @override
   void dispose() {
     _reason.dispose();
@@ -29,12 +32,20 @@ class _BankLiabilitySheetState extends State<BankLiabilitySheet> {
 
   @override
   Widget build(BuildContext context) {
-    final canSubmit = _reason.text.trim().length >= 10;
+    final canSubmit = _isReasonValid;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * .9,
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.insetLg,
+        AppSpacing.xl,
+        AppSpacing.insetLg,
+        AppSpacing.insetLg,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.bgPopup,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       child: SafeArea(
         top: false,
@@ -46,40 +57,68 @@ class _BankLiabilitySheetState extends State<BankLiabilitySheet> {
                 alignment: Alignment.topCenter,
                 children: [
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 48),
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl3),
                     child: Text('Rekeningmu Sudah\nTerdaftar di Akun Lain',
                         textAlign: TextAlign.center,
-                        style: AppTypography.headingXs),
+                        style: AppTypography.headingMd),
                   ),
                   Align(
                     alignment: Alignment.topRight,
-                    child: IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
+                    child: Semantics(
+                      button: true,
+                      label: 'Tutup informasi tanggungan rekening',
+                      child: InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        borderRadius: BorderRadius.circular(AppRadius.circular),
+                        child: Container(
+                          width: AppSpacing.xl3,
+                          height: AppSpacing.xl3,
+                          decoration: const BoxDecoration(
+                            color: AppColors.bgLight,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: AppSpacing.iconXl,
+                            color: AppColors.grey700,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Akun Komerce-mu yang lain masih ada tanggungan saldo minus.',
                 textAlign: TextAlign.center,
-                style: AppTypography.bodySmRegular
+                style: AppTypography.bodyMdRegular
                     .copyWith(color: AppColors.grey600),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.alwaysWhite,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
                     const Padding(
-                      padding: EdgeInsets.all(12),
+                      padding: EdgeInsets.all(AppSpacing.md3),
                       child: Row(children: [
-                        Expanded(child: Text('Email')),
-                        Text('Kewajiban Top up'),
+                        Expanded(
+                          child: Text('Email',
+                              style: AppTypography.bodySmSemiBold),
+                        ),
+                        Text('Kewajiban Top up',
+                            style: AppTypography.bodySmSemiBold),
                       ]),
                     ),
                     ConstrainedBox(
@@ -89,19 +128,30 @@ class _BankLiabilitySheetState extends State<BankLiabilitySheet> {
                         itemCount: widget.liabilities.length,
                         itemBuilder: (_, index) {
                           final item = widget.liabilities[index];
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                            child: Row(children: [
-                              Expanded(
-                                child: Text(item.email,
-                                    overflow: TextOverflow.ellipsis,
+                          return DecoratedBox(
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                top: BorderSide(color: AppColors.grey200),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md3,
+                                vertical: AppSpacing.sm,
+                              ),
+                              child: Row(children: [
+                                Expanded(
+                                  child: Text(item.email,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTypography.bodySmRegular
+                                          .copyWith(
+                                              color: AppColors.errorBase)),
+                                ),
+                                Text(_rupiah(item.balance),
                                     style: AppTypography.bodySmRegular
                                         .copyWith(color: AppColors.errorBase)),
-                              ),
-                              Text(_rupiah(item.balance),
-                                  style: AppTypography.bodySmRegular
-                                      .copyWith(color: AppColors.errorBase)),
-                            ]),
+                              ]),
+                            ),
                           );
                         },
                       ),
@@ -109,28 +159,41 @@ class _BankLiabilitySheetState extends State<BankLiabilitySheet> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                     'Bayar tanggungan dahulu untuk lanjut tambah rekening.',
                     style: AppTypography.bodySmRegular),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text('Alasan Penambahan Rekening*',
                     style: AppTypography.bodySmMedium),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _reason,
                 maxLines: 3,
                 maxLength: 255,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Tulis alasanmu minimal 10 karakter',
-                  border: OutlineInputBorder(),
+                  errorText: _hasReasonInput && !_isReasonValid
+                      ? 'Alasan minimal 10 karakter'
+                      : null,
+                  filled: true,
+                  fillColor: AppColors.alwaysWhite,
+                  contentPadding: const EdgeInsets.all(AppSpacing.md3),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    borderSide: const BorderSide(color: AppColors.grey300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    borderSide: const BorderSide(color: AppColors.grey300),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

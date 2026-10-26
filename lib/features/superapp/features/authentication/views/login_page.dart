@@ -182,6 +182,8 @@ class _LoginPageState extends State<LoginPage> {
           : state.usernameErrorMessage;
 
       final lowerError = errorMsg.toLowerCase();
+      final isTeamInternalBlocked =
+          LoginErrorPopups.isTeamInternalBlocked(errorMsg);
       final isOtherRoleError = LoginErrorPopups.isOtherRoleError(errorMsg);
 
       // Saat fase check email (sebelum password dimasukkan), abaikan error yang
@@ -193,7 +195,9 @@ class _LoginPageState extends State<LoginPage> {
       // Saat fase check email, error ditampilkan INLINE di bawah TextField.
       // Error khusus yang butuh bottom sheet tetap diteruskan ke handler di bawah.
       if (isCheckEmailPhase) {
-        if (!lowerError.contains('user not registered') && !isOtherRoleError) {
+        if (!lowerError.contains('user not registered') &&
+            !isTeamInternalBlocked &&
+            !isOtherRoleError) {
           // Reset status agar tidak terus-terusan trigger failure state, tapi biarkan usernameErrorMessage
           context.read<LoginBloc>().add(LoginStatusResetEvent());
           return;
@@ -295,6 +299,11 @@ class _LoginPageState extends State<LoginPage> {
             }
           },
           isDismissible: true,
+        );
+      } else if (isTeamInternalBlocked) {
+        LoginErrorPopups.showTeamInternalBlocked(
+          context,
+          onClose: () => context.read<LoginBloc>().add(LoginStatusResetEvent()),
         );
       } else if (isOtherRoleError) {
         LoginErrorPopups.showOtherRole(

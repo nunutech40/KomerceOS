@@ -4,6 +4,15 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginErrorPopups {
+  static const teamInternalErrorCode = 'ERR_ROLE_TEAM_INTERNAL_BLOCKED';
+
+  static bool isTeamInternalBlocked(String message) {
+    final error = message.toLowerCase();
+    return error.contains(teamInternalErrorCode.toLowerCase()) ||
+        error.contains('role team internal tidak memiliki akses') ||
+        error.contains('tidak memiliki akses untuk masuk ke aplikasi');
+  }
+
   static bool isOtherRoleError(String message) {
     final error = message.toLowerCase();
     return error.contains('user is non partner') ||
@@ -11,9 +20,31 @@ class LoginErrorPopups {
         error.contains('non partner') ||
         error.contains('non-partner') ||
         error.contains('talent internal') ||
-        error.contains('internal talent') ||
-        error.contains('team internal') ||
-        error.contains('role internal');
+        error.contains('internal talent');
+  }
+
+  static void showTeamInternalBlocked(BuildContext context,
+      {VoidCallback? onClose}) {
+    DsBottomSheet.show(
+      context: context,
+      title: 'Akses Tidak Diizinkan',
+      description:
+          'Akun Anda dengan role Team Internal tidak memiliki akses untuk masuk ke aplikasi Komerce OS demi alasan keamanan.',
+      image: SvgPicture.asset(
+        'assets/images/superapp/auth/account_not_active.svg',
+        height: 200,
+      ),
+      primaryButtonText: 'Kembali',
+      onPrimaryPressed: () {
+        Navigator.pop(context);
+        onClose?.call();
+      },
+      onClosePressed: () {
+        Navigator.pop(context);
+        onClose?.call();
+      },
+      isDismissible: true,
+    );
   }
 
   static void showOtherRole(BuildContext context, {VoidCallback? onClose}) {

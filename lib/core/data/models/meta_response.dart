@@ -2,7 +2,10 @@ import 'package:equatable/equatable.dart';
 
 class MetaResponse extends Equatable {
   final String? message;
-  final int? code;
+
+  /// Backend uses numeric codes for most APIs but string codes for selected
+  /// domain errors (for example `ERR_ROLE_TEAM_INTERNAL_BLOCKED`).
+  final Object? code;
   final String? status;
 
   const MetaResponse(

@@ -51,6 +51,14 @@ abstract class BaseRepository {
           final metaMessage = meta['message'];
           if (metaMessage != null && metaMessage.toString().isNotEmpty) {
             String errorMessage = metaMessage.toString();
+            final errorCode = meta['code']?.toString();
+
+            // Preserve the machine-readable code required by the login UI.
+            // Other messages keep their existing value to avoid changing
+            // established error copy across unrelated features.
+            if (errorCode == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+              errorMessage = '$errorCode: $errorMessage';
+            }
 
             final data = responseData['data'];
             if (data is Map<String, dynamic>) {

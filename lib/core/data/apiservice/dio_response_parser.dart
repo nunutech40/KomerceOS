@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../common/exception.dart';
 import '../models/meta_response.dart';
 
 class DioResponseParser {
@@ -26,7 +27,15 @@ class DioResponseParser {
           // Throw exception with message from meta
           final metaResponse = MetaResponse.fromJson(meta);
           String errorMessage = metaResponse.message ?? 'Unknown Error';
-          
+          final errorCode = meta['code']?.toString();
+
+          // Some auth APIs return a business failure with HTTP 200. Preserve
+          // the Team Internal code so presentation can render its dedicated
+          // access-denied modal rather than treating it as a generic error.
+          if (errorCode == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+            throw ServerException('$errorCode: $errorMessage');
+          }
+
           final data = responseBody['data'];
           if (data is Map<String, dynamic>) {
             if (data.containsKey('login_attempt')) {
@@ -39,7 +48,7 @@ class DioResponseParser {
               errorMessage += ' Sisa percobaan: ${data['attempt_left']}';
             }
           }
-          
+
           throw Exception(errorMessage);
         }
       }

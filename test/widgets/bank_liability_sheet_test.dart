@@ -65,9 +65,15 @@ void main() {
                 find.widgetWithText(TextButton, 'Kirim Alasan & Ajukan'))
             .onPressed,
         isNull);
+    expect(find.text('Alasan minimal 10 karakter'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'kurang');
+    await tester.pump();
+    expect(find.text('Alasan minimal 10 karakter'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'Alasan valid');
     await tester.pump();
+    expect(find.text('Alasan minimal 10 karakter'), findsNothing);
     expect(
         tester
             .widget<TextButton>(

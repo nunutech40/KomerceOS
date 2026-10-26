@@ -57,6 +57,8 @@ class _BankAccountPageState extends State<BankAccountPage> {
   bool _checkingOwner = false;
   bool _loadingAccounts = true;
   bool _working = false;
+  bool _awaitingSavedAccountSync = false;
+  String? _savedAccountAwaitingSync;
   bool _whatsappAvailable = false;
   bool _checkingWhatsApp = false;
   List<BankLiability> _liabilities = const [];
@@ -81,12 +83,66 @@ class _BankAccountPageState extends State<BankAccountPage> {
       setState(() {
         _accounts = accounts;
         _loadingAccounts = false;
+        if (_savedAccountAwaitingSync != null &&
+            _containsAccount(accounts, _savedAccountAwaitingSync!)) {
+          _awaitingSavedAccountSync = false;
+          _savedAccountAwaitingSync = null;
+          _error = null;
+        }
       });
     } catch (_) {
       if (!mounted) return;
       setState(() => _loadingAccounts = false);
       _showErrorSheet(_loadAccounts);
     }
+  }
+
+  bool _containsAccount(
+      Iterable<BankAccountsDataModel> accounts, String accountNumber) {
+    final expected = accountNumber.replaceAll(RegExp(r'\D'), '');
+    return accounts.any((account) =>
+        (account.bankOwnerNumber ?? '').replaceAll(RegExp(r'\D'), '') ==
+        expected);
+  }
+
+  /// Add-bank is a server mutation followed by a read from a different
+  /// endpoint. The list can be briefly eventually consistent. Polling here
+  /// prevents a successful first add from appearing as an empty list, which
+  /// otherwise invites the user to submit the same account again.
+  Future<void> _refreshSavedAccount(String accountNumber) async {
+    List<BankAccountsDataModel> latest = _accounts;
+    Object? lastError;
+    for (var attempt = 0; attempt < 4; attempt++) {
+      try {
+        latest = widget.loadAccounts == null
+            ? await _loadAccountsFromApi()
+            : await widget.loadAccounts!();
+        if (!mounted) return;
+        setState(() {
+          _accounts = latest;
+          _loadingAccounts = false;
+          if (_containsAccount(latest, accountNumber)) {
+            _awaitingSavedAccountSync = false;
+            _savedAccountAwaitingSync = null;
+            _error = null;
+          }
+        });
+        if (!_awaitingSavedAccountSync) return;
+      } catch (error) {
+        lastError = error;
+      }
+      if (attempt < 3) {
+        await Future<void>.delayed(Duration(milliseconds: 600 * (attempt + 1)));
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _accounts = latest;
+      _loadingAccounts = false;
+      _error = lastError == null
+          ? 'Rekening berhasil ditambahkan. Daftar sedang disinkronkan; silakan muat ulang sebelum menambah rekening lagi.'
+          : 'Rekening berhasil ditambahkan, tetapi daftar belum dapat dimuat. Silakan muat ulang sebelum menambah rekening lagi.';
+    });
   }
 
   Future<List<BankAccountsDataModel>> _loadAccountsFromApi() async {
@@ -463,21 +519,33 @@ class _BankAccountPageState extends State<BankAccountPage> {
     final saved = await _cubit.addAccount(
         _otpToken!, _bankCode!, _accountNumber.trim(), _ownerName!);
     if (!mounted) return;
-    saved.fold(
-      (failure) => setState(() => _error = failure.message),
-      (_) {
-        _resendTimer?.cancel();
+    final savedSuccessfully = saved.fold<bool>(
+      (failure) {
+        setState(() => _error = failure.message);
+        return false;
+      },
+      (_) => true,
+    );
+    if (savedSuccessfully) {
+      final accountNumber = _accountNumber.trim();
+      _resendTimer?.cancel();
+      setState(() {
         _otpController.clear();
         _otpToken = null;
         _otpNextRequestAt = null;
         _otpExpiresAt = null;
         _otpMethod = null;
         _liabilities = const [];
+        _awaitingSavedAccountSync = true;
+        _savedAccountAwaitingSync = accountNumber;
         _step = _BankAccountStep.list;
-        _loadAccounts();
-        _showSuccess();
-      },
-    );
+      });
+      // Mulai sinkronisasi sebelum modal sukses dibuka, agar ketika modal
+      // ditutup daftar biasanya sudah berisi rekening yang baru disimpan.
+      final refresh = _refreshSavedAccount(accountNumber);
+      await _showSuccess();
+      await refresh;
+    }
     if (mounted) setState(() => _working = false);
   }
 
@@ -486,57 +554,82 @@ class _BankAccountPageState extends State<BankAccountPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      builder: (sheetContext) => Container(
+        width: double.infinity,
+        margin:
+            const EdgeInsets.symmetric(horizontal: AppSpacing.pageMargin2xs),
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+          AppSpacing.insetLg,
+          AppSpacing.xl,
+          AppSpacing.insetLg,
+          AppSpacing.insetLg,
+        ),
         decoration: const BoxDecoration(
           color: AppColors.bgPopup,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
         ),
         child: SafeArea(
           top: false,
-          child: SizedBox(
-            height:
-                (MediaQuery.sizeOf(context).height * .75).clamp(420.0, 680.0),
-            child: Column(
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 48),
-                      child: Text('Rekening Berhasil\nDitambahkan',
-                          style: AppTypography.headingXs,
-                          textAlign: TextAlign.center),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl3),
+                    child: Text(
+                      'Rekening Berhasil\nDitambahkan',
+                      style: AppTypography.headingMd,
+                      textAlign: TextAlign.center,
                     ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded,
-                            color: AppColors.grey600),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Semantics(
+                      button: true,
+                      label: 'Tutup notifikasi rekening berhasil',
+                      child: InkWell(
+                        onTap: () => Navigator.pop(sheetContext),
+                        borderRadius: BorderRadius.circular(AppRadius.circular),
+                        child: Container(
+                          width: AppSpacing.xl3,
+                          height: AppSpacing.xl3,
+                          decoration: const BoxDecoration(
+                            color: AppColors.bgLight,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: AppColors.grey700,
+                            size: AppSpacing.iconXl,
+                          ),
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                    'Selamat! Nomor rekening berhasil\nditambahkan di akun kamu',
-                    style: AppTypography.bodySmRegular
-                        .copyWith(color: AppColors.grey600),
-                    textAlign: TextAlign.center),
-                Expanded(
-                  child: Center(
-                    child: SvgPicture.asset(
-                        'assets/images/ilustrated-success.svg',
-                        height: 240),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                DsButton(text: 'Oke', onPressed: () => Navigator.pop(context)),
-              ],
-            ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Selamat! Nomor rekening berhasil\nditambahkan di akun kamu',
+                style: AppTypography.bodyMdRegular
+                    .copyWith(color: AppColors.grey700),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              SvgPicture.asset(
+                'assets/images/ilustrated-success.svg',
+                height: 196,
+                semanticsLabel: 'Ilustrasi rekening berhasil ditambahkan',
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              DsButton(
+                text: 'Oke',
+                onPressed: () => Navigator.pop(sheetContext),
+              ),
+            ],
           ),
         ),
       ),
@@ -563,7 +656,9 @@ class _BankAccountPageState extends State<BankAccountPage> {
                   AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
               child: DsButton(
                 text: switch (_step) {
-                  _BankAccountStep.list => 'Tambah Rekening',
+                  _BankAccountStep.list => _awaitingSavedAccountSync
+                      ? 'Muat Ulang Daftar'
+                      : 'Tambah Rekening',
                   _BankAccountStep.form => 'Konfirmasi',
                   _BankAccountStep.otp => 'Verifikasi',
                   _BankAccountStep.method => '',
@@ -574,7 +669,8 @@ class _BankAccountPageState extends State<BankAccountPage> {
                   _BankAccountStep.otp => 'Memverifikasi OTP...',
                   _BankAccountStep.method => null,
                 },
-                state: _working
+                state: _working ||
+                        (_step == _BankAccountStep.list && _loadingAccounts)
                     ? DsButtonState.loading
                     : _step == _BankAccountStep.list &&
                                 _accounts.length >= _maxAccounts ||
@@ -586,7 +682,9 @@ class _BankAccountPageState extends State<BankAccountPage> {
                 onPressed: () {
                   switch (_step) {
                     case _BankAccountStep.list:
-                      _enterForm();
+                      _awaitingSavedAccountSync
+                          ? _loadAccounts()
+                          : _enterForm();
                     case _BankAccountStep.form:
                       _enterMethod();
                     case _BankAccountStep.otp:
@@ -612,7 +710,29 @@ class _BankAccountPageState extends State<BankAccountPage> {
             child: CircularProgressIndicator(color: AppColors.primaryBase),
           ));
         }
-        return _accounts.isEmpty ? _emptyState() : _accountList();
+        final accountsBody = _accounts.isEmpty ? _emptyState() : _accountList();
+        if (!_awaitingSavedAccountSync || _error == null) {
+          return accountsBody;
+        }
+        return Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.warningLight,
+                borderRadius: BorderRadius.circular(AppSpacing.xs),
+              ),
+              child: Text(
+                _error!,
+                style: AppTypography.bodySmRegular
+                    .copyWith(color: AppColors.warningBase),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            accountsBody,
+          ],
+        );
       case _BankAccountStep.form:
         return _form();
       case _BankAccountStep.method:

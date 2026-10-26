@@ -13,7 +13,7 @@ import 'package:mockito/mockito.dart';
 import '../../../helpers/helpers.dart';
 
 // =============================================================================
-// PANDUAN: Repository — Sang Orkestrator 
+// PANDUAN: Repository — Sang Orkestrator
 // =============================================================================
 // 1. Orkestrasi (Happy) : Remote OK → Local Save OK → Right(Entity)
 // 2. Error Path         : Remote Error → tangkap → ubah jadi Left(Failure), zero interactions local
@@ -57,7 +57,7 @@ void main() {
     data: tUserLoginData,
   );
 
-  final tLoginEntity = LoginModel(
+  const tLoginEntity = LoginModel(
     accessToken: 'access_token_abc',
     tokenType: 'Bearer',
     data: UserLoginModel(
@@ -79,7 +79,9 @@ void main() {
 
   group('getAuthState', () {
     // ----- a. HAPPY PATH -----
-    test('harus return Right(true) saat membaca local sukses dan user terautentikasi', () async {
+    test(
+        'harus return Right(true) saat membaca local sukses dan user terautentikasi',
+        () async {
       when(mockSharedPref.isLoggedIn()).thenAnswer((_) async => true);
 
       final result = await repository.getAuthState();
@@ -90,7 +92,8 @@ void main() {
     });
 
     // ----- a. HAPPY PATH (Not logged in) -----
-    test('harus return Right(false) saat user belum/tidak terautentikasi', () async {
+    test('harus return Right(false) saat user belum/tidak terautentikasi',
+        () async {
       when(mockSharedPref.isLoggedIn()).thenAnswer((_) async => false);
 
       final result = await repository.getAuthState();
@@ -100,7 +103,9 @@ void main() {
     });
 
     // ----- b. ERROR PATH -----
-    test('harus return Left(UnknownFailure) saat isLoggedIn() throw Exception (di tangkap BaseRepository)', () async {
+    test(
+        'harus return Left(UnknownFailure) saat isLoggedIn() throw Exception (di tangkap BaseRepository)',
+        () async {
       when(mockSharedPref.isLoggedIn()).thenThrow(Exception('pref error'));
 
       final result = await repository.getAuthState();
@@ -115,15 +120,17 @@ void main() {
 
   group('doLogin', () {
     // ----- a. HAPPY PATH (Orkestrasi) -----
-    test('harus memanggil Remote dan Local Save (Orkestrasi) lalu return Right(LoginModel) saat sukses', () async {
+    test(
+        'harus memanggil Remote dan Local Save (Orkestrasi) lalu return Right(LoginModel) saat sukses',
+        () async {
       when(mockRemote.doLogin(tUsername, tPassword))
           .thenAnswer((_) async => tLoginResponse);
       when(mockSharedPref.saveUserAndToken(any)).thenAnswer((_) async {});
 
       final result = await repository.doLogin(tUsername, tPassword);
 
-      expect(result, Right(tLoginEntity));
-      
+      expect(result, const Right(tLoginEntity));
+
       // Orkestrasi terverifikasi : Hit API -> Simpan Respons Lokal
       verify(mockRemote.doLogin(tUsername, tPassword)).called(1);
       // EDGE / EXACT Check: Pastikan data yang disimpan lokal sesuai dengan object dari remote!
@@ -131,7 +138,9 @@ void main() {
     });
 
     // ----- b. ERROR PATH (Data Pelit / Zero Interactions local save) -----
-    test('harus return Left(ServerFailure) dan BATAL save ke lokal saat Server Exception', () async {
+    test(
+        'harus return Left(ServerFailure) dan BATAL save ke lokal saat Server Exception',
+        () async {
       when(mockRemote.doLogin(tUsername, tPassword))
           .thenThrow(ServerException('Wrong Password'));
 
@@ -139,7 +148,7 @@ void main() {
 
       expect(result, const Left(ServerFailure('Wrong Password')));
       verify(mockRemote.doLogin(tUsername, tPassword)).called(1);
-      
+
       verifyNever(mockSharedPref.saveUserAndToken(any));
     });
 
@@ -150,11 +159,16 @@ void main() {
 
       final result = await repository.doLogin(tUsername, tPassword);
 
-      expect(result, const Left(ServerFailure('Respons login tidak memuat sesi yang valid')));
+      expect(
+          result,
+          const Left(
+              ServerFailure('Respons login tidak memuat sesi yang valid')));
       verifyNever(mockSharedPref.saveUserAndToken(any));
     });
 
-    test('harus return Left(ConnectionFailure) dan BATAL save ke lokal saat remote throw DioException Timeout', () async {
+    test(
+        'harus return Left(ConnectionFailure) dan BATAL save ke lokal saat remote throw DioException Timeout',
+        () async {
       when(mockRemote.doLogin(tUsername, tPassword)).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: ''),
@@ -165,21 +179,30 @@ void main() {
       final result = await repository.doLogin(tUsername, tPassword);
 
       expect(result.isLeft(), isTrue);
-      result.fold((l) => expect(l, isA<ConnectionFailure>().having((e) => e.message, 'message', 'Request timeout')), (_) => null);
+      result.fold(
+          (l) => expect(
+              l,
+              isA<ConnectionFailure>()
+                  .having((e) => e.message, 'message', 'Request timeout')),
+          (_) => null);
       verifyNever(mockSharedPref.saveUserAndToken(any));
     });
 
     // ----- b. ERROR PATH EXTREME -----
-    test('harus return Left(ServerFailure) dan meng-extract message dari badResponse 401 Body', () async {
+    test(
+        'harus return Left(ServerFailure) dan meng-extract message dari badResponse 401 Body',
+        () async {
       when(mockRemote.doLogin(tUsername, tPassword)).thenThrow(
         DioException(
+          requestOptions: RequestOptions(path: ''),
+          type: DioExceptionType.badResponse,
+          response: Response(
             requestOptions: RequestOptions(path: ''),
-            type: DioExceptionType.badResponse,
-            response: Response(
-                requestOptions: RequestOptions(path: ''),
-                statusCode: 401,
-                data: {'meta': {'message': 'Unauthorized', 'code': 401}},
-            ),
+            statusCode: 401,
+            data: {
+              'meta': {'message': 'Unauthorized', 'code': 401}
+            },
+          ),
         ),
       );
 
@@ -188,13 +211,47 @@ void main() {
       expect(result, const Left(ServerFailure('Unauthorized')));
       verifyNever(mockSharedPref.saveUserAndToken(any));
     });
+
+    test('meneruskan error code Team Internal dan tidak menyimpan sesi',
+        () async {
+      when(mockRemote.doLogin(tUsername, tPassword)).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: ''),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 403,
+            data: {
+              'meta': {
+                'code': 'ERR_ROLE_TEAM_INTERNAL_BLOCKED',
+                'message':
+                    'Akun Anda tidak memiliki akses untuk masuk ke aplikasi.',
+              },
+            },
+          ),
+        ),
+      );
+
+      final result = await repository.doLogin(tUsername, tPassword);
+
+      expect(
+        result,
+        const Left(ServerFailure(
+          'ERR_ROLE_TEAM_INTERNAL_BLOCKED: '
+          'Akun Anda tidak memiliki akses untuk masuk ke aplikasi.',
+        )),
+      );
+      verifyNever(mockSharedPref.saveUserAndToken(any));
+    });
   });
 
   // ─── doLogout ─────────────────────────────────────────────────────────────
 
   group('doLogout', () {
     // ----- a. HAPPY PATH -----
-    test('harus memanggil remote logout lalu menghapus data local (removeDataPref) saat remote return true', () async {
+    test(
+        'harus memanggil remote logout lalu menghapus data local (removeDataPref) saat remote return true',
+        () async {
       when(mockRemote.doLogout()).thenAnswer((_) async => true);
       when(mockSharedPref.removeDataPref()).thenAnswer((_) async {});
 
@@ -206,7 +263,9 @@ void main() {
     });
 
     // ----- EDGE PATH — removeDataPref TIDAK dipanggil saat remote return false -----
-    test('TIDAK memanggil removeDataPref saat remote return false (logout ditolak server)', () async {
+    test(
+        'TIDAK memanggil removeDataPref saat remote return false (logout ditolak server)',
+        () async {
       when(mockRemote.doLogout()).thenAnswer((_) async => false);
 
       final result = await repository.doLogout();
@@ -219,7 +278,9 @@ void main() {
     // ----- c. EDGE PATH (CLEAN UP SAFETY) -----
     // ⚠️ BUG TERDETEKSI via TEST: Jika implementasi tidak sesuai standard,
     // test ini akan MERAH! Ini adalah laporan bahwa Clean Up Safety absen.
-    test('AMANKAN LOGOUT LOKAL (Clean Up Safety): Harus TETAP menghapus data local storage meskipun remote API error atau timeout', () async {
+    test(
+        'AMANKAN LOGOUT LOKAL (Clean Up Safety): Harus TETAP menghapus data local storage meskipun remote API error atau timeout',
+        () async {
       when(mockRemote.doLogout()).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: ''),
@@ -240,7 +301,8 @@ void main() {
 
   group('sendForgotPass', () {
     // ----- a. HAPPY PATH -----
-    test('harus return Right(true) saat API sendForgotPass sukses membalas', () async {
+    test('harus return Right(true) saat API sendForgotPass sukses membalas',
+        () async {
       when(mockRemote.sendForgotPassword(tEmail)).thenAnswer((_) async => true);
 
       final result = await repository.sendForgotPass(tEmail);
@@ -250,8 +312,11 @@ void main() {
     });
 
     // ----- b. ERROR PATH -----
-    test('harus return Left(ConnectionFailure) saat remote API throw SocketException', () async {
-      when(mockRemote.sendForgotPassword(tEmail)).thenThrow(const SocketException('No Internet'));
+    test(
+        'harus return Left(ConnectionFailure) saat remote API throw SocketException',
+        () async {
+      when(mockRemote.sendForgotPassword(tEmail))
+          .thenThrow(const SocketException('No Internet'));
 
       final result = await repository.sendForgotPass(tEmail);
 
@@ -260,16 +325,20 @@ void main() {
     });
 
     // ----- c. EDGE PATH -----
-    test('harus mereturn Left(ServerFailure) dengan custom message ketika badResponse error dari backend', () async {
+    test(
+        'harus mereturn Left(ServerFailure) dengan custom message ketika badResponse error dari backend',
+        () async {
       when(mockRemote.sendForgotPassword(tEmail)).thenThrow(
         DioException(
+          requestOptions: RequestOptions(path: ''),
+          type: DioExceptionType.badResponse,
+          response: Response(
             requestOptions: RequestOptions(path: ''),
-            type: DioExceptionType.badResponse,
-            response: Response(
-                requestOptions: RequestOptions(path: ''),
-                statusCode: 404,
-                data: {'meta': {'message': 'Email tidak terdaftar', 'code': 404}},
-            ),
+            statusCode: 404,
+            data: {
+              'meta': {'message': 'Email tidak terdaftar', 'code': 404}
+            },
+          ),
         ),
       );
 
@@ -283,35 +352,45 @@ void main() {
 
   group('changePassword', () {
     // ----- a. HAPPY PATH -----
-    test('harus return Right(true) saat API changePassword berhasil di-update tanpa kendala', () async {
+    test(
+        'harus return Right(true) saat API changePassword berhasil di-update tanpa kendala',
+        () async {
       when(mockRemote.changePassword(tOldPass, tNewPass, tConfirmPass))
           .thenAnswer((_) async => true);
 
-      final result = await repository.changePassword(tOldPass, tNewPass, tConfirmPass);
+      final result =
+          await repository.changePassword(tOldPass, tNewPass, tConfirmPass);
 
       expect(result, const Right(true));
-      verify(mockRemote.changePassword(tOldPass, tNewPass, tConfirmPass)).called(1);
+      verify(mockRemote.changePassword(tOldPass, tNewPass, tConfirmPass))
+          .called(1);
     });
 
     // ----- b. ERROR PATH -----
-    test('harus mereturn Left(ServerFailure) yang mengekstrak message validasi bila password gagal di approve server', () async {
+    test(
+        'harus mereturn Left(ServerFailure) yang mengekstrak message validasi bila password gagal di approve server',
+        () async {
       when(mockRemote.changePassword(tOldPass, tNewPass, tConfirmPass))
           .thenThrow(ServerException('Password baru terlalu lemah'));
 
-      final result = await repository.changePassword(tOldPass, tNewPass, tConfirmPass);
+      final result =
+          await repository.changePassword(tOldPass, tNewPass, tConfirmPass);
 
       expect(result, const Left(ServerFailure('Password baru terlalu lemah')));
     });
 
     // ----- c. EDGE PATH -----
-    test('harus mereturn Left(ConnectionFailure) jika timeout koneksi server saat ubah password', () async {
+    test(
+        'harus mereturn Left(ConnectionFailure) jika timeout koneksi server saat ubah password',
+        () async {
       when(mockRemote.changePassword(tOldPass, tNewPass, tConfirmPass))
           .thenThrow(DioException(
-            requestOptions: RequestOptions(path: ''),
-            type: DioExceptionType.connectionTimeout,
-          ));
+        requestOptions: RequestOptions(path: ''),
+        type: DioExceptionType.connectionTimeout,
+      ));
 
-      final result = await repository.changePassword(tOldPass, tNewPass, tConfirmPass);
+      final result =
+          await repository.changePassword(tOldPass, tNewPass, tConfirmPass);
 
       expect(result.isLeft(), isTrue);
       result.fold((l) => expect(l, isA<ConnectionFailure>()), (_) => null);

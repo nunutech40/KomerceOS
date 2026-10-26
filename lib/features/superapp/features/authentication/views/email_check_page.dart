@@ -157,7 +157,9 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
 
   void _onBlocStateChanged(BuildContext context, CheckEmailState state) {
     if (state is CheckEmailFailure) {
-      if (LoginErrorPopups.isOtherRoleError(state.message)) {
+      if (LoginErrorPopups.isTeamInternalBlocked(state.message)) {
+        LoginErrorPopups.showTeamInternalBlocked(context);
+      } else if (LoginErrorPopups.isOtherRoleError(state.message)) {
         LoginErrorPopups.showOtherRole(context);
       } else {
         ScaffoldMessenger.of(context)
