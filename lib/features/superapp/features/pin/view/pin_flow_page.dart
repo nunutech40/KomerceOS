@@ -293,34 +293,34 @@ class _PinFlowPageState extends State<PinFlowPage> {
     }
   }
 
-  void _showLockSheet() {
+  Future<void> _showLockSheet() async {
     if (_lockHandled) return;
     _lockHandled = true;
+    if (!mounted) return;
+
+    // Jangan menghapus sesi sebelum pesan lock terlihat. Logout sebelumnya
+    // membuat GoRouter langsung mengganti halaman menjadi login sehingga
+    // user tampak "logout sendiri" tanpa tahu PIN sudah terkunci.
+    await DsBottomSheet.show<void>(
+      context: context,
+      isDismissible: false,
+      title: 'Terlalu Banyak Percobaan PIN',
+      description: 'Kamu telah mencapai batas maksimal percobaan PIN. '
+          'Demi keamanan akun, silakan coba kembali dalam 24 jam.',
+      primaryButtonText: 'Masuk Kembali',
+      onPrimaryPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    if (!mounted) return;
+    _timer?.cancel();
+    _verifiedOldPin = '';
     if (widget.onLocked != null) {
       widget.onLocked!();
-    } else {
-      context
-          .read<SuperappProfileBloc>()
-          .add(const ClearSuperappProfileEvent());
-      context.read<AuthBloc>().add(AuthLogoutRequested());
+      return;
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      DsBottomSheet.show<void>(
-        context: context,
-        isDismissible: false,
-        title: 'Terlalu Banyak Percobaan PIN',
-        description: 'Kamu telah mencapai batas maksimal percobaan PIN. '
-            'Demi keamanan akun, silakan coba kembali dalam 24 jam.',
-        primaryButtonText: 'Lanjut',
-        onPrimaryPressed: () {
-          Navigator.of(context).pop();
-          _timer?.cancel();
-          _verifiedOldPin = '';
-          _go(_PinStep.login);
-        },
-      );
-    });
+    context.read<SuperappProfileBloc>().add(const ClearSuperappProfileEvent());
+    context.read<AuthBloc>().add(const AuthLogoutRequested());
   }
 
   @override

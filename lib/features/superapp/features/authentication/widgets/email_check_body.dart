@@ -79,7 +79,7 @@ class EmailCheckBody extends StatelessWidget {
                     child: AspectRatio(
                       aspectRatio: 414 / 248,
                       child: SvgPicture.asset(
-                        'assets/images/superapp/bg_auth.svg',
+                        'assets/images/superapp/auth/bg_auth.svg',
                         fit: BoxFit.fill,
                       ),
                     ),

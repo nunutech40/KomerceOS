@@ -136,12 +136,6 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
 
   Future<void> _showBankPinLock({bool autoLogout = false}) async {
     if (!mounted) return;
-    if (autoLogout) {
-      context
-          .read<SuperappProfileBloc>()
-          .add(const ClearSuperappProfileEvent());
-      context.read<AuthBloc>().add(AuthLogoutRequested());
-    }
     await DsBottomSheet.show<void>(
       context: context,
       isDismissible: !autoLogout,
@@ -163,17 +157,24 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
       barrierColor: const Color(0x66000000),
       onPrimaryPressed: () {
         Navigator.of(context).pop();
-        if (autoLogout) {
-          return;
-        }
-        final email =
-            context.read<SuperappProfileBloc>().state.displayProfile?.email ??
-                '';
-        Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => PinFlowPage(flow: PinFlow.forgot, email: email),
-        ));
       },
     );
+    if (!mounted) return;
+    if (autoLogout) {
+      // Tampilkan alasan lock terlebih dahulu. Bila AuthBloc dipanggil
+      // sebelum sheet dirender, GoRouter langsung menuju login dan pesan
+      // keamanan tidak pernah terlihat.
+      context
+          .read<SuperappProfileBloc>()
+          .add(const ClearSuperappProfileEvent());
+      context.read<AuthBloc>().add(const AuthLogoutRequested());
+      return;
+    }
+    final email =
+        context.read<SuperappProfileBloc>().state.displayProfile?.email ?? '';
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => PinFlowPage(flow: PinFlow.forgot, email: email),
+    ));
   }
 
   Future<void> _openPin() async {
