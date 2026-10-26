@@ -123,7 +123,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await recaptchaUseCase.initializeClient();
       }
       // Email check and password login are verified with different actions.
-      final action = state.isEmailChecked ? 'CHECK_LOGIN' : 'CHECK_EMAIL';
+      final action = state.isEmailChecked ? 'LOGIN' : 'CHECK_EMAIL';
       recaptchaToken = await recaptchaUseCase
           .getToken(RecaptchaAction.custom(action));
     } catch (e) {
