@@ -63,7 +63,7 @@ void main() {
     )).called(1);
   });
 
-  test('submit password memakai token CHECK_LOGIN untuk endpoint login',
+  test('submit password memakai token LOGIN untuk endpoint login',
       () async {
     final doLogin = MockDoLoginUseCase();
     when(doLogin.execute(
@@ -95,7 +95,7 @@ void main() {
       (state) => state.status == RequestStatus.failure,
     );
 
-    expect(recaptcha.actions, ['CHECK_LOGIN']);
+    expect(recaptcha.actions, ['LOGIN']);
     verify(doLogin.execute(
       'user@example.com',
       'password123',
