@@ -111,7 +111,7 @@ class AppRouter {
       //    > Paksa lempar ke Login Page
       if (authStatus == AuthStatus.unauthenticated &&
           !_isPublicRoute(location)) {
-        return PAGES.login.screenPath;
+        return PAGES.emailCheck.screenPath;
       }
 
       // 3. Sudah punya akses (Authenticated) tapi mencoba buka halaman Guest

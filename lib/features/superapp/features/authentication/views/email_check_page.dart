@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -45,6 +46,12 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
     super.initState();
     _emailController = TextEditingController();
     _emailController.addListener(_onEmailChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !context.read<AuthBloc>().state.sessionExpired) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Sesi berakhir. Silakan masuk kembali.'),
+      ));
+    });
   }
 
   @override

@@ -143,6 +143,17 @@ void main() {
       verifyNever(mockSharedPref.saveUserAndToken(any));
     });
 
+    test('respons login tanpa access token tidak menyimpan sesi', () async {
+      when(mockRemote.doLogin(tUsername, tPassword)).thenAnswer((_) async =>
+          const LoginResponse(
+              accessToken: '', tokenType: 'Bearer', data: tUserLoginData));
+
+      final result = await repository.doLogin(tUsername, tPassword);
+
+      expect(result, const Left(ServerFailure('Respons login tidak memuat sesi yang valid')));
+      verifyNever(mockSharedPref.saveUserAndToken(any));
+    });
+
     test('harus return Left(ConnectionFailure) dan BATAL save ke lokal saat remote throw DioException Timeout', () async {
       when(mockRemote.doLogin(tUsername, tPassword)).thenThrow(
         DioException(

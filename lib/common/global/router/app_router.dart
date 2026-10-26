@@ -105,7 +105,7 @@ class AppRouter {
 
       if (authStatus == AuthStatus.unauthenticated &&
           !_isPublicRoute(location)) {
-        return PAGES.login.screenPath;
+        return PAGES.emailCheck.screenPath;
       }
 
       if (authStatus == AuthStatus.authenticated && _isGuestRoute(location)) {

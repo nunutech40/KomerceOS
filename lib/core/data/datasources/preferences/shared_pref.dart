@@ -26,22 +26,27 @@ class SharedPref implements TokenProvider {
   /// sedangkan data User disimpan di [SharedPreferences] (tanpa token) untuk keperluan UI.
   Future<void> saveUserAndToken(LoginResponse userAndToken) async {
     final prefs = await sharedPreferences;
-
-    // 1. Simpan Token ke Secure Storage (Aman)
-    if (userAndToken.accessToken != null) {
-      await secureStorage.saveTokens(
-          accessToken: userAndToken.accessToken!,
-          refreshToken: ''); // Endpoint ini tidak mengembalikan refresh token
+    final accessToken = userAndToken.accessToken?.trim();
+    if (accessToken == null || accessToken.isEmpty) {
+      throw StateError('Access token login tidak tersedia');
     }
 
-    // 2. Bersihkan token dari objek sebelum disimpan ke SharedPref (Keamanan)
+    // Simpan data pengguna tanpa token di SharedPreferences.
     var userOnly = LoginResponse(
         accessToken: null, // Jangan simpan di prefs
         tokenType: userAndToken.tokenType,
         data: userAndToken.data);
 
     String userJson = jsonEncode(userOnly.toJson());
-    await prefs.setString(USERANDTOKEN, userJson);
+    try {
+      // Endpoint login hanya mengembalikan access token.
+      await secureStorage.saveAccessToken(accessToken);
+      final saved = await prefs.setString(USERANDTOKEN, userJson);
+      if (!saved) throw StateError('Data login gagal disimpan');
+    } catch (_) {
+      await secureStorage.deleteTokens();
+      rethrow;
+    }
   }
 
   Future<void> updateTokens(String accessToken, String refreshToken) async {
