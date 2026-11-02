@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:komtim_partner/common/failure.dart';
+import 'package:komtim_partner/common/exception.dart';
 
 import '../../domain/entities/check_email_model.dart';
 import '../../domain/entities/login_model.dart';
@@ -39,9 +40,14 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
   Future<Either<Failure, LoginModel>> doLogin(String username, String password,
       {String? recaptchaToken}) async {
     return executeEither(() async {
-      final result = await remoteDataSource.doLogin(
-          username, password,
+      final result = await remoteDataSource.doLogin(username, password,
           recaptchaToken: recaptchaToken);
+
+      if (result.accessToken == null ||
+          result.accessToken!.trim().isEmpty ||
+          result.data == null) {
+        throw ServerException('Respons login tidak memuat sesi yang valid');
+      }
 
       await sharedPref.saveUserAndToken(LoginResponse(
           accessToken: result.accessToken,
@@ -103,4 +109,3 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
     });
   }
 }
-

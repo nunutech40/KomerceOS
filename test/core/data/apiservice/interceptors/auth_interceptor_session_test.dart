@@ -62,56 +62,56 @@ void main() {
     await alerts.close();
   });
 
-  test('401 API terproteksi menghapus sesi lokal dan masuk status logout',
+  test('401 profil auth menghapus sesi lokal dan masuk status logout',
       () async {
     final handler = _ErrorHandler();
     final unauthenticated = auth.stream
         .firstWhere((state) => state.status.name == 'unauthenticated');
     await interceptor.onError(
-        _error(Endpoints.securedVerifyPin, 401, requestToken: 'active'),
+        _error(Endpoints.superappGetProfile, 401, requestToken: 'active'),
         handler);
     await unauthenticated;
     expect(handler.rejected, isTrue);
+    expect(auth.state.sessionExpired, isTrue);
     verify(prefs.removeDataPref()).called(1);
   });
 
-  test('401 tanpa header token tetap mengakhiri sesi yang tersimpan', () async {
+  test('401 tanpa header token tidak menghapus sesi yang tersimpan', () async {
     final handler = _ErrorHandler();
-    final unauthenticated = auth.stream
-        .firstWhere((state) => state.status.name == 'unauthenticated');
-    await interceptor.onError(_error(Endpoints.securedVerifyPin, 401), handler);
-    await unauthenticated;
-    expect(handler.rejected, isTrue);
-    verify(prefs.removeDataPref()).called(1);
+    await interceptor.onError(
+        _error(Endpoints.superappGetProfile, 401), handler);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
   });
 
-  test('401 PIN salah dengan sisa percobaan tidak menghapus sesi', () async {
+  test('401 verifikasi PIN tidak menghapus sesi walau respons tanpa rincian',
+      () async {
     final handler = _ErrorHandler();
     await interceptor.onError(
         _error(Endpoints.securedVerifyPin, 401,
             requestToken: 'active',
             responseData: {
-              'meta': {'status': 'failed', 'message': 'PIN salah'},
-              'data': {'attempt_left': 2, 'lock': false},
+              'meta': {'status': 'failed'}
             }),
         handler);
     expect(handler.forwarded, isTrue);
     verifyNever(prefs.removeDataPref());
   });
 
-  test('dua respons 401 serentak hanya memicu satu logout', () async {
+  test('dua respons 401 profil serentak hanya memicu satu logout', () async {
     final first = _ErrorHandler();
     final second = _ErrorHandler();
+    final unauthenticated = auth.stream
+        .firstWhere((state) => state.status.name == 'unauthenticated');
     await Future.wait([
       interceptor.onError(
-          _error(Endpoints.securedVerifyPin, 401, requestToken: 'active'),
+          _error(Endpoints.superappGetProfile, 401, requestToken: 'active'),
           first),
       interceptor.onError(
-          _error(Endpoints.pinAttemptLeft, 401, requestToken: 'active'),
+          _error(Endpoints.superappGetProfile, 401, requestToken: 'active'),
           second),
     ]);
-    await auth.stream
-        .firstWhere((state) => state.status.name == 'unauthenticated');
+    await unauthenticated;
     expect(first.rejected && second.rejected, isTrue);
     verify(prefs.removeDataPref()).called(1);
   });
@@ -131,14 +131,24 @@ void main() {
     verifyNever(prefs.removeDataPref());
   });
 
-  test('401 ubah password bukan endpoint publik', () async {
+  test('401 layanan lama tidak otomatis menghapus sesi', () async {
     final handler = _ErrorHandler();
     await interceptor.onError(
         _error(Endpoints.changePassword, 401, requestToken: 'active'), handler);
-    await auth.stream
-        .firstWhere((state) => state.status.name == 'unauthenticated');
-    expect(handler.rejected, isTrue);
-    verify(prefs.removeDataPref()).called(1);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
+  });
+
+  test('401 API dashboard tidak menghapus sesi login', () async {
+    final handler = _ErrorHandler();
+    await interceptor.onError(
+        _error(
+            'https://dev.komship.komerce.my.id/api/v1/dashboard/partner/balanceSummary',
+            401,
+            requestToken: 'active'),
+        handler);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
   });
 
   test('error jaringan dan 403 tidak menghapus sesi', () async {
@@ -158,7 +168,18 @@ void main() {
   test('401 request dengan token lama tidak menghapus sesi baru', () async {
     final handler = _ErrorHandler();
     await interceptor.onError(
-        _error(Endpoints.securedVerifyPin, 401, requestToken: 'previous'),
+        _error(Endpoints.superappGetProfile, 401, requestToken: 'previous'),
+        handler);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
+  });
+
+  test('401 profil setelah token lokal hilang tidak memicu logout kedua',
+      () async {
+    when(tokens.getAccessToken()).thenAnswer((_) async => null);
+    final handler = _ErrorHandler();
+    await interceptor.onError(
+        _error(Endpoints.superappGetProfile, 401, requestToken: 'previous'),
         handler);
     expect(handler.forwarded, isTrue);
     verifyNever(prefs.removeDataPref());

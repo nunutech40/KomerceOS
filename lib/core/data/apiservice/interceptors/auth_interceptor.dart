@@ -74,8 +74,9 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     super.onResponse(response, handler);
   }
 
-  /// BE menentukan kapan token expired/dicabut. FE mengakhiri sesi pada 401
-  /// endpoint terproteksi; error jaringan dan 401 endpoint publik tidak logout.
+  /// Hanya profil dari layanan auth yang dapat mengonfirmasi bahwa sesi
+  /// aplikasi sudah tidak berlaku. API fitur dapat memakai 401 untuk alasan
+  /// lain (misalnya PIN salah atau akses produk), jadi errornya tetap lokal.
   @override
   Future<void> onError(
       DioException err, ErrorInterceptorHandler handler) async {
@@ -104,10 +105,7 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
       return handler.next(err);
     }
 
-    // The PIN verification endpoint can use HTTP 401 for a wrong PIN while
-    // keeping the login session valid. Let the PIN flow show the remaining
-    // attempts; only a genuine authentication failure should log out.
-    if (_isPinVerificationError(err)) {
+    if (err.requestOptions.path != Endpoints.superappGetProfile) {
       return handler.next(err);
     }
 
@@ -116,51 +114,38 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     final requestToken = requestAuthorization?.startsWith('Bearer ') == true
         ? requestAuthorization!.substring('Bearer '.length)
         : null;
+    // A request sent without credentials cannot prove that the current
+    // session is invalid. It may have raced with token persistence at login.
+    if (requestToken == null || requestToken.isEmpty) {
+      return handler.next(err);
+    }
     String? currentToken;
     try {
       currentToken = await tokenProvider.getAccessToken();
     } catch (_) {
-      // A rejected protected request with unreadable local credentials is
-      // still an invalid session, not a reason to keep it authenticated.
+      // Without the stored token, this response cannot be tied to the
+      // currently authenticated session.
     }
-    // A response from an older request must not log out a new login session.
-    if (requestToken != null &&
-        currentToken != null &&
-        currentToken.isNotEmpty &&
+    // Only the request made with the currently stored token may expire it.
+    // This also protects a new login from a late response from an old user.
+    if (currentToken == null ||
+        currentToken.isEmpty ||
         requestToken != currentToken) {
       return handler.next(err);
     }
-    _invalidatedToken = requestToken ?? currentToken;
+    _invalidatedToken = requestToken;
     return _handleLogout(handler, err);
   }
 
-  bool _isPinVerificationError(DioException err) {
-    if (err.requestOptions.path != Endpoints.securedVerifyPin) return false;
-    final body = err.response?.data;
-    if (body is! Map) return false;
-    final data = body['data'];
-    if (data is Map &&
-        (data.containsKey('attempt_left') || data.containsKey('lock'))) {
-      return true;
-    }
-    final meta = body['meta'];
-    final message =
-        meta is Map ? meta['message']?.toString().toLowerCase() : null;
-    return message != null &&
-        (message.contains('pin salah') ||
-            message.contains('incorrect pin') ||
-            message.contains('invalid pin'));
-  }
-
   /// Menangani sesi tidak sah dari endpoint terproteksi.
-  /// 1. Menghapus data di SharedPreferences.
+  /// 1. Menghapus data sesi dari SharedPreferences dan SecureStorage.
   /// 2. Memperbarui status auth global agar GoRouter mengarahkan ke Login.
   /// 3. Me-reject request asli dengan error.
   Future<void> _handleLogout(
       ErrorInterceptorHandler handler, DioException err) async {
     if (!_logoutQueued) {
       _logoutQueued = true;
-      authBloc.add(AuthLogoutRequested());
+      authBloc.add(const AuthLogoutRequested(sessionExpired: true));
     }
     return handler.reject(err);
   }

@@ -344,8 +344,7 @@ Future<void> initDependencies() async {
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
   locator.registerLazySingleton(() => CheckEmailLoginUseCase(locator()));
-  locator.registerLazySingleton(
-      () => DoLoginUseCase(locator(), locator(), locator()));
+  locator.registerLazySingleton(() => DoLoginUseCase(locator(), locator()));
   locator.registerLazySingleton(() => ResendVerificationUseCase(locator()));
   locator.registerLazySingleton(() => GetAuthStateUseCase(locator()));
   locator.registerLazySingleton(() => DoLogoutUseCase(

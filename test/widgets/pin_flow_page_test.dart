@@ -104,11 +104,28 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '000003');
     await tester.pumpAndSettle();
     expect(logoutCount, 1);
+    expect(find.text('Terlalu Banyak Percobaan PIN'), findsNothing);
+  });
+
+  testWidgets('akun yang masih terkunci melihat batas 24 jam setelah login',
+      (tester) async {
+    var logoutCount = 0;
+    await showFlow(tester, PinFlow.change,
+        repository: FakePinRepository()..attemptLeft = 0,
+        onLocked: () => logoutCount++);
+    await tester.pumpAndSettle();
+    expect(logoutCount, 0);
     expect(find.text('Terlalu Banyak Percobaan PIN'), findsOneWidget);
+    expect(find.byType(SvgPicture), findsOneWidget);
     expect(
         find.text('Kamu telah mencapai batas maksimal percobaan PIN. '
             'Demi keamanan akun, silakan coba kembali dalam 24 jam.'),
         findsOneWidget);
+    expect(find.text('Reset PIN'), findsOneWidget);
+    await tester.tap(find.text('Reset PIN'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pilih Metode Verifikasi'), findsOneWidget);
+    expect(logoutCount, 0);
   });
 
   testWidgets('PIN salah tanpa jumlah percobaan tidak langsung logout',

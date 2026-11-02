@@ -70,7 +70,9 @@ extension WidgetTesterExt on WidgetTester {
       await pump(const Duration(milliseconds: 100));
     }
     if (!isVisible) {
-      throw Exception('Widget tidak ditemukan: ${finder.description}');
+      throw Exception(
+        'Widget tidak ditemukan: ${finder.describeMatch(Plurality.zero)}',
+      );
     }
   }
 

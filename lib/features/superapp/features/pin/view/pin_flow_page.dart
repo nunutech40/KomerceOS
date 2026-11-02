@@ -53,6 +53,7 @@ class _PinFlowPageState extends State<PinFlowPage> {
   Timer? _timer;
   bool _isConfirming = false;
   bool _lockHandled = false;
+  bool _lockedAtOpen = false;
 
   @override
   void initState() {
@@ -104,7 +105,10 @@ class _PinFlowPageState extends State<PinFlowPage> {
     result.fold(
       (failure) => setState(() => _error = failure.message),
       (remaining) {
-        if (remaining <= 0) _showLockSheet();
+        if (remaining <= 0) {
+          _lockedAtOpen = true;
+          _showExistingLockSheet();
+        }
       },
     );
   }
@@ -195,6 +199,10 @@ class _PinFlowPageState extends State<PinFlowPage> {
 
   Future<void> _submit() async {
     if (_input.length != 6) return;
+    if (_lockedAtOpen && _step == _PinStep.oldPin) {
+      await _showExistingLockSheet();
+      return;
+    }
     switch (_step) {
       case _PinStep.oldPin:
         final enteredPin = _input;
@@ -210,7 +218,7 @@ class _PinFlowPageState extends State<PinFlowPage> {
             if (attempts == 0 ||
                 RegExp(r'lock:\s*(true|1)', caseSensitive: false)
                     .hasMatch(failure.message)) {
-              _showLockSheet();
+              _logoutAfterPinLock();
             } else {
               setState(() => _error = attempts == null
                   ? failure.message
@@ -228,7 +236,7 @@ class _PinFlowPageState extends State<PinFlowPage> {
               _verifiedOldToken = data.usableToken!;
               _go(_PinStep.newPin);
             } else if (data.attemptLeft == 0) {
-              _showLockSheet();
+              _logoutAfterPinLock();
             } else {
               setState(() => _error = data.attemptLeft == null
                   ? 'PIN salah. Coba lagi.'
@@ -293,34 +301,47 @@ class _PinFlowPageState extends State<PinFlowPage> {
     }
   }
 
-  void _showLockSheet() {
+  void _logoutAfterPinLock() {
     if (_lockHandled) return;
     _lockHandled = true;
+    if (!mounted) return;
+    _timer?.cancel();
+    _verifiedOldPin = '';
+    _verifiedOldToken = '';
     if (widget.onLocked != null) {
       widget.onLocked!();
-    } else {
-      context
-          .read<SuperappProfileBloc>()
-          .add(const ClearSuperappProfileEvent());
-      context.read<AuthBloc>().add(AuthLogoutRequested());
+      return;
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      DsBottomSheet.show<void>(
-        context: context,
-        isDismissible: false,
-        title: 'Terlalu Banyak Percobaan PIN',
-        description: 'Kamu telah mencapai batas maksimal percobaan PIN. '
-            'Demi keamanan akun, silakan coba kembali dalam 24 jam.',
-        primaryButtonText: 'Lanjut',
-        onPrimaryPressed: () {
-          Navigator.of(context).pop();
-          _timer?.cancel();
-          _verifiedOldPin = '';
-          _go(_PinStep.login);
-        },
-      );
-    });
+    context.read<SuperappProfileBloc>().add(const ClearSuperappProfileEvent());
+    context.read<AuthBloc>().add(const AuthLogoutRequested());
+  }
+
+  Future<void> _showExistingLockSheet() async {
+    if (!mounted) return;
+    final resetPin = await DsBottomSheet.show<bool>(
+      context: context,
+      title: 'Terlalu Banyak Percobaan PIN',
+      description: 'Kamu telah mencapai batas maksimal percobaan PIN. '
+          'Demi keamanan akun, silakan coba kembali dalam 24 jam.',
+      image: SvgPicture.asset(
+        'assets/images/superapp/auth/attempt_count_login.svg',
+        width: 278,
+        height: 232,
+        semanticsLabel: 'Ilustrasi batas percobaan PIN',
+      ),
+      secondaryButtonText: 'Kembali',
+      onSecondaryPressed: () => Navigator.of(context).pop(false),
+      primaryButtonText: 'Reset PIN',
+      onPrimaryPressed: () => Navigator.of(context).pop(true),
+    );
+    if (!mounted) return;
+    if (resetPin == true) {
+      _isRecovery = true;
+      _go(_PinStep.chooseEmail);
+      _restorePendingOtp();
+    } else if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override

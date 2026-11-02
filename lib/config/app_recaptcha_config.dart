@@ -1,7 +1,4 @@
 class AppRecaptchaConfig {
-  static const String _iosSiteKey =
-      String.fromEnvironment('RECAPTCHA_IOS_SITE_KEY');
-
   final String androidSiteKey;
   final String iosSiteKey;
   AppRecaptchaConfig(this.androidSiteKey, this.iosSiteKey);
@@ -13,19 +10,19 @@ class AppRecaptchaConfig {
     if (flavor == 'production') {
       return AppRecaptchaConfig(
         "6Lfzp4EtAAAAAKS40nm6gh3_irkwGpBXAFlHt5Z3",
-        _iosSiteKey,
+        "YOUR_IOS_SITE_KEY",
       );
     } else if (flavor == 'staging') {
       return AppRecaptchaConfig(
         "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx",
-        _iosSiteKey,
+        "YOUR_IOS_SITE_KEY",
       );
     }
 
     // Default / dev
     return AppRecaptchaConfig(
       "6LfuqxIsAAAAADO9NHf0LBNzzJQ7mHTvSt_8a7Hx",
-      _iosSiteKey,
+      "YOUR_IOS_SITE_KEY",
     );
   }
 }

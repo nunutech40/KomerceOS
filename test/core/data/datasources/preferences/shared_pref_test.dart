@@ -92,6 +92,8 @@ void main() {
       when(mockSecureStorage.write(
               key: anyNamed('key'), value: anyNamed('value')))
           .thenAnswer((_) async {});
+      when(mockSecureStorage.delete(key: anyNamed('key')))
+          .thenAnswer((_) async {});
       when(mockPrefs.setString(any, any)).thenAnswer((_) async => true);
     });
 
@@ -104,6 +106,19 @@ void main() {
         key: 'access_token',
         value: tAccessToken,
       )).called(1);
+      verify(mockSecureStorage.delete(key: 'refresh_token')).called(1);
+      verifyNever(mockSecureStorage.write(
+          key: 'refresh_token', value: anyNamed('value')));
+    });
+
+    test('gagal menyimpan profil lokal membatalkan token login', () async {
+      when(mockPrefs.setString(USERANDTOKEN, any))
+          .thenAnswer((_) async => false);
+
+      await expectLater(
+          sharedPref.saveUserAndToken(tLoginResponse), throwsStateError);
+      verify(mockSecureStorage.delete(key: 'access_token')).called(1);
+      verify(mockSecureStorage.delete(key: 'refresh_token')).called(2);
     });
 
     // ----- a. WRITE — User data ke SharedPref dengan key yang benar -----
@@ -138,12 +153,14 @@ void main() {
         data: null,
       );
 
-      await sharedPref.saveUserAndToken(responseNoToken);
+      await expectLater(
+          sharedPref.saveUserAndToken(responseNoToken), throwsStateError);
 
       verifyNever(mockSecureStorage.write(
         key: anyNamed('key'),
         value: anyNamed('value'),
       ));
+      verifyNever(mockPrefs.setString(any, any));
     });
   });
 

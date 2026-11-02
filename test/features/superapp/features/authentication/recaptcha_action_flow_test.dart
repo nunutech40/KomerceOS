@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komtim_partner/common/enum_status.dart';
@@ -22,13 +24,6 @@ class _RecordingRecaptcha extends RecaptchaUseCase {
   Future<String> getToken(RecaptchaAction action) async {
     actions.add(action.action);
     return 'test-token';
-  }
-}
-
-class _UnavailableRecaptcha extends RecaptchaUseCase {
-  @override
-  Future<void> initializeClient() async {
-    throw StateError('Site key reCAPTCHA iOS belum dikonfigurasi.');
   }
 }
 
@@ -70,23 +65,29 @@ void main() {
     )).called(1);
   });
 
-  test('check email menampilkan kegagalan saat reCAPTCHA tidak tersedia',
-      () async {
+  test('hasil check-login lama diabaikan setelah email diubah', () async {
+    final pending = Completer<Either<Failure, CheckEmailModel>>();
+    when(repository.checkEmailLogin(
+      any,
+      recaptchaToken: anyNamed('recaptchaToken'),
+    )).thenAnswer((_) => pending.future);
     final bloc = CheckEmailBloc(
       checkEmailLoginUseCase: checkEmail,
-      recaptchaUseCase: _UnavailableRecaptcha(),
+      recaptchaUseCase: recaptcha,
     );
     addTearDown(bloc.close);
 
-    final failure =
-        bloc.stream.firstWhere((state) => state is CheckEmailFailure);
-    bloc.add(const CheckEmailSubmitted('user@example.com'));
-    expect((await failure as CheckEmailFailure).message,
-        'Verifikasi keamanan belum tersedia. Silakan coba lagi nanti.');
-    verifyNever(repository.checkEmailLogin(
-      any,
-      recaptchaToken: anyNamed('recaptchaToken'),
-    ));
+    bloc.add(const CheckEmailSubmitted('old@example.com'));
+    await bloc.stream.firstWhere((state) => state is CheckEmailLoading);
+    bloc.add(const CheckEmailReset());
+    await bloc.stream.firstWhere((state) => state is CheckEmailInitial);
+    pending.complete(const Right(CheckEmailModel(
+      allowedLogin: true,
+      email: 'old@example.com',
+    )));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(bloc.state, isA<CheckEmailInitial>());
   });
 
   test('submit password memakai token LOGIN untuk endpoint login', () async {
@@ -126,5 +127,32 @@ void main() {
       'password123',
       recaptchaToken: 'test-token',
     )).called(1);
+  });
+
+  test(
+      'email yang sudah lolos check-login tidak dicek ulang di halaman password',
+      () async {
+    final doLogin = MockDoLoginUseCase();
+    when(doLogin.execute(any, any, recaptchaToken: anyNamed('recaptchaToken')))
+        .thenAnswer((_) async => const Left(ServerFailure('Login ditolak')));
+    final bloc = LoginBloc(
+      checkEmailLoginUseCase: checkEmail,
+      doLoginUseCase: doLogin,
+      recaptchaUseCase: recaptcha,
+    );
+    addTearDown(bloc.close);
+
+    bloc.add(const LoginEmailPrecheckedEvent('user@example.com'));
+    await bloc.stream.firstWhere((state) => state.isEmailChecked);
+    bloc.add(const LoginPasswordChangedEvent(password: 'password123'));
+    await bloc.stream.firstWhere((state) => state.password == 'password123');
+    bloc.add(const LoginButtonPressedEvent());
+    await bloc.stream.firstWhere(
+      (state) => state.status == RequestStatus.failure,
+    );
+
+    expect(recaptcha.actions, ['LOGIN']);
+    verifyNever(repository.checkEmailLogin(any,
+        recaptchaToken: anyNamed('recaptchaToken')));
   });
 }

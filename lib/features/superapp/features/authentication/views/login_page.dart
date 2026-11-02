@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -27,9 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   String? _inlineError;
-  Timer? _debounce;
-  bool _wasEmailChecked = false;
-  bool _showSuccessAnim = false;
+  bool _awaitingPrecheckedState = false;
 
   /// Guard: cegah listener trigger saat controller baru di-init dengan initial value.
   /// Tanpa ini, addListener dipanggil saat text berubah dari '' → widget.email,
@@ -41,6 +37,10 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _emailController = TextEditingController(text: widget.email);
     _passwordController = TextEditingController();
+    if (widget.email.isNotEmpty) {
+      _awaitingPrecheckedState = true;
+      context.read<LoginBloc>().add(LoginEmailPrecheckedEvent(widget.email));
+    }
     // Set flag setelah init agar listener tidak trigger saat initial value di-set
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isInitialized = true;
@@ -51,7 +51,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -91,17 +90,6 @@ class _LoginPageState extends State<LoginPage> {
       _passwordController.clear();
     }
 
-    // Auto check email via debounce (seperti komcard_mobile)
-    if (!blocState.isEmailChecked) {
-      if (_debounce?.isActive ?? false) _debounce!.cancel();
-      _debounce = Timer(const Duration(milliseconds: 1200), () {
-        if (!mounted) return;
-        if (email.isNotEmpty && _isValidEmail(email)) {
-          _onCheckEmail(context);
-        }
-      });
-    }
-
     // Sync state ke BLoC setiap perubahan (hanya jika ada perubahan)
     if (blocState.username != _emailController.text) {
       context
@@ -117,7 +105,6 @@ class _LoginPageState extends State<LoginPage> {
 
   /// Tombol "Lanjut" — Check Email ke API
   void _onCheckEmail(BuildContext context) {
-    _debounce?.cancel(); // batalkan debounce jika user klik manual
     final email = _emailController.text.trim();
     if (email.isEmpty) {
       setState(() => _inlineError = 'Email wajib diisi');
@@ -141,23 +128,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onBlocStateChanged(BuildContext context, LoginState state) {
-    // Tangani animasi sukses
-    if (state.isEmailChecked && !_wasEmailChecked) {
-      _wasEmailChecked = true;
-      setState(() {
-        _showSuccessAnim = true;
-      });
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) {
-          setState(() {
-            _showSuccessAnim = false;
-          });
-        }
-      });
-    } else if (!state.isEmailChecked && _wasEmailChecked) {
-      _wasEmailChecked = false;
+    if (state.isEmailChecked && state.username == widget.email) {
+      _awaitingPrecheckedState = false;
     }
-
     if (state.isAccountBanned) {
       // Akun tidak aktif → tampilkan Bottom Sheet "Akun Tidak Aktif"
       LoginErrorPopups.showAccountNotActive(context, () async {
@@ -182,6 +155,8 @@ class _LoginPageState extends State<LoginPage> {
           : state.usernameErrorMessage;
 
       final lowerError = errorMsg.toLowerCase();
+      final isTeamInternalBlocked =
+          LoginErrorPopups.isTeamInternalBlocked(errorMsg);
       final isOtherRoleError = LoginErrorPopups.isOtherRoleError(errorMsg);
 
       // Saat fase check email (sebelum password dimasukkan), abaikan error yang
@@ -193,15 +168,31 @@ class _LoginPageState extends State<LoginPage> {
       // Saat fase check email, error ditampilkan INLINE di bawah TextField.
       // Error khusus yang butuh bottom sheet tetap diteruskan ke handler di bawah.
       if (isCheckEmailPhase) {
-        if (!lowerError.contains('user not registered') && !isOtherRoleError) {
+        if (!lowerError.contains('user not registered') &&
+            !isTeamInternalBlocked &&
+            !isOtherRoleError) {
           // Reset status agar tidak terus-terusan trigger failure state, tapi biarkan usernameErrorMessage
           context.read<LoginBloc>().add(LoginStatusResetEvent());
           return;
         }
       }
 
-      if (lowerError.contains('login_attempt') ||
-          lowerError.contains('lock') ||
+      // Domain access errors must be handled before password-attempt errors:
+      // ERR_ROLE_TEAM_INTERNAL_BLOCKED itself contains the substring "lock".
+      if (isTeamInternalBlocked) {
+        LoginErrorPopups.showTeamInternalBlocked(
+          context,
+          onClose: () => context.read<LoginBloc>().add(LoginStatusResetEvent()),
+        );
+      } else if (isOtherRoleError) {
+        LoginErrorPopups.showOtherRole(
+          context,
+          onClose: () => context.read<LoginBloc>().add(LoginStatusResetEvent()),
+        );
+      } else if (lowerError.contains('login_attempt') ||
+          RegExp(r'\block:\s*\d+').hasMatch(lowerError) ||
+          lowerError.contains('account locked') ||
+          lowerError.contains('akun terkunci') ||
           lowerError.contains('please wait 24 hour') ||
           lowerError.contains('incorrect password') ||
           lowerError.contains('wrong password')) {
@@ -296,11 +287,6 @@ class _LoginPageState extends State<LoginPage> {
           },
           isDismissible: true,
         );
-      } else if (isOtherRoleError) {
-        LoginErrorPopups.showOtherRole(
-          context,
-          onClose: () => context.read<LoginBloc>().add(LoginStatusResetEvent()),
-        );
       } else {
         // Tampilkan error umum
         ScaffoldMessenger.of(context).showSnackBar(
@@ -323,6 +309,8 @@ class _LoginPageState extends State<LoginPage> {
       listener: _onBlocStateChanged,
       builder: (context, state) {
         final isLoading = state.status == RequestStatus.loading;
+        final isPasswordStage =
+            state.isEmailChecked || _awaitingPrecheckedState;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -376,12 +364,10 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               // --- Header ---
                               AuthHeader(
-                                title:
-                                    (!state.isEmailChecked || _showSuccessAnim)
-                                        ? 'Masukkan Email Kamu'
-                                        : 'Masuk ke Akun Kamu',
-                                subtitle: (!state.isEmailChecked ||
-                                        _showSuccessAnim)
+                                title: !isPasswordStage
+                                    ? 'Masukkan Email Kamu'
+                                    : 'Masuk ke Akun Kamu',
+                                subtitle: !isPasswordStage
                                     ? 'Masukkan email akun kamu\nuntuk melanjutkan proses login'
                                     : 'Pantau transaksi bisnis kamu kapan aja,\nlangsung dari aplikasi',
                               ),
@@ -445,30 +431,8 @@ class _LoginPageState extends State<LoginPage> {
                                           ),
                                         ],
                                       ),
-                                    ] else if (_showSuccessAnim &&
-                                        _inlineError == null) ...[
-                                      const SizedBox(height: AppSpacing.xs),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.check_circle_rounded,
-                                            size: 16,
-                                            color: AppColors.successBase,
-                                          ),
-                                          const SizedBox(width: AppSpacing.xs),
-                                          Text(
-                                            'Email berhasil ditemukan',
-                                            style: AppTypography.bodySmRegular
-                                                .copyWith(
-                                              color: AppColors.successBase,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ],
-                                    if (state.isEmailChecked &&
-                                        !_showSuccessAnim) ...[
+                                    if (isPasswordStage) ...[
                                       const SizedBox(height: AppSpacing.lg),
                                       DsPasswordField(
                                         label: 'Password',
@@ -497,18 +461,14 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ],
                                     const SizedBox(height: AppSpacing.xl),
-                                    if (!state.isEmailChecked ||
-                                        _showSuccessAnim)
+                                    if (!isPasswordStage)
                                       DsButton(
                                         text: 'Lanjut',
-                                        loadingText: _showSuccessAnim
-                                            ? 'Memuat halaman login...'
-                                            : 'Memverifikasi email...',
-                                        state: (isLoading || _showSuccessAnim)
+                                        loadingText: 'Memverifikasi email...',
+                                        state: isLoading
                                             ? DsButtonState.loading
-                                            : ((_isValidEmail(_emailController
-                                                        .text) ||
-                                                    _showSuccessAnim)
+                                            : (_isValidEmail(
+                                                    _emailController.text)
                                                 ? DsButtonState.enabled
                                                 : DsButtonState.disabled),
                                         onPressed: () => _onCheckEmail(context),

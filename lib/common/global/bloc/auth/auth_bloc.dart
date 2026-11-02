@@ -42,6 +42,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onAuthLogoutRequested(
       AuthLogoutRequested event, Emitter<AuthState> emit) async {
     await sharedPref.removeDataPref();
-    emit(AuthState.unauthenticated());
+    emit(AuthState.unauthenticated(sessionExpired: event.sessionExpired));
   }
 }

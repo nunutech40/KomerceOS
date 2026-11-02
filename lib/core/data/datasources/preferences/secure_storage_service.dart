@@ -58,6 +58,13 @@ class SecureStorageService {
     await _storage.write(key: _refreshTokenKey, value: refreshToken);
   }
 
+  /// Login Super App saat ini hanya mengembalikan access token. Hapus refresh
+  /// token lama agar sesi baru tidak mewarisi kredensial sesi sebelumnya.
+  Future<void> saveAccessToken(String accessToken) async {
+    await _storage.write(key: _accessTokenKey, value: accessToken);
+    await _storage.delete(key: _refreshTokenKey);
+  }
+
   /// Mengambil Access Token dari penyimpanan aman.
   Future<String?> getAccessToken() async {
     return await _storage.read(key: _accessTokenKey);

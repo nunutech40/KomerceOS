@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../common/exception.dart';
 import '../models/meta_response.dart';
 
 class DioResponseParser {
@@ -10,6 +11,17 @@ class DioResponseParser {
     final dynamic responseBody = response.data;
 
     if (responseBody is Map<String, dynamic>) {
+      // check-login can return a domain failure outside the usual `meta`
+      // envelope, even with HTTP 200. Do not parse its null `data` as an
+      // empty, successful email result.
+      if (responseBody['status'] == false &&
+          responseBody['error_code'] == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+        final message = responseBody['message']?.toString().trim();
+        throw ServerException(
+          'ERR_ROLE_TEAM_INTERNAL_BLOCKED: '
+          '${message == null || message.isEmpty ? 'Akun Team Internal tidak memiliki akses untuk masuk ke aplikasi.' : message}',
+        );
+      }
       final meta = responseBody['meta'];
 
       // Check if meta exists and status is success
@@ -26,7 +38,15 @@ class DioResponseParser {
           // Throw exception with message from meta
           final metaResponse = MetaResponse.fromJson(meta);
           String errorMessage = metaResponse.message ?? 'Unknown Error';
-          
+          final errorCode = meta['code']?.toString();
+
+          // Some auth APIs return a business failure with HTTP 200. Preserve
+          // the Team Internal code so presentation can render its dedicated
+          // access-denied modal rather than treating it as a generic error.
+          if (errorCode == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+            throw ServerException('$errorCode: $errorMessage');
+          }
+
           final data = responseBody['data'];
           if (data is Map<String, dynamic>) {
             if (data.containsKey('login_attempt')) {
@@ -39,7 +59,7 @@ class DioResponseParser {
               errorMessage += ' Sisa percobaan: ${data['attempt_left']}';
             }
           }
-          
+
           throw Exception(errorMessage);
         }
       }

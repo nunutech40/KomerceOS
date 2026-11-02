@@ -56,10 +56,8 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
         await recaptchaUseCase.initializeClient();
       } catch (e) {
         if (emit.isDone || requestVersion != _requestVersion) return;
-        debugPrint('reCAPTCHA initialization failed: $e');
-        emit(const CheckEmailFailure(
-            message:
-                'Verifikasi keamanan belum tersedia. Silakan coba lagi nanti.'));
+        emit(CheckEmailFailure(
+            message: 'reCAPTCHA init failed: ${e.toString()}'));
         return;
       }
     }
@@ -71,9 +69,8 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
           .getToken(RecaptchaAction.custom('CHECK_EMAIL'));
     } catch (e) {
       if (emit.isDone || requestVersion != _requestVersion) return;
-      debugPrint('reCAPTCHA token failed: $e');
-      emit(const CheckEmailFailure(
-          message: 'Verifikasi keamanan gagal. Silakan coba lagi.'));
+      emit(CheckEmailFailure(
+          message: 'reCAPTCHA token failed: ${e.toString()}'));
       return;
     }
 

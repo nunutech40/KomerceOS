@@ -16,6 +16,16 @@ class LoginButtonPressedEvent extends LoginEvent {
 
 class LoginStatusResetEvent extends LoginEvent {}
 
+/// Email was already accepted by /auth/check-login on EmailCheckPage.
+class LoginEmailPrecheckedEvent extends LoginEvent {
+  const LoginEmailPrecheckedEvent(this.email);
+
+  final String email;
+
+  @override
+  List<Object> get props => [email];
+}
+
 class LoginEmailChangedEvent extends LoginEvent {
   const LoginEmailChangedEvent({required this.email});
 

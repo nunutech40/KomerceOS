@@ -35,8 +35,15 @@ abstract class BaseRepository {
     }
 
     if (e.type == DioExceptionType.connectionError) {
-      return ConnectionFailure(
-          'Failed to connect to the network: ${e.message}');
+      return const ConnectionFailure(
+          'Koneksi gagal. Periksa jaringan, lalu coba lagi.');
+    }
+
+    if (e.type == DioExceptionType.unknown && e.response == null) {
+      // Chucker reports these transport failures as HTTP -1. There is no
+      // server response or business error to display; keep the flow retryable.
+      return const ConnectionFailure(
+          'Tidak ada respons dari server. Periksa koneksi, lalu coba lagi.');
     }
 
     // Bad response (4xx, 5xx) — extract meta message from response body
@@ -45,10 +52,28 @@ abstract class BaseRepository {
       final statusCode = e.response!.statusCode ?? 0;
 
       if (responseData is Map<String, dynamic>) {
+        // Some auth endpoints use a flat error envelope instead of `meta`.
+        // Keep its domain code so the UI can select the access-denied popup.
+        if (responseData['status'] == false &&
+            responseData['error_code'] == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+          final message = responseData['message']?.toString().trim();
+          return ServerFailure(
+            'ERR_ROLE_TEAM_INTERNAL_BLOCKED: '
+            '${message == null || message.isEmpty ? 'Akun Team Internal tidak memiliki akses untuk masuk ke aplikasi.' : message}',
+          );
+        }
         // Try to extract message from meta
         final meta = responseData['meta'];
         if (meta != null && meta is Map<String, dynamic>) {
           final metaMessage = meta['message'];
+          final errorCode = meta['code']?.toString();
+          if (errorCode == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+            final message = metaMessage?.toString().trim();
+            final accessMessage = message == null || message.isEmpty
+                ? 'Akun Team Internal tidak memiliki akses untuk masuk ke aplikasi.'
+                : message;
+            return ServerFailure('$errorCode: $accessMessage');
+          }
           if (metaMessage != null && metaMessage.toString().isNotEmpty) {
             String errorMessage = metaMessage.toString();
 

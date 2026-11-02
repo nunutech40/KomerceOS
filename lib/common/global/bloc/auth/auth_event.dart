@@ -19,4 +19,11 @@ class AuthLoginRequested extends AuthEvent {
   List<Object?> get props => [user];
 }
 
-class AuthLogoutRequested extends AuthEvent {}
+class AuthLogoutRequested extends AuthEvent {
+  final bool sessionExpired;
+
+  const AuthLogoutRequested({this.sessionExpired = false});
+
+  @override
+  List<Object?> get props => [sessionExpired];
+}
