@@ -29,6 +29,7 @@ part 'check_email_state.dart';
 class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
   final CheckEmailLoginUseCase checkEmailLoginUseCase;
   final RecaptchaUseCase recaptchaUseCase;
+  int _requestVersion = 0;
 
   CheckEmailBloc({
     required this.checkEmailLoginUseCase,
@@ -46,6 +47,7 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
     CheckEmailSubmitted event,
     Emitter<CheckEmailState> emit,
   ) async {
+    final requestVersion = ++_requestVersion;
     emit(CheckEmailLoading());
 
     // reCAPTCHA init
@@ -53,8 +55,11 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
       try {
         await recaptchaUseCase.initializeClient();
       } catch (e) {
-        emit(CheckEmailFailure(
-            message: 'reCAPTCHA init failed: ${e.toString()}'));
+        if (emit.isDone || requestVersion != _requestVersion) return;
+        debugPrint('reCAPTCHA initialization failed: $e');
+        emit(const CheckEmailFailure(
+            message:
+                'Verifikasi keamanan belum tersedia. Silakan coba lagi nanti.'));
         return;
       }
     }
@@ -65,11 +70,14 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
       recaptchaToken = await recaptchaUseCase
           .getToken(RecaptchaAction.custom('CHECK_EMAIL'));
     } catch (e) {
-      emit(CheckEmailFailure(
-          message: 'reCAPTCHA token failed: ${e.toString()}'));
+      if (emit.isDone || requestVersion != _requestVersion) return;
+      debugPrint('reCAPTCHA token failed: $e');
+      emit(const CheckEmailFailure(
+          message: 'Verifikasi keamanan gagal. Silakan coba lagi.'));
       return;
     }
 
+    if (emit.isDone || requestVersion != _requestVersion) return;
     if (recaptchaToken.isEmpty) {
       emit(const CheckEmailFailure(
           message: 'Verifikasi keamanan gagal. Silakan coba lagi.'));
@@ -78,6 +86,7 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
 
     final result = await checkEmailLoginUseCase.call(event.email,
         recaptchaToken: recaptchaToken);
+    if (emit.isDone || requestVersion != _requestVersion) return;
 
     result.fold(
       (failure) => emit(CheckEmailFailure(message: failure.message)),
@@ -105,6 +114,7 @@ class CheckEmailBloc extends Bloc<CheckEmailEvent, CheckEmailState> {
   }
 
   void _onReset(CheckEmailReset event, Emitter<CheckEmailState> emit) {
+    _requestVersion++;
     emit(CheckEmailInitial());
   }
 }

@@ -25,6 +25,13 @@ class _RecordingRecaptcha extends RecaptchaUseCase {
   }
 }
 
+class _UnavailableRecaptcha extends RecaptchaUseCase {
+  @override
+  Future<void> initializeClient() async {
+    throw StateError('Site key reCAPTCHA iOS belum dikonfigurasi.');
+  }
+}
+
 void main() {
   late MockAuthRepository repository;
   late CheckEmailLoginUseCase checkEmail;
@@ -63,8 +70,26 @@ void main() {
     )).called(1);
   });
 
-  test('submit password memakai token LOGIN untuk endpoint login',
+  test('check email menampilkan kegagalan saat reCAPTCHA tidak tersedia',
       () async {
+    final bloc = CheckEmailBloc(
+      checkEmailLoginUseCase: checkEmail,
+      recaptchaUseCase: _UnavailableRecaptcha(),
+    );
+    addTearDown(bloc.close);
+
+    final failure =
+        bloc.stream.firstWhere((state) => state is CheckEmailFailure);
+    bloc.add(const CheckEmailSubmitted('user@example.com'));
+    expect((await failure as CheckEmailFailure).message,
+        'Verifikasi keamanan belum tersedia. Silakan coba lagi nanti.');
+    verifyNever(repository.checkEmailLogin(
+      any,
+      recaptchaToken: anyNamed('recaptchaToken'),
+    ));
+  });
+
+  test('submit password memakai token LOGIN untuk endpoint login', () async {
     final doLogin = MockDoLoginUseCase();
     when(doLogin.execute(
       any,

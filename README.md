@@ -224,7 +224,9 @@ lib/
    flutter run --flavor dev --dart-define=FLAVOR=dev
 
    # Development iOS (Xcode scheme: DevConfig)
-   flutter run --flavor DevConfig --dart-define=FLAVOR=dev
+   # Isi RECAPTCHA_IOS_SITE_KEY dengan key iOS untuk bundle ID id.ios.komerceos.
+   flutter run --flavor DevConfig --dart-define=FLAVOR=dev \
+     --dart-define=RECAPTCHA_IOS_SITE_KEY="$RECAPTCHA_IOS_SITE_KEY"
 
    # Development on Android device (Wireless Debugging)
    fvm flutter run \

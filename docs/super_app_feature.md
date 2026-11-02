@@ -76,7 +76,7 @@ BLoC yang digunakan:
 - `ForgotPasswordBloc`: kirim email reset, resend, countdown, dan rate limit.
 - `VerificationBloc`: pemilihan produk, pengiriman email verifikasi, resend, dan countdown.
 
-Semua request autentikasi mengirim `device` (`android` atau `ios`) dan, jika tersedia, `recaptcha_token`. Konfigurasi Android reCAPTCHA dipisahkan untuk dev, staging, dan production di `lib/config/app_recaptcha_config.dart`. Site key iOS masih berupa placeholder `YOUR_IOS_SITE_KEY` dan perlu diisi sebelum login iOS digunakan.
+Semua request autentikasi mengirim `device` (`android` atau `ios`) dan, jika tersedia, `recaptcha_token`. Konfigurasi Android reCAPTCHA dipisahkan untuk dev, staging, dan production di `lib/config/app_recaptcha_config.dart`. Untuk iOS, berikan site key reCAPTCHA Enterprise tipe iOS yang mengizinkan bundle ID `id.ios.komerceos` lewat `--dart-define=RECAPTCHA_IOS_SITE_KEY=...` saat build. Tanpa key tersebut, check email menampilkan kegagalan verifikasi keamanan dan tidak memanggil API.
 
 ## Home Super App
 

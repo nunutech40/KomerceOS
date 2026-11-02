@@ -33,6 +33,7 @@ class EmailCheckPage extends StatefulWidget {
 
 class _EmailCheckPageState extends State<EmailCheckPage> {
   late final TextEditingController _emailController;
+  String _lastEmailText = '';
   String? _inlineError;
   Timer? _debounce;
 
@@ -59,6 +60,9 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
   // ---------------------------------------------------------------------------
 
   void _onEmailChanged() {
+    final email = _emailController.text;
+    if (email == _lastEmailText) return;
+    _lastEmailText = email;
     final blocState = context.read<CheckEmailBloc>().state;
 
     // Reset BLoC saat email berubah — termasuk saat sedang Loading.
@@ -71,8 +75,6 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
     // Bersihkan snackbar yang mungkin masih di-queue dari halaman sebelumnya
     // (misal: LoginPage) agar tidak muncul secara anomali di halaman ini.
     ScaffoldMessenger.of(context).clearSnackBars();
-
-    final email = _emailController.text;
 
     setState(() {
       if (email.isEmpty) {
@@ -153,9 +155,7 @@ class _EmailCheckPageState extends State<EmailCheckPage> {
       if (LoginErrorPopups.isOtherRoleError(state.message)) {
         LoginErrorPopups.showOtherRole(context);
       } else {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(state.message)));
+        setState(() => _inlineError = state.message);
       }
     }
 
