@@ -13,6 +13,17 @@
             ]
         },
         {
+            "name": "Komtim Partner Dev (iOS)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--flavor",
+                "DevConfig",
+                "--dart-define=FLAVOR=dev"
+            ]
+        },
+        {
             "name": "Komtim Partner Staging",
             "request": "launch",
             "type": "dart",

@@ -220,8 +220,11 @@ lib/
 
 3. **Jalankan aplikasi**
    ```bash
-   # Development
+   # Development Android
    flutter run --flavor dev --dart-define=FLAVOR=dev
+
+   # Development iOS (Xcode scheme: DevConfig)
+   flutter run --flavor DevConfig --dart-define=FLAVOR=dev
 
    # Development on Android device (Wireless Debugging)
    fvm flutter run \
