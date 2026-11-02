@@ -7,4 +7,11 @@ abstract class CheckBillEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchCheckBillEvent extends CheckBillEvent {}
+class FetchCheckBillEvent extends CheckBillEvent {
+  final bool isFromKyc;
+
+  const FetchCheckBillEvent({this.isFromKyc = false});
+
+  @override
+  List<Object?> get props => [isFromKyc];
+}

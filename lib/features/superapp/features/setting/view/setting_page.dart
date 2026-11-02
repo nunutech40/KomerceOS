@@ -13,6 +13,7 @@ import 'package:komtim_partner/features/update/widget/update_complete.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../myapp/view/my_app_page.dart';
+import '../widget/setting_kyc_status_section.dart';
 import '../widget/setting_menu_item.dart';
 import 'setting_account_page.dart';
 
@@ -119,6 +120,9 @@ class SettingPage extends StatelessWidget {
                   );
                 },
               ),
+              // Kyc status section
+              const SettingKycStatusSection(),
+
               const SizedBox(height: 28),
 
               // Group 1: Informasi Akun, Aplikasiku, Tutorial & FAQ

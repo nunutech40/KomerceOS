@@ -64,7 +64,9 @@ class _TopupFlowManagerState extends State<TopupFlowManager> {
           } else {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const TopupPage()),
+              MaterialPageRoute(
+                builder: (_) => TopupPage(isFromKyc: state.isFromKyc),
+              ),
             );
           }
         } else if (state is CheckBillError) {

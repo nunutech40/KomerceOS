@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:komtim_partner/DI/injection.dart';
+import 'package:komtim_partner/core/data/repositories/superapp_profile_repository_impl.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
@@ -60,8 +62,8 @@ class _WebViewPageState extends State<WebViewPage> {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && widget.returnToPaymentMethod) {
-          Navigator.of(context).pop();
+        if (didPop) {
+          _triggerProfileRefresh();
         }
       },
       child: Scaffold(
@@ -69,6 +71,7 @@ class _WebViewPageState extends State<WebViewPage> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
+                _triggerProfileRefresh();
                 if (widget.returnToPaymentMethod) {
                   Navigator.of(context).pop();
                 } else if (widget.onTopupSuccess != null) {
@@ -88,4 +91,15 @@ class _WebViewPageState extends State<WebViewPage> {
           ),
     );
   }
+
+   void _triggerProfileRefresh() {
+    try {
+      if (locator.isRegistered<SuperappProfileRepositoryImpl>()) {
+        locator<SuperappProfileRepositoryImpl>().notifyProfileRefresh();
+      }
+    } catch (e) {
+      debugPrint('[WebViewPage] Error notifying profile refresh: $e');
+    }
+  }
+
 }

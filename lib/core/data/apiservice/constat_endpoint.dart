@@ -38,6 +38,8 @@ class Endpoints {
       '$_BaseURLInternal/api/v1/user/partner/profile-user';
   static String get superappUpdateBusinessProfile =>
       '$_BaseURLInternal/api/v1/user/partner/profile-business';
+  static String get payKtpVerification =>
+      '$_BaseURLInternal/api/v1/partner/ktp-verification/pay';
 
   // Legacy Komship profile APIs. These intentionally use the Komship host,
   // which is different from the Super App auth/profile host.

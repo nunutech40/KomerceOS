@@ -13,6 +13,7 @@ import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
 
 import '../widget/account_action_tile.dart';
 import '../widget/bank_account_pin_sheet.dart';
+import '../widget/setting_kyc_status_section.dart';
 import 'setting_pin_page.dart';
 import 'setting_profile_page.dart';
 import 'bank_account_page.dart';
@@ -293,6 +294,8 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
               ),
             ),
           ),
+          // Status KYC Section
+          const SettingKycStatusSection(),
           const SizedBox(height: AppSpacing.lg),
           Material(
             color: AppColors.alwaysWhite,

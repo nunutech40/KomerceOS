@@ -20,7 +20,14 @@ class TopupPage extends StatelessWidget {
   /// Hanya diisi ketika TopupPage dibuka dari flow shopping.
   final VoidCallback? onTopupSuccess;
 
-  const TopupPage({super.key, this.onTopupSuccess});
+  /// Flag penanda apakah dibuka dari alur KYC (verifikasi akun).
+  final bool isFromKyc;
+
+  const TopupPage({
+    super.key,
+    this.onTopupSuccess,
+    this.isFromKyc = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,10 @@ class TopupPage extends StatelessWidget {
           create: (context) => locator<CreateQrcodeBloc>(),
         ),
       ],
-      child: TopupView(onTopupSuccess: onTopupSuccess),
+      child: TopupView(
+        onTopupSuccess: onTopupSuccess,
+        isFromKyc: isFromKyc,
+      ),
     );
   }
 }
@@ -42,7 +52,14 @@ class TopupView extends StatefulWidget {
   /// Callback dipanggil setelah topup berhasil.
   final VoidCallback? onTopupSuccess;
 
-  const TopupView({super.key, this.onTopupSuccess});
+  /// Flag penanda apakah dibuka dari alur KYC (verifikasi akun).
+  final bool isFromKyc;
+
+  const TopupView({
+    super.key,
+    this.onTopupSuccess,
+    this.isFromKyc = false,
+  });
 
   @override
   State<TopupView> createState() => _TopupViewState();
@@ -284,6 +301,7 @@ class _TopupViewState extends State<TopupView> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[TopupView] build() with isFromKyc = ${widget.isFromKyc}');
     final amount = _getCleanedAmount();
     final bool showValidationError =
         _amountController.text.isNotEmpty && amount < 10000;
@@ -452,6 +470,50 @@ class _TopupViewState extends State<TopupView> {
                     'Minimal Topup Rp 10.000',
                     style: AppTypography.bodySmRegular.copyWith(
                       color: AppColors.errorBase,
+                    ),
+                  ),
+                ],
+                if (widget.isFromKyc) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4FAFF),
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      border: Border.all(
+                        color: const Color(0xFFD5EFFF),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline_rounded,
+                          color: Color(0xFF0284C7),
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.xs2),
+                        RichText(
+                          text: TextSpan(
+                            text: 'Verifikasi Akun bernilai ',
+                            style: AppTypography.bodySmRegular.copyWith(
+                              color: const Color(0xFF0D74CE),
+                            ),
+                            children: [
+                              TextSpan(
+                                text: 'Rp25.000',
+                                style: AppTypography.bodySmSemiBold.copyWith(
+                                  color: const Color(0xFF0D74CE),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

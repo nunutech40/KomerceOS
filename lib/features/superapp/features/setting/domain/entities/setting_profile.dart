@@ -49,6 +49,7 @@ class SettingProfile extends Equatable {
   final ProfileGender? gender;
   final ProfileOption? location, businessSector;
   final String? logoUrl, logoPath;
+  final int? verificationKtpStatus;
 
   bool get hasValidBusinessLocation =>
       location != null && location!.label.trim().isNotEmpty;
@@ -75,6 +76,7 @@ class SettingProfile extends Equatable {
     this.businessSector,
     this.logoUrl,
     this.logoPath,
+    this.verificationKtpStatus,
   });
 
   factory SettingProfile.fromGlobalProfile(SuperappProfileModel profile) {
@@ -99,6 +101,7 @@ class SettingProfile extends Equatable {
       location: option(business?.location),
       businessSector: option(business?.businessSector),
       logoUrl: business?.businessLogo,
+      verificationKtpStatus: profile.verificationKtpStatus,
     );
   }
 
@@ -115,6 +118,8 @@ class SettingProfile extends Equatable {
         businessSector: businessSector,
         logoUrl: logoUrl,
         logoPath: logoPath,
+        verificationKtpStatus:
+            account.verificationKtpStatus ?? verificationKtpStatus,
       );
 
   SettingProfile withBusinessFrom(SettingProfile business) =>
@@ -132,6 +137,7 @@ class SettingProfile extends Equatable {
         location: location,
         businessSector: businessSector,
         logoUrl: logoUrl,
+        verificationKtpStatus: verificationKtpStatus,
       );
 
   /// Keep edited fields while synchronizing untouched fields from global state.
@@ -154,6 +160,8 @@ class SettingProfile extends Equatable {
           merge(businessSector, baseline.businessSector, fresh.businessSector),
       logoUrl: fresh.logoUrl,
       logoPath: merge(logoPath, baseline.logoPath, fresh.logoPath),
+      verificationKtpStatus: merge(verificationKtpStatus,
+          baseline.verificationKtpStatus, fresh.verificationKtpStatus),
     );
   }
 
@@ -170,6 +178,7 @@ class SettingProfile extends Equatable {
     ProfileOption? businessSector,
     String? logoUrl,
     String? logoPath,
+    int? verificationKtpStatus,
   }) =>
       SettingProfile(
         fullName: fullName ?? this.fullName,
@@ -184,6 +193,8 @@ class SettingProfile extends Equatable {
         businessSector: businessSector ?? this.businessSector,
         logoUrl: logoUrl ?? this.logoUrl,
         logoPath: logoPath ?? this.logoPath,
+        verificationKtpStatus:
+            verificationKtpStatus ?? this.verificationKtpStatus,
       );
 
   bool get isAccountValid =>
@@ -210,6 +221,7 @@ class SettingProfile extends Equatable {
         location,
         businessSector,
         logoUrl,
-        logoPath
+        logoPath,
+        verificationKtpStatus,
       ];
 }

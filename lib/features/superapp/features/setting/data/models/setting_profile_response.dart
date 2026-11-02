@@ -16,6 +16,7 @@ class SettingProfileResponse {
   final String? businessSectorId;
   final String? businessSectorName;
   final String? businessLogo;
+  final int? verificationKtpStatus;
 
   const SettingProfileResponse({
     required this.fullName,
@@ -31,6 +32,7 @@ class SettingProfileResponse {
     this.businessSectorId,
     this.businessSectorName,
     this.businessLogo,
+    this.verificationKtpStatus,
   });
 
   factory SettingProfileResponse.fromJson(Map<String, dynamic> json) =>
@@ -48,6 +50,15 @@ class SettingProfileResponse {
         businessSectorId: json['partner_category_id']?.toString(),
         businessSectorName: json['partner_category_name']?.toString(),
         businessLogo: json['partner_business_logo']?.toString(),
+        verificationKtpStatus: json['verification_ktp_status'] != null
+            ? int.tryParse(json['verification_ktp_status'].toString())
+            : json['status_verification_ktp'] != null
+                ? int.tryParse(json['status_verification_ktp'].toString())
+                : json['ktp_status'] != null
+                    ? int.tryParse(json['ktp_status'].toString())
+                    : json['is_ktp_verified'] == true
+                        ? 2
+                        : null,
       );
 
   SettingProfile toEntity() {
@@ -76,6 +87,7 @@ class SettingProfileResponse {
       location: option(cityCode, businessLocation),
       businessSector: option(businessSectorId, businessSectorName),
       logoUrl: resolveProfileImageUrl(businessLogo),
+      verificationKtpStatus: verificationKtpStatus,
     );
   }
 }

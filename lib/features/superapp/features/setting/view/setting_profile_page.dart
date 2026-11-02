@@ -14,6 +14,7 @@ import '../bloc/setting_profile_state.dart';
 import '../domain/entities/setting_profile.dart';
 import 'sections/profile_sections.dart';
 import '../widget/profile_option_sheet.dart';
+import '../widget/setting_kyc_status_section.dart';
 
 class SettingProfilePage extends StatefulWidget {
   const SettingProfilePage({super.key});
@@ -266,6 +267,10 @@ class _SettingProfileFormState extends State<_SettingProfileForm> {
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              SettingKycStatusSection(
+                                initialStatus: p.verificationKtpStatus,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
                               SectionName(
                                   profile: p,
                                   enabled: !state.personalProfileVerified,

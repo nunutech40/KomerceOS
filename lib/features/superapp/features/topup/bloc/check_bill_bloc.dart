@@ -20,7 +20,7 @@ class CheckBillBloc extends Bloc<CheckBillEvent, CheckBillState> {
       final result = await checkBillUseCase.call();
       result.fold(
         (failure) => emit(CheckBillError(failure)),
-        (data) => emit(CheckBillLoaded(data)),
+        (data) => emit(CheckBillLoaded(data, isFromKyc: event.isFromKyc)),
       );
     } catch (e) {
       emit(CheckBillError(UnknownFailure(e.toString())));

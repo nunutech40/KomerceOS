@@ -10,6 +10,10 @@ import 'package:komtim_partner/common/global/design_system/components/ds_menu_it
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/features/superapp/features/home/bloc/balance_summary_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/home/widgets/home_skeleton.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_identity_bottom_sheet.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_success_bottom_sheet.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_verification_bottom_sheet.dart';
+import 'package:komtim_partner/features/superapp/features/topup/bloc/check_bill_bloc.dart';
 
 /// Section balance — Kompay saldo, Kompoint, tombol Top Up & Penarikan,
 /// serta card Pending Balance (khusus Komship verified).
@@ -151,6 +155,45 @@ class _ActionButtons extends StatelessWidget {
   const _ActionButtons({required this.onTopupTap});
   final VoidCallback onTopupTap;
 
+  void _handleWithdrawalTap(BuildContext context) {
+    final profileState = context.read<SuperappProfileBloc>().state;
+    final status = profileState.displayProfile?.verificationKtpStatus ?? 0;
+
+    debugPrint(
+        '[KYC] Tombol Penarikan ditekan, verification_ktp_status: $status');
+
+    switch (status) {
+      case 0:
+        KycVerificationBottomSheet.show(
+          context,
+          onTopupTap: () {
+            debugPrint(
+                '[KYC] onTopupTap dipanggil dari KYC flow -> dispatch FetchCheckBillEvent(isFromKyc: true)');
+            context
+                .read<CheckBillBloc>()
+                .add(const FetchCheckBillEvent(isFromKyc: true));
+          },
+        );
+        break;
+      case 5:
+      case 3:
+        // Zero-fee skip rule: status 5 (Paid) dan status 3 (Ditolak) langsung ke popup identitas tanpa bayar 25.000 lagi
+        KycIdentityBottomSheet.show(context);
+        break;
+      case 1:
+        // Dalam proses verifikasi admin
+        KycSuccessBottomSheet.showVerificationInProgress(context);
+        break;
+      case 2:
+        // User terverifikasi KYC
+        debugPrint('[KYC] User terverifikasi, lanjutkan alur penarikan');
+        break;
+      default:
+        debugPrint('[KYC] Status verifikasi KTP saat ini: $status');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -172,7 +215,7 @@ class _ActionButtons extends StatelessWidget {
           title: 'Penarikan',
           icon: SvgPicture.asset(
               'assets/images/superapp/home/ic_withdraw.svg'),
-          onTap: () {},
+          onTap: () => _handleWithdrawalTap(context),
           backgroundColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xs2,

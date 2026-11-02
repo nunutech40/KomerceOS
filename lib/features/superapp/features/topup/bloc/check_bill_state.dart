@@ -13,11 +13,12 @@ class CheckBillLoading extends CheckBillState {}
 
 class CheckBillLoaded extends CheckBillState {
   final CheckBillModel data;
+  final bool isFromKyc;
 
-  const CheckBillLoaded(this.data);
+  const CheckBillLoaded(this.data, {this.isFromKyc = false});
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [data, isFromKyc];
 }
 
 class CheckBillError extends CheckBillState {

@@ -77,6 +77,7 @@ class SuperappProfileModel extends Equatable {
   final int? isKomtim;
   final String? accountStatus;
   final bool? isKtpVerified;
+  final int? verificationKtpStatus;
 
   // Sub-data
   final List<ProductMailVerificationModel> productMailVerifications;
@@ -107,6 +108,7 @@ class SuperappProfileModel extends Equatable {
     this.isKomtim,
     this.accountStatus,
     this.isKtpVerified,
+    this.verificationKtpStatus,
     this.productMailVerifications = const [],
     this.userLevels = const [],
     this.businessProfile,
@@ -129,6 +131,68 @@ class SuperappProfileModel extends Equatable {
       return null;
     }
     return profilePhoto;
+  }
+
+  SuperappProfileModel copyWith({
+    int? id,
+    String? roleName,
+    String? username,
+    int? status,
+    String? email,
+    int? roleId,
+    String? fullName,
+    String? noHp,
+    String? address,
+    String? photoProfileUrl,
+    String? birthDate,
+    int? gender,
+    int? saldo,
+    int? kompoints,
+    int? isKomship,
+    int? isKompack,
+    int? isKomplace,
+    int? isAffiliate,
+    int? isKomcards,
+    int? isKomchat,
+    int? isKomtim,
+    String? accountStatus,
+    bool? isKtpVerified,
+    int? verificationKtpStatus,
+    List<ProductMailVerificationModel>? productMailVerifications,
+    List<UserLevelModel>? userLevels,
+    BusinessProfileModel? businessProfile,
+  }) {
+    return SuperappProfileModel(
+      id: id ?? this.id,
+      roleName: roleName ?? this.roleName,
+      username: username ?? this.username,
+      status: status ?? this.status,
+      email: email ?? this.email,
+      roleId: roleId ?? this.roleId,
+      fullName: fullName ?? this.fullName,
+      noHp: noHp ?? this.noHp,
+      address: address ?? this.address,
+      photoProfileUrl: photoProfileUrl ?? this.photoProfileUrl,
+      birthDate: birthDate ?? this.birthDate,
+      gender: gender ?? this.gender,
+      saldo: saldo ?? this.saldo,
+      kompoints: kompoints ?? this.kompoints,
+      isKomship: isKomship ?? this.isKomship,
+      isKompack: isKompack ?? this.isKompack,
+      isKomplace: isKomplace ?? this.isKomplace,
+      isAffiliate: isAffiliate ?? this.isAffiliate,
+      isKomcards: isKomcards ?? this.isKomcards,
+      isKomchat: isKomchat ?? this.isKomchat,
+      isKomtim: isKomtim ?? this.isKomtim,
+      accountStatus: accountStatus ?? this.accountStatus,
+      isKtpVerified: isKtpVerified ?? this.isKtpVerified,
+      verificationKtpStatus:
+          verificationKtpStatus ?? this.verificationKtpStatus,
+      productMailVerifications:
+          productMailVerifications ?? this.productMailVerifications,
+      userLevels: userLevels ?? this.userLevels,
+      businessProfile: businessProfile ?? this.businessProfile,
+    );
   }
 
   @override
@@ -156,6 +220,7 @@ class SuperappProfileModel extends Equatable {
         isKomtim,
         accountStatus,
         isKtpVerified,
+        verificationKtpStatus,
         productMailVerifications,
         userLevels,
         businessProfile,

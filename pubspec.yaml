@@ -87,6 +87,7 @@ flutter:
     - assets/images/superapp/home/navbar/
     - assets/images/superapp/setting/
     - assets/images/superapp/topup/
+    - assets/images/superapp/kyc/
     - assets/images/team/
     - assets/images/superapp/team/
     - assets/json/
