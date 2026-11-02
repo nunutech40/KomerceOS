@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_liveness_flow.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
@@ -48,11 +49,7 @@ class KycIdentityBottomSheet extends StatelessWidget {
   /// Defaults ke [Navigator.pop].
   final VoidCallback? onBack;
 
-  const KycIdentityBottomSheet({
-    super.key,
-    this.onSubmit,
-    this.onBack,
-  });
+  const KycIdentityBottomSheet({super.key, this.onSubmit, this.onBack});
 
   // ---------------------------------------------------------------------------
   // Static factory
@@ -78,8 +75,14 @@ class KycIdentityBottomSheet extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       barrierColor: Colors.black54,
-      builder: (_) => KycIdentityBottomSheet(
-        onSubmit: onSubmit,
+      builder: (sheetContext) => KycIdentityBottomSheet(
+        onSubmit: onSubmit ??
+            () {
+              Navigator.pop(sheetContext);
+              Future<void>.delayed(const Duration(milliseconds: 250), () {
+                if (context.mounted) KycLivenessFlow.start(context);
+              });
+            },
         onBack: onBack ?? () => Navigator.pop(context),
       ),
     );
@@ -183,8 +186,10 @@ class KycIdentityBottomSheet extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primaryBase,
                     textStyle: AppTypography.bodyMdSemiBold,
-                    minimumSize:
-                        const Size(double.infinity, AppSpacing.touchSm),
+                    minimumSize: const Size(
+                      double.infinity,
+                      AppSpacing.touchSm,
+                    ),
                   ),
                   child: const Text('Kembali'),
                 ),

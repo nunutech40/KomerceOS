@@ -36,6 +36,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Kamera diperlukan untuk verifikasi gerakan wajah dan mengambil foto swafoto.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Kami memerlukan akses ke mikrofon untuk mendukung fitur tertentu di aplikasi ini.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

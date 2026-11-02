@@ -731,6 +731,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  flutter_liveness_sdk:
+    dependency: "direct main"
+    description:
+      path: "../flutter-liveness-sdk"
+      relative: true
+    source: path
+    version: "0.1.0"
   flutter_local_notifications:
     dependency: "direct main"
     description:
