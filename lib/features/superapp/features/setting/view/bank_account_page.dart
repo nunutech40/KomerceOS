@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,6 +11,7 @@ import 'package:komtim_partner/core/domain/entities/bank_accounts_model.dart';
 import '../bloc/bank_account_cubit.dart';
 import '../domain/entities/bank_account_entry.dart';
 import '../widget/bank_liability_sheet.dart';
+import '../widget/bank_result_sheet.dart';
 
 import '../widget/profile_form_card.dart';
 import '../widget/profile_option_sheet.dart';
@@ -66,6 +68,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
   List<AvailableBank> _availableBanks = [];
   Timer? _resendTimer;
   List<BankAccountsDataModel> _accounts = [];
+  int _listRequestVersion = 0;
 
   @override
   void initState() {
@@ -74,15 +77,17 @@ class _BankAccountPageState extends State<BankAccountPage> {
   }
 
   Future<void> _loadAccounts() async {
+    final requestVersion = ++_listRequestVersion;
     setState(() => _loadingAccounts = true);
     try {
       final accounts = widget.loadAccounts == null
           ? await _loadAccountsFromApi()
           : await widget.loadAccounts!();
-      if (!mounted) return;
+      if (!mounted || requestVersion != _listRequestVersion) return;
       setState(() {
         _accounts = accounts;
         _loadingAccounts = false;
+        _error = null;
         if (_savedAccountAwaitingSync != null &&
             _containsAccount(accounts, _savedAccountAwaitingSync!)) {
           _awaitingSavedAccountSync = false;
@@ -91,8 +96,12 @@ class _BankAccountPageState extends State<BankAccountPage> {
         }
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _loadingAccounts = false);
+      if (!mounted || requestVersion != _listRequestVersion) return;
+      setState(() {
+        _loadingAccounts = false;
+        _error =
+            'Daftar rekening belum dapat dimuat. Periksa koneksi, lalu coba lagi.';
+      });
       _showErrorSheet(_loadAccounts);
     }
   }
@@ -110,6 +119,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
   /// prevents a successful first add from appearing as an empty list, which
   /// otherwise invites the user to submit the same account again.
   Future<void> _refreshSavedAccount(String accountNumber) async {
+    final requestVersion = ++_listRequestVersion;
     List<BankAccountsDataModel> latest = _accounts;
     Object? lastError;
     for (var attempt = 0; attempt < 4; attempt++) {
@@ -117,7 +127,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
         latest = widget.loadAccounts == null
             ? await _loadAccountsFromApi()
             : await widget.loadAccounts!();
-        if (!mounted) return;
+        if (!mounted || requestVersion != _listRequestVersion) return;
         setState(() {
           _accounts = latest;
           _loadingAccounts = false;
@@ -135,7 +145,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
         await Future<void>.delayed(Duration(milliseconds: 600 * (attempt + 1)));
       }
     }
-    if (!mounted) return;
+    if (!mounted || requestVersion != _listRequestVersion) return;
     setState(() {
       _accounts = latest;
       _loadingAccounts = false;
@@ -211,22 +221,24 @@ class _BankAccountPageState extends State<BankAccountPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-        child: BankLiabilitySheet(liabilities: _liabilities),
+      barrierColor: const Color(0x73000000),
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Padding(
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+          child: BankLiabilitySheet(liabilities: _liabilities),
+        ),
       ),
     );
     if (!mounted || note == null) return;
-    // No confirmed endpoint records the reason yet. Keep this case fail-closed:
-    // never advance to OTP or save the bank account on a local-only reason.
-    await DsBottomSheet.show<void>(
+    // UI-only acknowledgement, as agreed for the current design.
+    // This action does not save a bank account or start OTP verification.
+    await BankResultSheet.show(
       context: context,
-      title: 'Pengajuan Belum Dapat Diproses',
+      title: 'Alasan Berhasil Diajukan',
       description:
-          'Alasan belum dapat dikirim karena layanan pengajuan tanggungan belum tersedia. Rekening belum ditambahkan.',
-      primaryButtonText: 'Mengerti',
-      onPrimaryPressed: () => Navigator.of(context).pop(),
+          'Alasan penambahan rekening berhasil\ndikirim dan sedang ditinjau oleh tim.',
     );
   }
 
@@ -246,17 +258,69 @@ class _BankAccountPageState extends State<BankAccountPage> {
       setState(() => _step = _BankAccountStep.form);
       return;
     }
-    await DsBottomSheet.show<void>(
+    await showModalBottomSheet<void>(
       context: context,
-      title: 'Profil Belum Lengkap Nih',
-      description: 'Untuk melanjutkan, silakan lengkapi profil Anda.',
-      primaryButtonText: 'Lengkapi Profil',
-      onPrimaryPressed: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => const SettingProfilePage(),
-        ));
-      },
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x73000000),
+      builder: (sheetContext) => Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(sheetContext).height * .9,
+        ),
+        margin:
+            const EdgeInsets.symmetric(horizontal: AppSpacing.pageMargin2xs),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.insetLg,
+          AppSpacing.xl,
+          AppSpacing.insetLg,
+          AppSpacing.insetLg,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.bgPopup,
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Lengkapi Profil Anda Terlebih Dahulu',
+                  style: AppTypography.headingXs,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Untuk dapat menambahkan rekening bank, silakan\nlengkapi data profil Anda terlebih dahulu.',
+                  style: AppTypography.bodySmRegular
+                      .copyWith(color: AppColors.grey600),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 56),
+                SvgPicture.asset(
+                  'assets/images/superapp/setting/illustration_profile_save_confirmation.svg',
+                  width: 298,
+                  height: 290,
+                  semanticsLabel: 'Ilustrasi profil belum lengkap',
+                ),
+                const SizedBox(height: 72),
+                DsButton(
+                  text: 'Lengkapi Profil',
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => const SettingProfilePage(),
+                    ));
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -549,92 +613,12 @@ class _BankAccountPageState extends State<BankAccountPage> {
     if (mounted) setState(() => _working = false);
   }
 
-  Future<void> _showSuccess() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        width: double.infinity,
-        margin:
-            const EdgeInsets.symmetric(horizontal: AppSpacing.pageMargin2xs),
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.insetLg,
-          AppSpacing.xl,
-          AppSpacing.insetLg,
-          AppSpacing.insetLg,
-        ),
-        decoration: const BoxDecoration(
-          color: AppColors.bgPopup,
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl3),
-                    child: Text(
-                      'Rekening Berhasil\nDitambahkan',
-                      style: AppTypography.headingMd,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Semantics(
-                      button: true,
-                      label: 'Tutup notifikasi rekening berhasil',
-                      child: InkWell(
-                        onTap: () => Navigator.pop(sheetContext),
-                        borderRadius: BorderRadius.circular(AppRadius.circular),
-                        child: Container(
-                          width: AppSpacing.xl3,
-                          height: AppSpacing.xl3,
-                          decoration: const BoxDecoration(
-                            color: AppColors.bgLight,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            color: AppColors.grey700,
-                            size: AppSpacing.iconXl,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Selamat! Nomor rekening berhasil\nditambahkan di akun kamu',
-                style: AppTypography.bodyMdRegular
-                    .copyWith(color: AppColors.grey700),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              SvgPicture.asset(
-                'assets/images/ilustrated-success.svg',
-                height: 196,
-                semanticsLabel: 'Ilustrasi rekening berhasil ditambahkan',
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              DsButton(
-                text: 'Oke',
-                onPressed: () => Navigator.pop(sheetContext),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _showSuccess() => BankResultSheet.show(
+        context: context,
+        title: 'Rekening Berhasil\nDitambahkan',
+        description:
+            'Selamat! Nomor rekening berhasil\nditambahkan di akun kamu',
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -646,10 +630,13 @@ class _BankAccountPageState extends State<BankAccountPage> {
           backgroundColor: AppColors.alwaysWhite),
       body: Column(
         children: [
-          Expanded(
-              child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: _buildBody())),
+          Expanded(child: LayoutBuilder(builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: _buildBody((constraints.maxHeight - 2 * AppSpacing.md)
+                  .clamp(0.0, double.infinity)),
+            );
+          })),
           if (_step != _BankAccountStep.method)
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -673,7 +660,10 @@ class _BankAccountPageState extends State<BankAccountPage> {
                         (_step == _BankAccountStep.list && _loadingAccounts)
                     ? DsButtonState.loading
                     : _step == _BankAccountStep.list &&
-                                _accounts.length >= _maxAccounts ||
+                                (_accounts.length >= _maxAccounts ||
+                                    (_accounts.isEmpty &&
+                                        _error != null &&
+                                        !_awaitingSavedAccountSync)) ||
                             _step == _BankAccountStep.form && !_canConfirm ||
                             _step == _BankAccountStep.otp &&
                                 _otpController.text.length != 6
@@ -700,7 +690,7 @@ class _BankAccountPageState extends State<BankAccountPage> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(double availableHeight) {
     switch (_step) {
       case _BankAccountStep.list:
         if (_loadingAccounts) {
@@ -710,8 +700,9 @@ class _BankAccountPageState extends State<BankAccountPage> {
             child: CircularProgressIndicator(color: AppColors.primaryBase),
           ));
         }
-        final accountsBody = _accounts.isEmpty ? _emptyState() : _accountList();
-        if (!_awaitingSavedAccountSync || _error == null) {
+        final accountsBody =
+            _accounts.isEmpty ? _emptyState(availableHeight) : _accountList();
+        if (_error == null) {
           return accountsBody;
         }
         return Column(
@@ -751,13 +742,15 @@ class _BankAccountPageState extends State<BankAccountPage> {
     }
   }
 
-  Widget _emptyState() => SizedBox(
-        height: 620,
+  Widget _emptyState(double availableHeight) => SizedBox(
+        height: availableHeight < 320 ? 320 : availableHeight,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset('assets/images/ic_empty.svg',
-                width: 235, height: 210),
+            SvgPicture.asset(
+                'assets/images/superapp/setting/bank_account_empty.svg',
+                width: 243,
+                height: 220),
             const SizedBox(height: AppSpacing.lg),
             const Text('Tidak Ada Rekening Bank',
                 style: AppTypography.headingXs),

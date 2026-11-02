@@ -114,21 +114,26 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     final requestToken = requestAuthorization?.startsWith('Bearer ') == true
         ? requestAuthorization!.substring('Bearer '.length)
         : null;
+    // A request sent without credentials cannot prove that the current
+    // session is invalid. It may have raced with token persistence at login.
+    if (requestToken == null || requestToken.isEmpty) {
+      return handler.next(err);
+    }
     String? currentToken;
     try {
       currentToken = await tokenProvider.getAccessToken();
     } catch (_) {
-      // A rejected protected request with unreadable local credentials is
-      // still an invalid session, not a reason to keep it authenticated.
+      // Without the stored token, this response cannot be tied to the
+      // currently authenticated session.
     }
-    // A response from an older request must not log out a new login session.
-    if (requestToken != null &&
-        currentToken != null &&
-        currentToken.isNotEmpty &&
+    // Only the request made with the currently stored token may expire it.
+    // This also protects a new login from a late response from an old user.
+    if (currentToken == null ||
+        currentToken.isEmpty ||
         requestToken != currentToken) {
       return handler.next(err);
     }
-    _invalidatedToken = requestToken ?? currentToken;
+    _invalidatedToken = requestToken;
     return _handleLogout(handler, err);
   }
 

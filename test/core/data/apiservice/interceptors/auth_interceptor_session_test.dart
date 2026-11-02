@@ -76,15 +76,12 @@ void main() {
     verify(prefs.removeDataPref()).called(1);
   });
 
-  test('401 tanpa header token tetap mengakhiri sesi yang tersimpan', () async {
+  test('401 tanpa header token tidak menghapus sesi yang tersimpan', () async {
     final handler = _ErrorHandler();
-    final unauthenticated = auth.stream
-        .firstWhere((state) => state.status.name == 'unauthenticated');
     await interceptor.onError(
         _error(Endpoints.superappGetProfile, 401), handler);
-    await unauthenticated;
-    expect(handler.rejected, isTrue);
-    verify(prefs.removeDataPref()).called(1);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
   });
 
   test('401 verifikasi PIN tidak menghapus sesi walau respons tanpa rincian',
@@ -169,6 +166,17 @@ void main() {
   });
 
   test('401 request dengan token lama tidak menghapus sesi baru', () async {
+    final handler = _ErrorHandler();
+    await interceptor.onError(
+        _error(Endpoints.superappGetProfile, 401, requestToken: 'previous'),
+        handler);
+    expect(handler.forwarded, isTrue);
+    verifyNever(prefs.removeDataPref());
+  });
+
+  test('401 profil setelah token lokal hilang tidak memicu logout kedua',
+      () async {
+    when(tokens.getAccessToken()).thenAnswer((_) async => null);
     final handler = _ErrorHandler();
     await interceptor.onError(
         _error(Endpoints.superappGetProfile, 401, requestToken: 'previous'),

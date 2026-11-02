@@ -9,18 +9,19 @@ class LoginErrorPopups {
   static bool isTeamInternalBlocked(String message) {
     final error = message.toLowerCase();
     return error.contains(teamInternalErrorCode.toLowerCase()) ||
-        error.contains('role team internal tidak memiliki akses') ||
+        error.contains('team internal') ||
+        error.contains('talent internal') ||
+        error.contains('internal talent') ||
         error.contains('tidak memiliki akses untuk masuk ke aplikasi');
   }
 
   static bool isOtherRoleError(String message) {
+    if (isTeamInternalBlocked(message)) return false;
     final error = message.toLowerCase();
     return error.contains('user is non partner') ||
         error.contains('user is not partner') ||
         error.contains('non partner') ||
-        error.contains('non-partner') ||
-        error.contains('talent internal') ||
-        error.contains('internal talent');
+        error.contains('non-partner');
   }
 
   static void showTeamInternalBlocked(BuildContext context,

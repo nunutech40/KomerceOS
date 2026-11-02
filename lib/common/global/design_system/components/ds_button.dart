@@ -15,6 +15,11 @@ class DsButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget? leftIcon;
   final bool colorIcon;
+  final double height;
+  final double borderRadius;
+  final TextStyle? textStyle;
+  final double? elevation;
+  final Color? disabledBackgroundColor;
 
   final DsButtonState state;
 
@@ -26,6 +31,11 @@ class DsButton extends StatelessWidget {
     this.loadingTextStyle,
     this.leftIcon,
     this.colorIcon = true,
+    this.height = 50,
+    this.borderRadius = AppRadius.lg,
+    this.textStyle,
+    this.elevation,
+    this.disabledBackgroundColor,
     super.key,
   });
 
@@ -41,20 +51,21 @@ class DsButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height:
-          50, // Height 50 bisa dipertahankan jika ini ukuran absolut standar button kalian
+      height: height,
       child: ElevatedButton(
         onPressed: (isLoading || isDisabled) ? null : onPressed,
         style: ElevatedButton.styleFrom(
+          elevation: elevation,
           backgroundColor: AppColors.primaryBase,
           foregroundColor: Colors.white,
-          disabledBackgroundColor:
-              isLoading ? Colors.transparent : AppColors.grey350,
+          disabledBackgroundColor: isLoading
+              ? Colors.transparent
+              : disabledBackgroundColor ?? AppColors.grey350,
           disabledForegroundColor: textColor,
           side: isLoading ? const BorderSide(color: AppColors.grey350) : null,
           shape: RoundedRectangleBorder(
             // PERBAIKAN 1: Gunakan token AppRadius
-            borderRadius: BorderRadius.circular(AppRadius.lg), // Ganti angka 16
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
         ),
         child: Row(
@@ -92,7 +103,7 @@ class DsButton extends StatelessWidget {
                 // PERBAIKAN 3: Gunakan token AppTypography
                 style: (isLoading && loadingTextStyle != null
                         ? loadingTextStyle!
-                        : AppTypography.headingXxs)
+                        : textStyle ?? AppTypography.headingXxs)
                     .copyWith(color: textColor),
               ),
             ),

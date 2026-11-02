@@ -243,6 +243,38 @@ void main() {
       );
       verifyNever(mockSharedPref.saveUserAndToken(any));
     });
+
+    test('meneruskan error_code Team Internal dari body flat HTTP 403',
+        () async {
+      when(mockRemote.doLogin(tUsername, tPassword)).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: ''),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 403,
+            data: {
+              'status': false,
+              'error_code': 'ERR_ROLE_TEAM_INTERNAL_BLOCKED',
+              'message':
+                  'Akun Anda tidak memiliki akses untuk masuk ke aplikasi.',
+              'data': null,
+            },
+          ),
+        ),
+      );
+
+      final result = await repository.doLogin(tUsername, tPassword);
+
+      expect(
+        result,
+        const Left(ServerFailure(
+          'ERR_ROLE_TEAM_INTERNAL_BLOCKED: '
+          'Akun Anda tidak memiliki akses untuk masuk ke aplikasi.',
+        )),
+      );
+      verifyNever(mockSharedPref.saveUserAndToken(any));
+    });
   });
 
   // ─── doLogout ─────────────────────────────────────────────────────────────

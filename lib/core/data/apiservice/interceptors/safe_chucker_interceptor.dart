@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
@@ -8,18 +9,30 @@ const _redacted = '[REDACTED]';
 /// Keeps the actual HTTP exchange untouched while giving Chucker a redacted
 /// copy. Chucker persists captured traffic on the QA device.
 class SafeChuckerInterceptor extends Interceptor {
-  final ChuckerDioInterceptor _chucker = ChuckerDioInterceptor();
+  // Chucker keeps requestTime on the interceptor instance. A separate capture
+  // per request prevents parallel Home/Profile calls overwriting that time.
+  final _captures = Expando<ChuckerDioInterceptor>();
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    _chucker.onRequest(options, handler);
+  Future<void> onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
+    final capture = ChuckerDioInterceptor();
+    _captures[options] = capture;
+    try {
+      await capture.onRequest(
+          _redactedOptions(options), _ChuckerRequestHandler());
+    } catch (_) {
+      // Capture initialization must not fail a real request.
+    }
+    handler.next(options);
   }
 
   @override
   Future<void> onResponse(
       Response response, ResponseInterceptorHandler handler) async {
     try {
-      await _chucker.onResponse(
+      final capture = _captures[response.requestOptions];
+      await capture?.onResponse(
         _redactedResponse(response),
         _ChuckerResponseHandler(),
       );
@@ -34,12 +47,28 @@ class SafeChuckerInterceptor extends Interceptor {
       DioException err, ErrorInterceptorHandler handler) async {
     try {
       final safeOptions = _redactedOptions(err.requestOptions);
-      await _chucker.onError(
+      final diagnostics = err.response == null
+          ? Response<dynamic>(
+              requestOptions: safeOptions,
+              data: {
+                'client_transport_error': {
+                  'type': err.type.name,
+                  'cause': err.error.runtimeType.toString(),
+                  if (err.error is SocketException)
+                    'os_error_code':
+                        (err.error as SocketException).osError?.errorCode,
+                  'has_http_response': false,
+                },
+              },
+            )
+          : _redactedResponse(err.response!, options: safeOptions);
+      final capture = _captures[err.requestOptions];
+      await capture?.onError(
         err.copyWith(
           requestOptions: safeOptions,
-          response: err.response == null
-              ? null
-              : _redactedResponse(err.response!, options: safeOptions),
+          // This copy only feeds Chucker. A missing HTTP response stays -1,
+          // with explicit client diagnostics instead of an empty body.
+          response: diagnostics,
         ),
         _ChuckerErrorHandler(),
       );
@@ -48,6 +77,11 @@ class SafeChuckerInterceptor extends Interceptor {
     }
     handler.next(err);
   }
+}
+
+class _ChuckerRequestHandler extends RequestInterceptorHandler {
+  @override
+  void next(RequestOptions options) {}
 }
 
 class _ChuckerResponseHandler extends ResponseInterceptorHandler {

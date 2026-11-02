@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:komtim_partner/common/global/design_system/components/ds_button.dart';
 import 'package:komtim_partner/features/superapp/features/setting/domain/entities/bank_account_entry.dart';
 import 'package:komtim_partner/features/superapp/features/setting/widget/bank_liability_sheet.dart';
 
 void main() {
-  testWidgets('Selesaikan Tanggungan hanya menutup modal', (tester) async {
+  testWidgets('pengajuan alasan memakai satu tombol utama', (tester) async {
     tester.view.physicalSize = const Size(720, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -30,10 +31,14 @@ void main() {
 
     await tester.tap(find.text('Buka form rekening'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Selesaikan Tanggungan'));
+    expect(find.text('Selesaikan Tanggungan'), findsNothing);
+    expect(find.text('Kirim Alasan & Ajukan'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Alasan valid');
+    await tester.pump();
+    await tester.tap(find.text('Kirim Alasan & Ajukan'));
     await tester.pumpAndSettle();
 
-    expect(result, isNull);
+    expect(result, 'Alasan valid');
     expect(find.byType(BankLiabilitySheet), findsNothing);
     expect(find.text('Buka form rekening'), findsOneWidget);
     expect(find.text('Mengerti'), findsNothing);
@@ -50,21 +55,13 @@ void main() {
     ));
     expect(find.text('s***@mail.com'), findsOneWidget);
     expect(find.text('-Rp17.000'), findsOneWidget);
-    expect(
-        tester
-            .widget<TextButton>(
-                find.widgetWithText(TextButton, 'Kirim Alasan & Ajukan'))
-            .onPressed,
-        isNull);
+    expect(tester.widget<DsButton>(find.byType(DsButton)).state,
+        DsButtonState.disabled);
 
     await tester.enterText(find.byType(TextField), '          ');
     await tester.pump();
-    expect(
-        tester
-            .widget<TextButton>(
-                find.widgetWithText(TextButton, 'Kirim Alasan & Ajukan'))
-            .onPressed,
-        isNull);
+    expect(tester.widget<DsButton>(find.byType(DsButton)).state,
+        DsButtonState.disabled);
     expect(find.text('Alasan minimal 10 karakter'), findsNothing);
 
     await tester.enterText(find.byType(TextField), 'kurang');
@@ -74,12 +71,8 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Alasan valid');
     await tester.pump();
     expect(find.text('Alasan minimal 10 karakter'), findsNothing);
-    expect(
-        tester
-            .widget<TextButton>(
-                find.widgetWithText(TextButton, 'Kirim Alasan & Ajukan'))
-            .onPressed,
-        isNotNull);
+    expect(tester.widget<DsButton>(find.byType(DsButton)).state,
+        DsButtonState.enabled);
   });
 
   testWidgets('tanggungan multi akun ditampilkan dalam daftar scroll',

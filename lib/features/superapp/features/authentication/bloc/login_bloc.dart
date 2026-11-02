@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/enum_status.dart';
@@ -16,16 +17,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final CheckEmailLoginUseCase checkEmailLoginUseCase;
   final DoLoginUseCase doLoginUseCase;
   final RecaptchaUseCase recaptchaUseCase;
+  int _inputVersion = 0;
 
   LoginBloc({
     required this.checkEmailLoginUseCase,
     required this.doLoginUseCase,
     required this.recaptchaUseCase,
   }) : super(const LoginState()) {
-    on<LoginButtonPressedEvent>(_handleLoginWithUsernameAndPasswordEvent);
+    on<LoginButtonPressedEvent>(_handleLoginWithUsernameAndPasswordEvent,
+        transformer: droppable());
     on<LoginEmailChangedEvent>(_handleLoginUsernameChangedEvent);
     on<LoginPasswordChangedEvent>(_handleLoginPasswordChangedEvent);
     on<LoginStatusResetEvent>(_handleStatusResetEvent);
+    on<LoginEmailPrecheckedEvent>((event, emit) {
+      _inputVersion++;
+      emit(state.copyWith(
+        username: event.email,
+        password: '',
+        isEmailChecked: true,
+        usernameErrorMessage: '',
+        passwordErrorMessage: '',
+        status: RequestStatus.empty,
+      ));
+    });
   }
 
   Future<void> _handleStatusResetEvent(
@@ -43,6 +57,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     LoginEmailChangedEvent event,
     Emitter<LoginState> emit,
   ) async {
+    _inputVersion++;
     // Reset status and errors when user types
     emit(state.copyWith(
       username: event.email,
@@ -57,6 +72,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     LoginPasswordChangedEvent event,
     Emitter<LoginState> emit,
   ) async {
+    _inputVersion++;
     // Verify that the password doesn't contain any whitespace
     if (event.password.contains(' ')) {
       emit(state.copyWith(
@@ -90,7 +106,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     LoginButtonPressedEvent event,
     Emitter<LoginState> emit,
   ) async {
-    if (!state.isEmailChecked) {
+    final isPasswordStep = state.isEmailChecked;
+    final email = state.username;
+    final password = state.password;
+    final inputVersion = _inputVersion;
+    if (!isPasswordStep) {
       // Step 1: hanya butuh email
       if (state.username.isEmpty) {
         emit(state.copyWith(
@@ -123,12 +143,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await recaptchaUseCase.initializeClient();
       }
       // Email check and password login are verified with different actions.
-      final action = state.isEmailChecked ? 'LOGIN' : 'CHECK_EMAIL';
-      recaptchaToken = await recaptchaUseCase
-          .getToken(RecaptchaAction.custom(action));
+      final action = isPasswordStep ? 'LOGIN' : 'CHECK_EMAIL';
+      recaptchaToken =
+          await recaptchaUseCase.getToken(RecaptchaAction.custom(action));
     } catch (e) {
       debugPrint("reCAPTCHA failed: $e");
     }
+
+    if (emit.isDone || inputVersion != _inputVersion) return;
 
     if (recaptchaToken == null || recaptchaToken.isEmpty) {
       emit(state.copyWith(
@@ -139,12 +161,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return;
     }
 
-    if (!state.isEmailChecked) {
+    if (!isPasswordStep) {
       // 1. Check Email Status
       final checkResult = await checkEmailLoginUseCase.call(
-        state.username,
+        email,
         recaptchaToken: recaptchaToken,
       );
+
+      if (emit.isDone || inputVersion != _inputVersion) return;
 
       checkResult.fold(
         (failure) {
@@ -186,8 +210,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     }
 
     // 2. Proceed to Login
-    final result = await doLoginUseCase.execute(state.username, state.password,
+    final result = await doLoginUseCase.execute(email, password,
         recaptchaToken: recaptchaToken);
+
+    if (emit.isDone || inputVersion != _inputVersion) return;
 
     result.fold(
       (failure) {

@@ -11,6 +11,17 @@ class DioResponseParser {
     final dynamic responseBody = response.data;
 
     if (responseBody is Map<String, dynamic>) {
+      // check-login can return a domain failure outside the usual `meta`
+      // envelope, even with HTTP 200. Do not parse its null `data` as an
+      // empty, successful email result.
+      if (responseBody['status'] == false &&
+          responseBody['error_code'] == 'ERR_ROLE_TEAM_INTERNAL_BLOCKED') {
+        final message = responseBody['message']?.toString().trim();
+        throw ServerException(
+          'ERR_ROLE_TEAM_INTERNAL_BLOCKED: '
+          '${message == null || message.isEmpty ? 'Akun Team Internal tidak memiliki akses untuk masuk ke aplikasi.' : message}',
+        );
+      }
       final meta = responseBody['meta'];
 
       // Check if meta exists and status is success

@@ -29,8 +29,19 @@ class SettingAccountPage extends StatefulWidget {
 class _SettingAccountPageState extends State<SettingAccountPage> {
   bool _hasPinInCurrentUiSession = false;
   bool _checkingBankPin = false;
+  bool _openingBankAccounts = false;
 
   Future<void> _openBankAccounts() async {
+    if (_openingBankAccounts) return;
+    _openingBankAccounts = true;
+    try {
+      await _openBankAccountsOnce();
+    } finally {
+      _openingBankAccounts = false;
+    }
+  }
+
+  Future<void> _openBankAccountsOnce() async {
     if (_checkingBankPin) return;
     if (!_hasPinInCurrentUiSession) {
       setState(() => _checkingBankPin = true);
@@ -76,7 +87,7 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
         (count) => count > 0,
       );
       if (!canContinue) {
-        if (remaining.isRight()) await _showBankPinLock(autoLogout: true);
+        if (remaining.isRight()) await _showBankPinLock();
         return;
       }
     }
@@ -117,7 +128,7 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
             builder: (_) => PinFlowPage(flow: PinFlow.forgot, email: email),
           ));
         },
-        onLocked: () => _showBankPinLock(autoLogout: true),
+        onLocked: _logoutAfterBankPinLock,
       ),
     );
     if (!mounted || verified != true) return;
@@ -134,42 +145,36 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
     );
   }
 
-  Future<void> _showBankPinLock({bool autoLogout = false}) async {
+  void _logoutAfterBankPinLock() {
     if (!mounted) return;
-    await DsBottomSheet.show<void>(
+    context
+        .read<SuperappProfileBloc>()
+        .add(const ClearSuperappProfileEvent());
+    context.read<AuthBloc>().add(const AuthLogoutRequested());
+  }
+
+  Future<void> _showBankPinLock() async {
+    if (!mounted) return;
+    final resetPin = await DsBottomSheet.show<bool>(
       context: context,
-      isDismissible: !autoLogout,
       title: 'Terlalu Banyak Percobaan PIN',
       titleStyle: AppTypography.headingXs,
       description: 'Kamu telah mencapai batas maksimal percobaan PIN.\n'
           'Demi keamanan akun, silakan coba kembali\ndalam 24 jam.',
-      image: const SizedBox(
-        height: 208,
-        child: Center(
-          child: Icon(Icons.laptop_mac_rounded,
-              size: 170, color: AppColors.primaryBase),
-        ),
+      image: SvgPicture.asset(
+        'assets/images/superapp/auth/attempt_count_login.svg',
+        width: 278,
+        height: 232,
+        semanticsLabel: 'Ilustrasi batas percobaan PIN',
       ),
-      secondaryButtonText: autoLogout ? null : 'Kembali',
+      secondaryButtonText: 'Kembali',
       secondaryButtonColor: AppColors.primaryBase,
-      onSecondaryPressed: () => Navigator.of(context).pop(),
-      primaryButtonText: autoLogout ? 'Masuk Kembali' : 'Reset PIN',
+      onSecondaryPressed: () => Navigator.of(context).pop(false),
+      primaryButtonText: 'Reset PIN',
       barrierColor: const Color(0x66000000),
-      onPrimaryPressed: () {
-        Navigator.of(context).pop();
-      },
+      onPrimaryPressed: () => Navigator.of(context).pop(true),
     );
-    if (!mounted) return;
-    if (autoLogout) {
-      // Tampilkan alasan lock terlebih dahulu. Bila AuthBloc dipanggil
-      // sebelum sheet dirender, GoRouter langsung menuju login dan pesan
-      // keamanan tidak pernah terlihat.
-      context
-          .read<SuperappProfileBloc>()
-          .add(const ClearSuperappProfileEvent());
-      context.read<AuthBloc>().add(const AuthLogoutRequested());
-      return;
-    }
+    if (!mounted || resetPin != true) return;
     final email =
         context.read<SuperappProfileBloc>().state.displayProfile?.email ?? '';
     Navigator.of(context).push(MaterialPageRoute<void>(

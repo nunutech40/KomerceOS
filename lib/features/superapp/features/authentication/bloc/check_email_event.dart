@@ -8,7 +8,7 @@ abstract class CheckEmailEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// User menekan tombol "Lanjutkan" dengan email yang valid
+/// Email valid setelah debounce, atau dikirim melalui tombol Lanjutkan/retry.
 class CheckEmailSubmitted extends CheckEmailEvent {
   final String email;
 
