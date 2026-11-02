@@ -26,6 +26,11 @@ const AndroidInitializationSettings initializationSettingsAndroid =
 
 const InitializationSettings initializationSettings = InitializationSettings(
   android: initializationSettingsAndroid,
+  iOS: DarwinInitializationSettings(
+    requestAlertPermission: false,
+    requestSoundPermission: false,
+    requestBadgePermission: false,
+  ),
 );
 
 @pragma('vm:entry-point')
@@ -50,8 +55,10 @@ Future<void> _showNotificationFromBackgroundMessage(
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails('high_importance_channel', 'channel_id',
             importance: Importance.max, priority: Priority.high);
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: DarwinNotificationDetails(),
+    );
 
     await flutterLocalNotificationsPlugin.show(
       notification.hashCode, // Notification ID
