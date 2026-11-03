@@ -54,7 +54,6 @@ class _PinFlowPageState extends State<PinFlowPage> {
   bool _isConfirming = false;
   bool _lockHandled = false;
   bool _lockedAtOpen = false;
-  bool _lockSheetVisible = false;
 
   @override
   void initState() {
@@ -143,7 +142,6 @@ class _PinFlowPageState extends State<PinFlowPage> {
       _input = '';
       _error = null;
       _isConfirming = false;
-      _lockSheetVisible = false;
       _fieldEpoch++;
     });
   }
@@ -320,18 +318,15 @@ class _PinFlowPageState extends State<PinFlowPage> {
 
   Future<void> _showExistingLockSheet() async {
     if (!mounted) return;
-    FocusManager.instance.primaryFocus?.unfocus();
-    setState(() => _lockSheetVisible = true);
     final resetPin = await DsBottomSheet.show<bool>(
       context: context,
-      title: 'Terlalu Banyak Percobaan\nPIN',
-      titleStyle: AppTypography.headingXs,
+      title: 'Terlalu Banyak Percobaan PIN',
       description: 'Kamu telah mencapai batas maksimal percobaan PIN. '
           'Demi keamanan akun, silakan coba kembali dalam 24 jam.',
       image: SvgPicture.asset(
-        'assets/images/superapp/auth/to_many_login.svg',
-        width: 271,
-        height: 271,
+        'assets/images/superapp/auth/attempt_count_login.svg',
+        width: 278,
+        height: 232,
         semanticsLabel: 'Ilustrasi batas percobaan PIN',
       ),
       secondaryButtonText: 'Kembali',
@@ -556,14 +551,13 @@ class _PinFlowPageState extends State<PinFlowPage> {
   }
 
   Widget _otpField({required bool obscure}) => DsOtpField(
-        key: ValueKey('${_step.name}-$_fieldEpoch-$_lockSheetVisible'),
+        key: ValueKey('${_step.name}-$_fieldEpoch'),
         obscureText: obscure,
         centerInputGroups: _step == _PinStep.otp ||
             _step == _PinStep.oldPin ||
             _step == _PinStep.newPin ||
             _step == _PinStep.confirmPin,
-        autoFocus: !_lockSheetVisible,
-        isEnabled: !_lockSheetVisible,
+        autoFocus: true,
         onChanged: (value) {
           setState(() {
             _input = value;

@@ -155,17 +155,16 @@ class _SettingAccountPageState extends State<SettingAccountPage> {
 
   Future<void> _showBankPinLock() async {
     if (!mounted) return;
-    FocusManager.instance.primaryFocus?.unfocus();
     final resetPin = await DsBottomSheet.show<bool>(
       context: context,
-      title: 'Terlalu Banyak Percobaan\nPIN',
+      title: 'Terlalu Banyak Percobaan PIN',
       titleStyle: AppTypography.headingXs,
       description: 'Kamu telah mencapai batas maksimal percobaan PIN.\n'
           'Demi keamanan akun, silakan coba kembali\ndalam 24 jam.',
       image: SvgPicture.asset(
-        'assets/images/superapp/auth/to_many_login.svg',
-        width: 271,
-        height: 271,
+        'assets/images/superapp/auth/attempt_count_login.svg',
+        width: 278,
+        height: 232,
         semanticsLabel: 'Ilustrasi batas percobaan PIN',
       ),
       secondaryButtonText: 'Kembali',
