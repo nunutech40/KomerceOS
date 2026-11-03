@@ -104,7 +104,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '000003');
     await tester.pumpAndSettle();
     expect(logoutCount, 1);
-    expect(find.text('Terlalu Banyak Percobaan PIN'), findsNothing);
+    expect(find.text('Terlalu Banyak Percobaan\nPIN'), findsNothing);
   });
 
   testWidgets('akun yang masih terkunci melihat batas 24 jam setelah login',
@@ -115,7 +115,7 @@ void main() {
         onLocked: () => logoutCount++);
     await tester.pumpAndSettle();
     expect(logoutCount, 0);
-    expect(find.text('Terlalu Banyak Percobaan PIN'), findsOneWidget);
+    expect(find.text('Terlalu Banyak Percobaan\nPIN'), findsOneWidget);
     expect(find.byType(SvgPicture), findsOneWidget);
     expect(
         find.text('Kamu telah mencapai batas maksimal percobaan PIN. '
@@ -138,7 +138,7 @@ void main() {
     await tester.pump();
     expect(find.text('PIN salah. Coba lagi.'), findsOneWidget);
     expect(logoutCount, 0);
-    expect(find.text('Terlalu Banyak Percobaan PIN'), findsNothing);
+    expect(find.text('Terlalu Banyak Percobaan\nPIN'), findsNothing);
   });
 
   testWidgets('lupa PIN dari input PIN lama berpindah ke OTP dan Buat PIN',

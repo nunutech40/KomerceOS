@@ -90,7 +90,7 @@ void main() {
     ));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
-    expect(find.text('Terlalu Banyak Percobaan PIN'), findsOneWidget);
+    expect(find.text('Terlalu Banyak Percobaan\nPIN'), findsOneWidget);
     debugPrint('QA_SCREEN_PIN_LOCK');
     await Future<void>.delayed(const Duration(seconds: 12));
   });
@@ -113,6 +113,6 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(logoutCount, 1);
-    expect(find.text('Terlalu Banyak Percobaan PIN'), findsNothing);
+    expect(find.text('Terlalu Banyak Percobaan\nPIN'), findsNothing);
   });
 }

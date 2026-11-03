@@ -313,3 +313,7 @@ Pengujian ini memverifikasi tampilan dan transisi widget di HP. Ini belum membuk
 ### Koreksi flow PIN dari SQA — 30 Okt 2026, 16.44 WIB
 
 SQA menetapkan: salah PIN ketiga langsung logout; setelah itu user dapat login lagi, tetapi verifikasi PIN tetap dibatasi selama 24 jam sejak kesalahan terakhir atau sampai reset lewat Lupa PIN. Implementasi Ubah PIN dan gate rekening sekarang memicu logout langsung pada respons percobaan habis. Saat membuka verifikasi PIN dengan status terkunci yang sudah ada, aplikasi menampilkan popup pembatasan 24 jam dan opsi Reset PIN. Uji widget lokal untuk kedua jalur lulus (23 tes terkait); empat skenario integration test sintetis pada HP juga lulus. Uji API nyata setelah koreksi ini masih perlu dilakukan. Catatan lama di atas yang menyebut logout setelah tombol `Masuk Kembali` berlaku untuk build sebelum koreksi ini.
+
+### Koreksi visual popup batas PIN — 3 Nov 2026
+
+QA menunjukkan popup `Terlalu Banyak Percobaan PIN` dengan ilustrasi kartu akun, tiga tanda seru, dan gembok. Pada branch `development`, popup Ubah PIN dan Rekening Bank kini memakai aset yang sudah tersedia, `to_many_login.svg`, serta judul dua baris dan tombol tutup. Ketika status PIN sudah terkunci saat halaman dibuka, input PIN tidak lagi memunculkan keyboard di belakang popup. Dua belas tes widget PIN dan integration test popup pada HP Infinix X6728 lulus; screenshot HP memperlihatkan seluruh sheet, ilustrasi, serta CTA Reset PIN tanpa keyboard menutupi konten. Alur salah PIN ketiga tetap langsung logout sesuai keputusan QA 30 Okt.
