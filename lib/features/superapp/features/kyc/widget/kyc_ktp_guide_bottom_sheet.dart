@@ -16,7 +16,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 ///   - Tulisan pada KTP terbaca jelas dan tidak terkena pantulan cahaya/silau.
 ///
 /// ### 🔄 Alur & Posisi dalam User Journey:
-/// 1. User menekan "Ajukan Verifikasi" di [KycIdentityBottomSheet].
+/// 1. Liveness berhasil dan pengguna melanjutkan ke foto KTP.
 /// 2. Halaman menampilkan panduan [KycKtpGuideBottomSheet.show].
 /// 3. User membaca panduan lalu menekan tombol "Mulai Foto" (`onStartPhoto`).
 /// 4. Bottom sheet ditutup dan aplikasi meluncurkan kamera / scanner KTP.
@@ -88,6 +88,7 @@ class KycKtpGuideBottomSheet extends StatelessWidget {
       filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
       child: Container(
         width: double.infinity,
+        height: MediaQuery.sizeOf(context).height * .78,
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.pageMargin2xs,
         ),
@@ -107,113 +108,114 @@ class KycKtpGuideBottomSheet extends StatelessWidget {
               AppSpacing.pageMargin2xs + 16,
               AppSpacing.lg,
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Top header bar: Title + Close (X)
-                  Stack(
-                    alignment: Alignment.center,
+            child: Column(
+              children: [
+                Expanded(
+                    child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                      ),
-                      Text(
-                        'Verifikasi Foto KTP',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.headingSm.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: effectiveOnClose,
-                          behavior: HitTestBehavior.opaque,
-                          child: Container(
-                            width: 40,
+                      // ── Top header bar: Title + Close (X)
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const SizedBox(
+                            width: double.infinity,
                             height: 40,
-                            decoration: const BoxDecoration(
-                              color: AppColors.grey100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close_rounded,
-                              size: 18,
-                              color: AppColors.grey700,
+                          ),
+                          Text(
+                            'Verifikasi Foto KTP',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.headingSm.copyWith(
+                              color: AppColors.black,
                             ),
                           ),
+                          Positioned(
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: effectiveOnClose,
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.grey100,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: AppColors.grey700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+
+                      // ── Subtitle
+                      Text(
+                        'Pastikan foto KTP terlihat jelas dan seluruh informasi dapat terbaca untuk melanjutkan verifikasi identitas.',
+                        textAlign: TextAlign.left,
+                        style: AppTypography.bodySmRegular.copyWith(
+                          color: AppColors.textDark,
+                          height: 1.4,
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // ── Section Title
+                      Text(
+                        'Petunjuk Verifikasi KTP',
+                        style: AppTypography.bodySmSemiBold.copyWith(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // ── Example 1: Benar
+                      const _ExampleCard(
+                        isCorrect: true,
+                        label: 'Benar',
+                        imagePath:
+                            'assets/images/superapp/kyc/image_ktp_valid.png',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // ── Example 2: Salah
+                      const _ExampleCard(
+                        isCorrect: false,
+                        label: 'Salah',
+                        imagePath:
+                            'assets/images/superapp/kyc/image_ktp_invalid.png',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // ── Bullet Rules
+                      const _RuleBulletPoint(
+                        text:
+                            'Unggah foto KTP asli, bukan hasil scan atau fotocopy.',
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      const _RuleBulletPoint(
+                        text:
+                            'Pastikan foto tidak buram dan memiliki pencahayaan yang cukup.',
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      const _RuleBulletPoint(
+                        text:
+                            'Seluruh bagian KTP harus masuk ke dalam kotak foto yang disediakan.',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-
-                  // ── Subtitle
-                  Text(
-                    'Pastikan foto KTP terlihat jelas dan seluruh informasi\ndapat terbaca untuk melanjutkan verifikasi identitas.',
-                    textAlign: TextAlign.left,
-                    style: AppTypography.bodyMdRegular.copyWith(
-                      color: AppColors.textDark,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  // ── Section Title
-                  Text(
-                    'Petunjuk Verifikasi KTP',
-                    style: AppTypography.bodyMdSemiBold.copyWith(
-                      color: AppColors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-
-                  // ── Example 1: Benar
-                  const _ExampleCard(
-                    isCorrect: true,
-                    label: 'Benar',
-                    imagePath:
-                        'assets/images/superapp/kyc/image_ktp_valid.png',
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  // ── Example 2: Salah
-                  const _ExampleCard(
-                    isCorrect: false,
-                    label: 'Salah',
-                    imagePath:
-                        'assets/images/superapp/kyc/image_ktp_invalid.png',
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  // ── Bullet Rules
-                  const _RuleBulletPoint(
-                    text:
-                        'Unggah foto KTP asli, bukan hasil scan atau fotocopy.',
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  const _RuleBulletPoint(
-                    text:
-                        'Pastikan foto tidak buram dan memiliki pencahayaan yang cukup.',
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  const _RuleBulletPoint(
-                    text:
-                        'Seluruh bagian KTP harus masuk ke dalam kotak foto yang disediakan.',
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // ── Action: Mulai Foto
-                  DsButton(
-                    text: 'Mulai Foto',
-                    onPressed: onStartPhoto ?? () {},
-                  ),
-                ],
-              ),
+                )),
+                const SizedBox(height: AppSpacing.sm),
+                DsButton(text: 'Mulai Foto', onPressed: onStartPhoto ?? () {}),
+              ],
             ),
           ),
         ),
@@ -246,7 +248,7 @@ class _ExampleCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(AppRadius.md2),
@@ -273,7 +275,7 @@ class _ExampleCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.xs),
 
           // KTP Image
           ClipRRect(
@@ -281,7 +283,7 @@ class _ExampleCard extends StatelessWidget {
             child: Image.asset(
               imagePath,
               width: double.infinity,
-              height: 120,
+              height: 110,
               fit: BoxFit.contain,
             ),
           ),
@@ -315,7 +317,7 @@ class _RuleBulletPoint extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: AppTypography.bodyMdRegular.copyWith(
+            style: AppTypography.bodySmRegular.copyWith(
               color: AppColors.textDark,
               height: 1.4,
             ),

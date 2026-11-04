@@ -4,37 +4,27 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_liveness_sdk/flutter_liveness_sdk.dart';
-import 'package:komtim_partner/DI/injection.dart';
-import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_camera_permission_dialog.dart';
-import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_cancel_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_liveness_bottom_sheet.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_liveness_result_page.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_liveness_capture_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Connects the KYC screens to the local Flutter liveness plugin.
-/// The plugin owns camera capture; KomerceOS owns the tutorial and draft.
+/// Android renders the capture page in the app while the SDK owns detection.
 abstract final class KycLivenessFlow {
   static Future<void> start(BuildContext context) async {
-    final userId = locator<SuperappProfileBloc>().state.displayProfile?.id;
-    if (userId == null) {
-      _message(context, 'Profil belum siap. Coba lagi setelah profil dimuat.');
-      return;
-    }
-
-    if (await _LivenessDraft.exists(userId)) {
-      if (context.mounted) _showResult(context, userId);
-      return;
-    }
+    await _removeLegacyLivenessCache();
     if (!context.mounted) return;
     await KycLivenessBottomSheet.show<void>(
       context,
-      onStart: () => unawaited(_beginCapture(context, userId)),
+      onStart: () => unawaited(_beginCapture(context)),
     );
   }
 
-  static Future<void> _beginCapture(BuildContext context, int userId) async {
+  static Future<void> _beginCapture(BuildContext context) async {
     bool granted = false;
     try {
       granted = (await Permission.camera.status).isGranted;
@@ -50,6 +40,8 @@ abstract final class KycLivenessFlow {
         onDeny: () => Navigator.pop(context, false),
       );
       if (allowed != true || !context.mounted) return;
+      granted = (await Permission.camera.request()).isGranted;
+      if (!granted || !context.mounted) return;
     }
 
     Navigator.pop(context); // Close the liveness tutorial.
@@ -57,29 +49,30 @@ abstract final class KycLivenessFlow {
     if (!context.mounted) return;
 
     try {
-      final result = await FlutterLivenessSdk.capture(
-        LivenessConfig(
-          steps: const [
-            LivenessStep.lookRight,
-            LivenessStep.lookLeft,
-            LivenessStep.smile,
-          ],
-          timeout: const Duration(seconds: 45),
-        ),
-      );
+      LivenessResult? result;
+      if (Platform.isAndroid) {
+        result = await Navigator.of(context).push<LivenessResult>(
+          MaterialPageRoute(
+            builder: (_) => const KycLivenessCapturePage(),
+          ),
+        );
+      } else {
+        result = await FlutterLivenessSdk.capture(
+          LivenessConfig(
+            steps: const [
+              LivenessStep.lookRight,
+              LivenessStep.lookLeft,
+              LivenessStep.smile,
+            ],
+            timeout: const Duration(seconds: 45),
+          ),
+        );
+      }
       if (!context.mounted) return;
+      if (result == null) return;
       switch (result.status) {
         case LivenessStatus.success:
-          final selfiePath = result.selfiePath;
-          if (selfiePath == null) {
-            _message(
-              context,
-              'Foto hasil verifikasi tidak tersedia. Coba lagi.',
-            );
-            return;
-          }
-          await _LivenessDraft.save(userId, selfiePath);
-          if (context.mounted) _showResult(context, userId);
+          _showResult(context);
           return;
         case LivenessStatus.cancelled:
           return;
@@ -104,81 +97,13 @@ abstract final class KycLivenessFlow {
       if (context.mounted) {
         _message(context, 'Kamera tidak dapat dibuka. Silakan coba lagi.');
       }
-    } on FileSystemException {
-      if (context.mounted) {
-        _message(
-          context,
-          'Foto verifikasi tidak dapat disimpan. Silakan coba lagi.',
-        );
-      }
     }
   }
 
-  static void _showResult(BuildContext context, int userId) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      builder: (sheetContext) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.verified_rounded,
-                size: 72,
-                color: Color(0xFFFF5C0A),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Verifikasi Wajah Berhasil',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Gerakan wajah berhasil diverifikasi. Foto disimpan sebagai draf lokal untuk integrasi KYC berikutnya.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              TextButton(
-                onPressed: () {
-                  KycCancelBottomSheet.show<void>(
-                    sheetContext,
-                    onCancelSubmission: () {
-                      Navigator.pop(sheetContext); // Confirmation.
-                      unawaited(_cancelDraft(sheetContext, userId));
-                    },
-                  );
-                },
-                child: const Text('Batal'),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF5C0A),
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(sheetContext);
-                  },
-                  child: const Text('Tutup'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Future<void> _cancelDraft(BuildContext context, int userId) async {
-    await _LivenessDraft.delete(userId);
-    if (context.mounted) Navigator.pop(context); // Result sheet.
+  static void _showResult(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => const KycLivenessResultPage(),
+    ));
   }
 
   static void _message(BuildContext context, String message) {
@@ -187,37 +112,21 @@ abstract final class KycLivenessFlow {
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
-}
 
-abstract final class _LivenessDraft {
-  static String _key(int userId) => 'kyc_liveness_selfie_$userId';
-
-  static Future<bool> exists(int userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final path = prefs.getString(_key(userId));
-    if (path == null) return false;
-    if (await File(path).exists()) return true;
-    await prefs.remove(_key(userId));
-    return false;
-  }
-
-  static Future<void> save(int userId, String sourcePath) async {
-    final root = await getApplicationSupportDirectory();
-    final directory = Directory('${root.path}/kyc_drafts');
-    await directory.create(recursive: true);
-    final target = File('${directory.path}/liveness_$userId.jpg');
-    await File(sourcePath).copy(target.path);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key(userId), target.path);
-  }
-
-  static Future<void> delete(int userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final path = prefs.getString(_key(userId));
-    if (path != null) {
-      final file = File(path);
-      if (await file.exists()) await file.delete();
+  static Future<void> _removeLegacyLivenessCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (final key in prefs
+          .getKeys()
+          .where((key) => key.startsWith('kyc_liveness_selfie_'))
+          .toList()) {
+        await prefs.remove(key);
+      }
+      final root = await getApplicationSupportDirectory();
+      final directory = Directory('${root.path}/kyc_drafts');
+      if (await directory.exists()) await directory.delete(recursive: true);
+    } on Exception {
+      // An old cache failure must not block a fresh liveness attempt.
     }
-    await prefs.remove(_key(userId));
   }
 }

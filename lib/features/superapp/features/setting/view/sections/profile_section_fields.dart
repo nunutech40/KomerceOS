@@ -126,54 +126,17 @@ class ProfileReadonlyField extends StatelessWidget {
                       .copyWith(color: AppColors.grey600)))));
 }
 
-class ProfilePickerField extends StatelessWidget {
-  final String label;
-  final String? value;
-  final String hint;
-  final VoidCallback onTap;
-  final bool requiredField, enabled;
-  final String? errorText;
-  const ProfilePickerField(
-      {super.key,
-      required this.label,
-      required this.value,
-      required this.hint,
-      required this.onTap,
-      this.requiredField = false,
-      this.enabled = true,
-      this.errorText});
-  @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ProfileFormRow(
-              label: label,
-              requiredField: requiredField,
-              child: InkWell(
-                  onTap: enabled ? onTap : null,
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(children: [
-                        Expanded(
-                            child: Text(value ?? hint,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.bodySmRegular.copyWith(
-                                    color: value == null
-                                        ? AppColors.grey600
-                                        : AppColors.alwaysBlack))),
-                        if (enabled)
-                          const Icon(Icons.keyboard_arrow_down,
-                              size: 18, color: AppColors.grey600)
-                      ])))),
-          if (errorText != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Text(errorText!,
-                  style: AppTypography.bodySmRegular
-                      .copyWith(color: AppColors.errorBase)),
-            ),
-        ],
-      );
+class ProfilePickerField extends DsPickerField {
+  const ProfilePickerField({
+    super.key,
+    required super.label,
+    required super.value,
+    required super.hint,
+    required super.onTap,
+    super.requiredField,
+    super.enabled,
+    super.errorText,
+  });
 }
 
 class ProfileSectionHeading extends StatelessWidget {

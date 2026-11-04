@@ -19,7 +19,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   permission_handler: ^12.0.1
   flutter_liveness_sdk:
-    path: ../flutter-liveness-sdk
+    path: packages/flutter_liveness_sdk
   path_provider: ^2.1.1
   open_file: ^3.3.2
   google_fonts: ^8.1.0
@@ -65,6 +65,7 @@ dependencies:
   gal: ^2.3.0
   flutter_html: ^3.0.0
   image_picker: ^1.2.3
+  camera: 0.12.0+2
   flutter_image_compress: ^2.5.1
 
 dev_dependencies:

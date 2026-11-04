@@ -16,7 +16,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 ///   - Tulisan pada KTP harus tetap terbaca jelas dan tidak kabur/silau.
 ///
 /// ### 🔄 Alur & Posisi dalam User Journey:
-/// 1. Foto KTP berhasil diverifikasi/dibaca di [KycVerifyingDocumentBottomSheet].
+/// 1. Pengguna selesai mengambil foto KTP dan melanjutkan ke foto selfie bersama KTP.
 /// 2. Halaman memicu panduan selfie [KycSelfieKtpGuideBottomSheet.show].
 /// 3. User menekan tombol "Mulai Foto" (`onStartPhoto`).
 /// 4. Bottom sheet ditutup dan aplikasi membuka kamera depan untuk memotret selfie bersama KTP.
@@ -87,6 +87,7 @@ class KycSelfieKtpGuideBottomSheet extends StatelessWidget {
       filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
       child: Container(
         width: double.infinity,
+        height: MediaQuery.sizeOf(context).height * .90,
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.pageMargin2xs,
         ),
@@ -106,140 +107,141 @@ class KycSelfieKtpGuideBottomSheet extends StatelessWidget {
               AppSpacing.pageMargin2xs + 16,
               AppSpacing.lg,
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Top header bar: Title + Close (X)
-                  Stack(
-                    alignment: Alignment.center,
+            child: Column(
+              children: [
+                Expanded(
+                    child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                      ),
-                      Text(
-                        'Verifikasi Foto Selfie & KTP',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.headingSm.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: effectiveOnClose,
-                          behavior: HitTestBehavior.opaque,
-                          child: Container(
-                            width: 40,
+                      // ── Top header bar: Title + Close (X)
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const SizedBox(
+                            width: double.infinity,
                             height: 40,
-                            decoration: const BoxDecoration(
-                              color: AppColors.grey100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close_rounded,
-                              size: 18,
-                              color: AppColors.grey700,
+                          ),
+                          Text(
+                            'Verifikasi Foto Selfie & KTP',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.headingSm.copyWith(
+                              color: AppColors.black,
                             ),
                           ),
+                          Positioned(
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: effectiveOnClose,
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.grey100,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: AppColors.grey700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+
+                      // ── Subtitle
+                      Text(
+                        'Ambil foto wajah dan KTP untuk memverifikasi identitasmu.',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.bodyMdRegular.copyWith(
+                          color: AppColors.textDark,
+                          height: 1.4,
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // ── Section Title
+                      Text(
+                        'Petunjuk Verifikasi KTP',
+                        style: AppTypography.bodyMdSemiBold.copyWith(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // ── Example 1: Benar
+                      const _SelfieCard(
+                        isCorrect: true,
+                        label: 'Benar',
+                        imagePath:
+                            'assets/images/superapp/kyc/image_selfie_valid.png',
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // Status diterima rules (hijau)
+                      Text(
+                        'Status verifikasi KTP diterima apabila:',
+                        style: AppTypography.bodyMdMedium.copyWith(
+                          color: AppColors.successBase,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      const _ColoredBullet(
+                        color: AppColors.successBase,
+                        text:
+                            'Selfie + KTP terfoto dengan jelas dan tidak terpotong',
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      const _ColoredBullet(
+                        color: AppColors.successBase,
+                        text:
+                            'Data yang ada di profile sesuai dengan data yang ada di KTP',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // ── Example 2: Salah
+                      const _SelfieCard(
+                        isCorrect: false,
+                        label: 'Salah',
+                        imagePath:
+                            'assets/images/superapp/kyc/image_selfie_invalid.png',
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // Status ditolak rules (merah)
+                      Text(
+                        'Status verifikasi KTP ditolak apabila:',
+                        style: AppTypography.bodyMdMedium.copyWith(
+                          color: AppColors.errorBase,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      const _ColoredBullet(
+                        color: AppColors.errorBase,
+                        text:
+                            'Selfie + KTP terfoto tidak jelas dan tidak terpotong',
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      const _ColoredBullet(
+                        color: AppColors.errorBase,
+                        text:
+                            'Data yang ada di profile tidak sesuai dengan data yang ada di KTP',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-
-                  // ── Subtitle
-                  Text(
-                    'Ambil foto wajah dan KTP untuk memverifikasi identitasmu.',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.bodyMdRegular.copyWith(
-                      color: AppColors.textDark,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  // ── Section Title
-                  Text(
-                    'Petunjuk Verifikasi KTP',
-                    style: AppTypography.bodyMdSemiBold.copyWith(
-                      color: AppColors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-
-                  // ── Example 1: Benar
-                  const _SelfieCard(
-                    isCorrect: true,
-                    label: 'Benar',
-                    imagePath:
-                        'assets/images/superapp/kyc/image_selfie_valid.png',
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-
-                  // Status diterima rules (hijau)
-                  Text(
-                    'Status verifikasi KTP diterima apabila:',
-                    style: AppTypography.bodyMdMedium.copyWith(
-                      color: AppColors.successBase,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  const _ColoredBullet(
-                    color: AppColors.successBase,
-                    text:
-                        'Selfie + KTP terfoto dengan jelas dan tidak terpotong',
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  const _ColoredBullet(
-                    color: AppColors.successBase,
-                    text:
-                        'Data yang ada di profile sesuai dengan data yang ada di KTP',
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-
-                  // ── Example 2: Salah
-                  const _SelfieCard(
-                    isCorrect: false,
-                    label: 'Salah',
-                    imagePath:
-                        'assets/images/superapp/kyc/image_selfie_invalid.png',
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-
-                  // Status ditolak rules (merah)
-                  Text(
-                    'Status verifikasi KTP ditolak apabila:',
-                    style: AppTypography.bodyMdMedium.copyWith(
-                      color: AppColors.errorBase,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  const _ColoredBullet(
-                    color: AppColors.errorBase,
-                    text:
-                        'Selfie + KTP terfoto tidak jelas dan tidak terpotong',
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  const _ColoredBullet(
-                    color: AppColors.errorBase,
-                    text:
-                        'Data yang ada di profile tidak sesuai dengan data yang ada di KTP',
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // ── Action: Mulai Foto
-                  DsButton(
-                    text: 'Mulai Foto',
-                    onPressed: onStartPhoto ?? () {},
-                  ),
-                ],
-              ),
+                )),
+                const SizedBox(height: AppSpacing.sm),
+                DsButton(text: 'Mulai Foto', onPressed: onStartPhoto ?? () {}),
+              ],
             ),
           ),
         ),

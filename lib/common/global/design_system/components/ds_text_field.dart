@@ -19,6 +19,7 @@ class DsTextField extends StatelessWidget {
     this.maxLength,
     this.lines = 1,
     this.enabled = true,
+    this.textStyle,
   });
 
   final TextEditingController controller;
@@ -31,13 +32,14 @@ class DsTextField extends StatelessWidget {
   final int? maxLength;
   final int lines;
   final bool enabled;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) => TextFormField(
         controller: controller,
         enabled: enabled,
-        style:
-            AppTypography.bodySmRegular.copyWith(color: AppColors.alwaysBlack),
+        style: (textStyle ?? AppTypography.bodySmRegular)
+            .copyWith(color: AppColors.alwaysBlack),
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
         validator: validator,
@@ -48,8 +50,8 @@ class DsTextField extends StatelessWidget {
         decoration: InputDecoration(
           counterText: maxLength == null ? null : '',
           hintText: hintText,
-          hintStyle:
-              AppTypography.bodySmRegular.copyWith(color: AppColors.grey600),
+          hintStyle: (textStyle ?? AppTypography.bodySmRegular)
+              .copyWith(color: AppColors.grey600),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,

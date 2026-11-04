@@ -17,7 +17,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 /// ### 🔄 Alur & Posisi dalam User Journey:
 /// 1. Pembayaran biaya verifikasi KYC 25k berhasil / user berstatus 5 (Paid).
 /// 2. Modal `KycIdentityBottomSheet` ditampilkan untuk mengundang user memulai proses.
-/// 3. User menekan tombol "Ajukan Verifikasi" (`onSubmit`) -> Navigasi ke halaman form input KTP / panduan KTP.
+/// 3. User menekan tombol "Ajukan Verifikasi" (`onSubmit`) -> memulai liveness, lalu foto KTP.
 /// 4. User menekan "Kembali" (`onBack`) -> Bottom sheet tertutup.
 ///
 /// ### 💻 Contoh Penggunaan:

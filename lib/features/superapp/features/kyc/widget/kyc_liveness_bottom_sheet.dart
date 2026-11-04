@@ -9,7 +9,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 /// Bottom sheet instruksi panduan sebelum memulai proses verifikasi liveness (deteksi wajah hidup).
 ///
 /// ### 📌 Kapan Digunakan:
-/// - Dipicu setelah user berhasil mengambil foto KTP dan selfie bersama KTP.
+/// - Dipicu setelah pengguna yang sudah membayar menekan "Ajukan Verifikasi".
 /// - Memberikan edukasi kepada user tentang instruksi yang akan diminta saat pemindaian wajah:
 ///   - Menghadap lurus ke arah kamera depan.
 ///   - Memastikan pencahayaan ruangan cukup terang.
@@ -17,10 +17,10 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 ///   - Bersiap mengikuti instruksi gerakan (seperti mengedipkan mata atau menoleh).
 ///
 /// ### 🔄 Alur & Posisi dalam User Journey:
-/// 1. Selesai memotret KTP & selfie KTP di [KycSelfieKtpGuideBottomSheet].
+/// 1. Pengguna yang sudah membayar membuka pengajuan verifikasi identitas.
 /// 2. Halaman menampilkan panduan [KycLivenessBottomSheet.show].
-/// 3. User menekan "Mulai Verifikasi Liveness" (`onStart`).
-/// 4. Bottom sheet ditutup dan aplikasi meluncurkan modul/SDK Liveness (atau cek izin kamera via [KycCameraPermissionDialog]).
+/// 3. Pengguna menekan "Mulai Verifikasi Liveness" (`onStart`).
+/// 4. SDK liveness dijalankan sebelum foto KTP dan selfie bersama KTP.
 ///
 /// ### 💻 Contoh Penggunaan:
 /// ```dart
