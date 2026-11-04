@@ -41,36 +41,49 @@ class DsFormRow extends StatelessWidget {
     required this.child,
     this.requiredField = false,
     this.labelStyle,
+    this.labelFlex = 4,
+    this.valueFlex = 7,
+    this.verticalPadding = AppSpacing.xs,
+    this.contentVerticalPadding = 12,
+    this.minHeight,
   });
 
   final String label;
   final Widget child;
   final bool requiredField;
   final TextStyle? labelStyle;
+  final int labelFlex;
+  final int valueFlex;
+  final double verticalPadding;
+  final double contentVerticalPadding;
+  final double? minHeight;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            flex: 4,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text.rich(
-                TextSpan(text: label, children: [
-                  if (requiredField)
-                    const TextSpan(
-                      text: ' *',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                ]),
-                style: (labelStyle ?? AppTypography.bodySmRegular)
-                    .copyWith(color: AppColors.alwaysBlack),
+  Widget build(BuildContext context) => ConstrainedBox(
+        constraints: BoxConstraints(minHeight: minHeight ?? 0),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: verticalPadding),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(
+              flex: labelFlex,
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: contentVerticalPadding),
+                child: Text.rich(
+                  TextSpan(text: label, children: [
+                    if (requiredField)
+                      const TextSpan(
+                        text: ' *',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                  ]),
+                  style: (labelStyle ?? AppTypography.bodySmRegular)
+                      .copyWith(color: AppColors.alwaysBlack),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(flex: 7, child: child),
-        ]),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(flex: valueFlex, child: child),
+          ]),
+        ),
       );
 }

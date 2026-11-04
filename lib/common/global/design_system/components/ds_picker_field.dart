@@ -18,6 +18,10 @@ class DsPickerField extends StatelessWidget {
     this.errorText,
     this.textStyle,
     this.trailingIcon = Icons.keyboard_arrow_down,
+    this.labelFlex = 4,
+    this.valueFlex = 7,
+    this.verticalPadding = AppSpacing.xs,
+    this.contentVerticalPadding = 12,
   });
 
   final String label;
@@ -29,6 +33,10 @@ class DsPickerField extends StatelessWidget {
   final String? errorText;
   final TextStyle? textStyle;
   final IconData trailingIcon;
+  final int labelFlex;
+  final int valueFlex;
+  final double verticalPadding;
+  final double contentVerticalPadding;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -38,10 +46,14 @@ class DsPickerField extends StatelessWidget {
             label: label,
             requiredField: requiredField,
             labelStyle: textStyle,
+            labelFlex: labelFlex,
+            valueFlex: valueFlex,
+            verticalPadding: verticalPadding,
+            contentVerticalPadding: contentVerticalPadding,
             child: InkWell(
               onTap: enabled ? onTap : null,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(vertical: contentVerticalPadding),
                 child: Row(children: [
                   Expanded(
                     child: Text(

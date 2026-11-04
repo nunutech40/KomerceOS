@@ -20,6 +20,7 @@ class DsTextField extends StatelessWidget {
     this.lines = 1,
     this.enabled = true,
     this.textStyle,
+    this.contentVerticalPadding = 12,
   });
 
   final TextEditingController controller;
@@ -33,6 +34,7 @@ class DsTextField extends StatelessWidget {
   final int lines;
   final bool enabled;
   final TextStyle? textStyle;
+  final double contentVerticalPadding;
 
   @override
   Widget build(BuildContext context) => TextFormField(
@@ -57,7 +59,8 @@ class DsTextField extends StatelessWidget {
           focusedBorder: InputBorder.none,
           filled: false,
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding:
+              EdgeInsets.symmetric(vertical: contentVerticalPadding),
         ),
         onChanged: onChanged,
       );

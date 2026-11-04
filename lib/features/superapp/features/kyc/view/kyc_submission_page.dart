@@ -227,11 +227,13 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
       },
       child: Scaffold(
         backgroundColor: AppColors.alwaysWhite,
-        appBar: DsAppBar(
-          title: title,
-          onBackPressed: _back,
-          backgroundColor: AppColors.alwaysWhite,
-        ),
+        appBar: isPhotoStage
+            ? DsAppBar(
+                title: title,
+                onBackPressed: _back,
+                backgroundColor: AppColors.alwaysWhite,
+              )
+            : null,
         body: isPhotoStage ? _photoPage() : _identityPage(canContinue),
       ),
     );
@@ -341,9 +343,42 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   Widget _identityPage(bool canContinue) => SafeArea(
         child: Column(
           children: [
+            SizedBox(
+              height: 72,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Row(children: [
+                  InkWell(
+                    onTap: _back,
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.grey200,
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(Icons.chevron_left_rounded,
+                          size: 28, color: AppColors.grey700),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Informasi Data Partner',
+                      style: AppTypography.headingSm
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ]),
+              ),
+            ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: _identityForm(),
               ),
             ),
@@ -352,13 +387,16 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
               child: TextButton(
                 onPressed: _showDraftPreview,
                 child: const Text('Simpan sebagai Draft',
-                    style: TextStyle(color: AppColors.primaryBase)),
+                    style: TextStyle(color: AppColors.errorBase)),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
               child: DsButton(
                 text: 'Ajukan Verifikasi',
+                height: 44,
+                borderRadius: 10,
+                disabledBackgroundColor: const Color(0xFFFFAE8C),
                 state: canContinue
                     ? DsButtonState.enabled
                     : DsButtonState.disabled,
@@ -385,13 +423,13 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         child: Column(children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
               color: const Color(0xFFFFE8D9),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Row(children: [
-              SizedBox(
+            child: Row(children: [
+              const SizedBox(
                 width: 40,
                 height: 40,
                 child: DecoratedBox(
@@ -405,16 +443,17 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                   ),
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Informasi Data Partner',
+                    const Text('Informasi Data Partner',
                         style: AppTypography.bodyMdSemiBold),
                     Text(
                       'Pastikan dokumen yang di-upload sama persis dengan informasi data partner yang akan mengajukan verifikasi identitas.',
-                      style: AppTypography.bodySmRegular,
+                      style: AppTypography.bodySmRegular
+                          .copyWith(color: AppColors.textDark),
                     ),
                   ],
                 ),
@@ -442,6 +481,10 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                 requiredField: true,
                 textStyle: AppTypography.bodyMdRegular,
                 trailingIcon: Icons.calendar_month_outlined,
+                labelFlex: 1,
+                valueFlex: 2,
+                verticalPadding: 0,
+                contentVerticalPadding: 11,
                 errorText: field.errorText,
                 onTap: () async {
                   final value = await _pickBirthDate();
@@ -539,10 +582,16 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         label: label,
         requiredField: true,
         labelStyle: AppTypography.bodyMdRegular,
+        labelFlex: 1,
+        valueFlex: 2,
+        verticalPadding: 0,
+        contentVerticalPadding: 11,
+        minHeight: maxLines > 1 ? 119 : null,
         child: DsTextField(
           controller: controller,
           hintText: 'Masukkan $label',
           textStyle: AppTypography.bodyMdRegular,
+          contentVerticalPadding: 11,
           maxLength: maxLength,
           lines: maxLines,
           keyboardType: keyboardType ??
