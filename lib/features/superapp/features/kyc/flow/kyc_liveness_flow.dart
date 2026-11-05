@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_liveness_sdk/flutter_liveness_sdk.dart';
+import 'package:komtim_partner/DI/injection.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/kyc_verification_repository.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_camera_permission_dialog.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_liveness_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_liveness_result_page.dart';
@@ -72,6 +74,28 @@ abstract final class KycLivenessFlow {
       if (result == null) return;
       switch (result.status) {
         case LivenessStatus.success:
+          final imagePath = result.selfiePath;
+          if (imagePath == null || imagePath.isEmpty) {
+            _message(context, 'Foto liveness tidak tersedia. Coba lagi.');
+            return;
+          }
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+          try {
+            await locator<KycVerificationRepository>()
+                .upload(livenessPath: imagePath);
+          } catch (_) {
+            if (context.mounted) {
+              Navigator.of(context, rootNavigator: true).pop();
+              _message(context, 'Upload liveness gagal. Coba lagi.');
+            }
+            return;
+          }
+          if (!context.mounted) return;
+          Navigator.of(context, rootNavigator: true).pop();
           _showResult(context);
           return;
         case LivenessStatus.cancelled:

@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/services/ktp_photo_cropper.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/ktp_capture_area.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_face_guide_path.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -16,6 +18,7 @@ class KycPhotoCaptureSection extends StatefulWidget {
     super.key,
     required this.selfie,
     required this.capturedPath,
+    this.capturedUrl,
     required this.onCaptured,
     required this.onBusyChanged,
     required this.onError,
@@ -23,6 +26,8 @@ class KycPhotoCaptureSection extends StatefulWidget {
 
   final bool selfie;
   final String? capturedPath;
+  final String? capturedUrl;
+  bool get hasCapture => capturedPath != null || capturedUrl != null;
   final ValueChanged<String> onCaptured;
   final ValueChanged<bool> onBusyChanged;
   final ValueChanged<String> onError;
@@ -38,6 +43,7 @@ class KycPhotoCaptureSectionState extends State<KycPhotoCaptureSection>
   bool _disposed = false;
   bool _hasStarted = false;
   int _generation = 0;
+  Size _viewportSize = Size.zero;
 
   @override
   void initState() {
@@ -51,7 +57,7 @@ class KycPhotoCaptureSectionState extends State<KycPhotoCaptureSection>
       unawaited(_releaseCamera());
     } else if (state == AppLifecycleState.resumed &&
         _hasStarted &&
-        widget.capturedPath == null &&
+        !widget.hasCapture &&
         _controller == null) {
       unawaited(startCamera());
     }
@@ -80,7 +86,7 @@ class KycPhotoCaptureSectionState extends State<KycPhotoCaptureSection>
   }
 
   Future<void> startCamera() async {
-    if (_disposed || _busy || widget.capturedPath != null) return;
+    if (_disposed || _busy || widget.hasCapture) return;
     _hasStarted = true;
     _setBusy(true);
     final request = ++_generation;
@@ -106,10 +112,19 @@ class KycPhotoCaptureSectionState extends State<KycPhotoCaptureSection>
       );
       next = CameraController(
         camera,
-        ResolutionPreset.high,
+        widget.selfie ? ResolutionPreset.high : ResolutionPreset.ultraHigh,
         enableAudio: false,
       );
       await next.initialize();
+      if (!widget.selfie) {
+        try {
+          await next.setFocusMode(FocusMode.auto);
+          await next.setFocusPoint(const Offset(.5, .5));
+          await next.setExposurePoint(const Offset(.5, .5));
+        } catch (_) {
+          // Some camera implementations do not support focus/exposure points.
+        }
+      }
       if (_disposed || request != _generation) {
         await next.dispose();
         return;
@@ -142,15 +157,55 @@ class KycPhotoCaptureSectionState extends State<KycPhotoCaptureSection>
       return;
     }
     _setBusy(true);
+    XFile? image;
+    String? croppedPath;
+    var handedOff = false;
     try {
-      final image = await camera.takePicture();
+      image = await camera.takePicture();
       if (_disposed || !mounted) return;
-      widget.onCaptured(image.path);
+      if (!widget.selfie) {
+        if (_viewportSize.isEmpty) {
+          throw const FormatException('Camera preview is not laid out');
+        }
+        final guide = _CaptureGuidePainter.ktpRect(_viewportSize);
+        croppedPath = await KtpPhotoCropper.cropToTemporaryFile(
+          image.path,
+          KtpCaptureArea(
+            viewportWidth: _viewportSize.width,
+            viewportHeight: _viewportSize.height,
+            left: guide.left,
+            top: guide.top,
+            width: guide.width,
+            height: guide.height,
+          ),
+        );
+      }
+      if (_disposed || !mounted) return;
+      widget.onCaptured(croppedPath ?? image.path);
+      handedOff = true;
       await _releaseCamera();
     } on CameraException {
       if (!_disposed) widget.onError('Foto belum berhasil diambil. Coba lagi.');
+    } catch (_) {
+      if (!_disposed) {
+        widget.onError('Foto KTP belum berhasil diproses. Coba lagi.');
+      }
     } finally {
+      if (image != null && (!widget.selfie || !handedOff)) {
+        await _deleteCaptureFile(image.path);
+      }
+      if (!handedOff && croppedPath != null) {
+        await _deleteCaptureFile(croppedPath);
+      }
       _setBusy(false);
+    }
+  }
+
+  Future<void> _deleteCaptureFile(String path) async {
+    try {
+      await File(path).delete();
+    } on FileSystemException {
+      // The camera plugin or OS may already have removed the temporary file.
     }
   }
 
@@ -160,35 +215,45 @@ class KycPhotoCaptureSectionState extends State<KycPhotoCaptureSection>
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: AspectRatio(
-        aspectRatio: 0.70,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (widget.capturedPath != null)
-              Image.file(File(widget.capturedPath!), fit: BoxFit.cover)
-            else if (camera != null && camera.value.isInitialized)
-              _CameraFeed(controller: camera)
-            else
-              const ColoredBox(color: Color(0xFF4C5148)),
-            if (widget.capturedPath == null) ...[
-              CustomPaint(painter: _CaptureGuidePainter(selfie: widget.selfie)),
-              if (_busy)
-                const Center(
-                    child: CircularProgressIndicator(color: Colors.white)),
-              if (camera == null && !_busy)
-                const Positioned(
-                  bottom: 20,
-                  left: 12,
-                  right: 12,
-                  child: Text(
-                    'Kamera belum aktif. Ketuk Ambil Gambar untuk mencoba lagi.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white),
+        aspectRatio:
+            widget.hasCapture && !widget.selfie ? _ktpAspectRatio : 0.70,
+        child: LayoutBuilder(builder: (context, constraints) {
+          _viewportSize = constraints.biggest;
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              if (widget.capturedPath != null)
+                Image.file(File(widget.capturedPath!), fit: BoxFit.cover)
+              else if (widget.capturedUrl != null)
+                Image.network(widget.capturedUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                        child: Text('Foto belum dapat ditampilkan')))
+              else if (camera != null && camera.value.isInitialized)
+                _CameraFeed(controller: camera)
+              else
+                const ColoredBox(color: Color(0xFF4C5148)),
+              if (!widget.hasCapture) ...[
+                CustomPaint(
+                    painter: _CaptureGuidePainter(selfie: widget.selfie)),
+                if (_busy)
+                  const Center(
+                      child: CircularProgressIndicator(color: Colors.white)),
+                if (camera == null && !_busy)
+                  const Positioned(
+                    bottom: 20,
+                    left: 12,
+                    right: 12,
+                    child: Text(
+                      'Kamera belum aktif. Ketuk Ambil Gambar untuk mencoba lagi.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
+              ],
             ],
-          ],
-        ),
+          );
+        }),
       ),
     );
   }
@@ -198,6 +263,15 @@ class _CaptureGuidePainter extends CustomPainter {
   const _CaptureGuidePainter({required this.selfie});
 
   final bool selfie;
+
+  static Rect ktpRect(Size size) {
+    final width = size.width * .78;
+    return Rect.fromCenter(
+      center: Offset(size.width * .5, size.height * .5),
+      width: width,
+      height: width / _ktpAspectRatio,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -220,13 +294,8 @@ class _CaptureGuidePainter extends CustomPainter {
       );
       _drawDashed(canvas, Path()..addRRect(ktp), paint);
     } else {
-      final ktpWidth = size.width * .78;
       final ktp = RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(size.width * .5, size.height * .5),
-          width: ktpWidth,
-          height: ktpWidth / _ktpAspectRatio,
-        ),
+        ktpRect(size),
         const Radius.circular(8),
       );
       canvas.drawRRect(ktp, paint);

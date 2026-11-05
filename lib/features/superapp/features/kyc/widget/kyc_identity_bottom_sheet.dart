@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_liveness_flow.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_resume_flow.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 
@@ -80,7 +80,9 @@ class KycIdentityBottomSheet extends StatelessWidget {
             () {
               Navigator.pop(sheetContext);
               Future<void>.delayed(const Duration(milliseconds: 250), () {
-                if (context.mounted) KycLivenessFlow.start(context);
+                if (context.mounted) {
+                  KycResumeFlow.continueFromIdentity(context);
+                }
               });
             },
         onBack: onBack ?? () => Navigator.pop(context),

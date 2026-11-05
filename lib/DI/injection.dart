@@ -1,4 +1,7 @@
 import 'package:get_it/get_it.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/datasources/kyc_verification_remote_datasource.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/repositories/kyc_verification_repository_impl.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/kyc_verification_repository.dart';
 import 'package:komtim_partner/core/data/datasources/remote/attendance_remote_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/business_sector_datasource.dart';
 import 'package:komtim_partner/core/data/datasources/remote/expire_invoice_remote_datasource.dart';
@@ -339,7 +342,8 @@ Future<void> initDependencies() async {
         getKomtimTeamsUseCase: locator(),
       ));
   locator.registerFactory(() => SettingProfileBloc(repository: locator()));
-  locator.registerFactory(() => BankAccountCubit(locator<BankAccountRepository>()));
+  locator.registerFactory(
+      () => BankAccountCubit(locator<BankAccountRepository>()));
 
   // inject usecase
   locator.registerLazySingleton(() => RecaptchaUseCase());
@@ -512,9 +516,9 @@ Future<void> initDependencies() async {
             remote: locator(),
             superappProfileRepository: locator(),
           ));
-  locator.registerLazySingleton<BankAccountRepository>(
-      () => BankAccountRepositoryImpl(
-          locator<BankAccountRemoteDataSource>(), locator<SecureStorageService>()));
+  locator.registerLazySingleton<BankAccountRepository>(() =>
+      BankAccountRepositoryImpl(locator<BankAccountRemoteDataSource>(),
+          locator<SecureStorageService>()));
   locator.registerLazySingleton<TeamRepository>(
       () => TeamRepositoryImpl(remoteDataSource: locator()));
 
@@ -540,8 +544,7 @@ Future<void> initDependencies() async {
       KompayRemoteDataSourceImpl(
           client: locator(), responseParser: locator(), sharedPref: locator()));
   locator.registerLazySingleton<PinRemoteDataSource>(() =>
-      PinRemoteDataSourceImpl(
-          client: locator(), responseParser: locator()));
+      PinRemoteDataSourceImpl(client: locator(), responseParser: locator()));
   locator.registerLazySingleton<BankAccountRemoteDataSource>(
       () => BankAccountRemoteDataSourceImpl(locator()));
   locator.registerLazySingleton<KompoinRemoteDataSource>(() =>
@@ -633,6 +636,10 @@ Future<void> initDependencies() async {
         sharedPref: locator(),
         authInterceptor: locator(),
       ));
+  locator.registerLazySingleton<KycVerificationRemoteDataSource>(
+      () => KycVerificationRemoteDataSourceImpl(locator()));
+  locator.registerLazySingleton<KycVerificationRepository>(
+      () => KycVerificationRepositoryImpl(locator()));
 
   // Global Blocs
   locator

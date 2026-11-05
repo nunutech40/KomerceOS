@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import '../../home/widgets/home_skeleton.dart';
-import '../../kyc/widget/kyc_identity_bottom_sheet.dart';
+import '../../kyc/flow/kyc_resume_flow.dart';
 import '../../kyc/widget/kyc_outlined_button.dart';
 import '../../kyc/widget/kyc_status_badge.dart';
 import '../../kyc/widget/kyc_success_bottom_sheet.dart';
@@ -104,7 +104,7 @@ class SettingKycStatusSection extends StatelessWidget {
                 if (isPaid || isRejected) {
                   // Zero-fee skip rule: User yang sudah bayar (status 5) atau ditolak (status 3)
                   // langsung membuka alur pengisian identitas tanpa ditarik biaya Rp 25.000 lagi
-                  KycIdentityBottomSheet.show(context);
+                  KycResumeFlow.openFromSettings(context);
                 } else {
                   // Status 0: Belum pernah bayar, tampilkan bottom sheet promosi & pembayaran Rp 25.000
                   KycVerificationBottomSheet.show(context);

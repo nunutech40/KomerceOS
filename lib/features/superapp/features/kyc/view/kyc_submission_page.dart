@@ -4,6 +4,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:komtim_partner/DI/injection.dart';
+import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/repositories/ml_kit_ktp_ocr_repository.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/ktp_ocr_data.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_history.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/ktp_ocr_repository.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/kyc_verification_repository.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_cancel_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_ktp_guide_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_photo_capture_section.dart';
@@ -13,15 +20,16 @@ import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_verifyi
 
 enum _KycStage { ktp, selfieKtp, identity }
 
-/// UI preview after paid verification and liveness. No KYC submission API exists
-/// yet, so the final screen explicitly states that nothing was sent.
+/// KTP, selfie with KTP, and partner information after liveness.
 class KycSubmissionPage extends StatefulWidget {
   const KycSubmissionPage({
     super.key,
     this.startWithKtpCamera = false,
+    this.history,
   });
 
   final bool startWithKtpCamera;
+  final KycHistory? history;
 
   @override
   State<KycSubmissionPage> createState() => _KycSubmissionPageState();
@@ -31,6 +39,10 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   final _ktpCameraKey = GlobalKey<KycPhotoCaptureSectionState>();
   final _selfieCameraKey = GlobalKey<KycPhotoCaptureSectionState>();
   final _formKey = GlobalKey<FormState>();
+  final _birthDateFieldKey = GlobalKey<FormFieldState<String>>();
+  final KtpOcrRepository _ocrRepository = const MlKitKtpOcrRepository();
+  final KycVerificationRepository _verificationRepository =
+      locator<KycVerificationRepository>();
   final _nik = TextEditingController();
   final _name = TextEditingController();
   final _birthPlace = TextEditingController();
@@ -46,14 +58,37 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   _KycStage _stage = _KycStage.ktp;
   String? _ktpPath;
   String? _selfieKtpPath;
+  String? _ktpUrl;
+  String? _selfieKtpUrl;
   bool _capturing = false;
+  bool _uploading = false;
+  bool _ktpUploaded = false;
+  bool _selfieUploaded = false;
   bool _confirmed = false;
+  Future<KtpOcrData?>? _ocrFuture;
 
   @override
   void initState() {
     super.initState();
+    _ktpUrl = widget.history?.ktpUrl;
+    _selfieKtpUrl = widget.history?.selfieKtpUrl;
+    final previous = widget.history?.partnerData;
+    if (previous != null) {
+      _nik.text = previous['nik'] ?? '';
+      _name.text = previous['name'] ?? '';
+      _birthPlace.text = previous['birth_place'] ?? '';
+      _birthDate.text = (previous['birth_date'] ?? '').replaceAll('-', '/');
+      _province.text = previous['province'] ?? '';
+      _city.text = previous['city'] ?? '';
+      _district.text = previous['district'] ?? '';
+      _village.text = previous['village'] ?? '';
+      _address.text = previous['address'] ?? '';
+      _rtRw.text = previous['rt_rw'] ?? '';
+      _postalCode.text = previous['pos_code'] ?? '';
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_ktpUrl != null) return;
       if (widget.startWithKtpCamera) {
         _ktpCameraKey.currentState?.startCamera();
       } else {
@@ -94,6 +129,38 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<KtpOcrData?> _readKtp(String path) async {
+    try {
+      return await _ocrRepository.readPhoto(path);
+    } catch (_) {
+      // Keep the form editable if the camera image cannot be recognized.
+      return null;
+    }
+  }
+
+  void _fillFromOcr(KtpOcrData data) {
+    void fill(TextEditingController controller, String? value) {
+      if (controller.text.trim().isEmpty && value != null && value.isNotEmpty) {
+        controller.text = value;
+      }
+    }
+
+    fill(_nik, data.nik);
+    fill(_name, data.name);
+    fill(_birthPlace, data.birthPlace);
+    fill(_birthDate, data.birthDate);
+    if (data.birthDate != null && data.birthDate!.isNotEmpty) {
+      _birthDateFieldKey.currentState?.didChange(data.birthDate);
+    }
+    fill(_province, data.province);
+    fill(_city, data.city);
+    fill(_district, data.district);
+    fill(_village, data.village);
+    fill(_address, data.address);
+    fill(_rtRw, data.rtRw);
+    fill(_postalCode, data.postalCode);
   }
 
   void _showPhotoGuide({required bool selfie}) {
@@ -139,6 +206,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   }
 
   void _back() {
+    if (_uploading) return;
     if (_stage != _KycStage.ktp) {
       setState(() => _stage = _KycStage.values[_stage.index - 1]);
       return;
@@ -149,59 +217,135 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         final navigator = Navigator.of(context);
         navigator.pop(); // Confirmation sheet.
         navigator.pop(); // Photo or form page.
-        navigator.pop(); // Liveness result page.
+        if (widget.history == null) navigator.pop(); // Liveness result page.
       },
     );
   }
 
   Future<void> _next() async {
+    if (_uploading) return;
     switch (_stage) {
       case _KycStage.ktp:
-        if (_ktpPath == null) {
+        if (_ktpPath == null && _ktpUrl == null) {
           _ktpCameraKey.currentState?.takePhoto();
           return;
         }
+        if (_ktpPath != null && !_ktpUploaded) {
+          if (!await _uploadPhoto(ktpPath: _ktpPath)) return;
+          _ktpUploaded = true;
+        }
+        if (!mounted) return;
         setState(() => _stage = _KycStage.selfieKtp);
-        if (_selfieKtpPath == null) {
+        if (_selfieKtpPath == null && _selfieKtpUrl == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) _showPhotoGuide(selfie: true);
           });
         }
         return;
       case _KycStage.selfieKtp:
-        if (_selfieKtpPath == null) {
+        if (_selfieKtpPath == null && _selfieKtpUrl == null) {
           _selfieCameraKey.currentState?.takePhoto();
           return;
         }
+        if (_selfieKtpPath != null && !_selfieUploaded) {
+          if (!await _uploadPhoto(selfieKtpPath: _selfieKtpPath)) return;
+          _selfieUploaded = true;
+        }
+        if (!mounted) return;
         setState(() => _stage = _KycStage.identity);
-        // UI-only preview: the OCR endpoint has not been connected yet.
         KycVerifyingDocumentBottomSheet.show<void>(context);
-        await Future<void>.delayed(const Duration(milliseconds: 800));
-        if (mounted) Navigator.of(context).pop();
+        final data = await _ocrFuture;
+        if (!mounted || _stage != _KycStage.identity) return;
+        Navigator.of(context).pop();
+        if (data != null && data.hasRecognizedFields) {
+          _fillFromOcr(data);
+          if (data.nik == null || data.name == null) {
+            _message(
+                'Sebagian data KTP belum terbaca. Periksa hasil atau ambil ulang foto.');
+          }
+        } else if (_ktpPath != null || widget.history?.hasKtp != true) {
+          _message(
+              'Data KTP belum terbaca. Isi data secara manual atau ambil ulang foto.');
+        }
         return;
       case _KycStage.identity:
         if (!_formKey.currentState!.validate() || !_confirmed) {
           if (!_confirmed) _message('Setujui pemeriksaan data identitas.');
           return;
         }
-        _showPreviewResult();
+        await _submitVerification();
         return;
     }
   }
 
-  void _showPreviewResult() {
+  Future<bool> _uploadPhoto({String? ktpPath, String? selfieKtpPath}) async {
+    setState(() => _uploading = true);
+    try {
+      await _verificationRepository.upload(
+          ktpPath: ktpPath, selfieKtpPath: selfieKtpPath);
+      return mounted;
+    } catch (_) {
+      _message('Foto belum berhasil diunggah. Coba lagi.');
+      return false;
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  Future<void> _submitVerification() async {
+    final profile = locator<SuperappProfileBloc>().state.displayProfile;
+    final email = profile?.email ?? widget.history?.partnerData['email'] ?? '';
+    final phone = profile?.noHp ?? widget.history?.partnerData['phone'] ?? '';
+    if (email.isEmpty || phone.isEmpty) {
+      _message('Email atau nomor HP akun belum tersedia. Muat ulang profil.');
+      return;
+    }
+    setState(() => _uploading = true);
+    try {
+      await _verificationRepository.checkNik(
+          nik: _nik.text.trim(), email: email);
+      await _verificationRepository.submit({
+        'nik': _nik.text.trim(),
+        'name': _name.text.trim(),
+        'email': email,
+        'phone': phone,
+        'birth_place': _birthPlace.text.trim(),
+        'birth_date': _birthDateForApi(_birthDate.text.trim()),
+        'province': _province.text.trim(),
+        'city': _city.text.trim(),
+        'district': _district.text.trim(),
+        'village': _village.text.trim(),
+        'address': _address.text.trim(),
+        'rt_rw': _rtRw.text.trim(),
+        'pos_code': _postalCode.text.trim(),
+      });
+      if (!mounted) return;
+      _showSubmissionResult();
+    } catch (_) {
+      _message('Pengajuan verifikasi gagal. Periksa NIK dan coba lagi.');
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  String _birthDateForApi(String value) {
+    final match = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(value);
+    if (match == null) return value;
+    return '${match.group(1)}-${match.group(2)}-${match.group(3)}';
+  }
+
+  void _showSubmissionResult() {
     KycSuccessBottomSheet.show<void>(
       context,
-      title: 'Pratinjau Pengajuan Verifikasi KTP',
-      subtitle: 'Alur UI selesai. Foto dan data belum dikirim ke server; '
-          'status verifikasi akun belum berubah.',
+      title: 'Pengajuan Verifikasi KTP Berhasil',
+      subtitle: 'Silakan tunggu konfirmasi lebih lanjut selama 1x24 jam.',
       imagePath: 'assets/images/ilustrated-success.svg',
       buttonText: 'Selesai',
       onButtonPressed: () {
         final navigator = Navigator.of(context);
-        navigator.pop(); // Preview result sheet.
+        navigator.pop(); // Success sheet.
         navigator.pop(); // Form page.
-        navigator.pop(); // Liveness result page.
+        if (widget.history == null) navigator.pop(); // Liveness result page.
       },
     );
   }
@@ -242,6 +386,8 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   Widget _photoPage() {
     final selfie = _stage == _KycStage.selfieKtp;
     final path = selfie ? _selfieKtpPath : _ktpPath;
+    final url = selfie ? _selfieKtpUrl : _ktpUrl;
+    final hasPhoto = path != null || url != null;
     final cameraKey = selfie ? _selfieCameraKey : _ktpCameraKey;
     return SafeArea(
       child: Column(
@@ -252,24 +398,21 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: path == null
+                color: !hasPhoto
                     ? const Color(0xFFFFE8D9)
                     : const Color(0xFFF1FAF5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(children: [
                 Icon(
-                    path == null
-                        ? Icons.info_outline
-                        : Icons.check_circle_outline,
+                    !hasPhoto ? Icons.info_outline : Icons.check_circle_outline,
                     size: 18,
-                    color: path == null
-                        ? AppColors.black
-                        : const Color(0xFF249A67)),
+                    color:
+                        !hasPhoto ? AppColors.black : const Color(0xFF249A67)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    path != null
+                    hasPhoto
                         ? selfie
                             ? 'Foto Selfie & KTP berhasil diambil. Lanjutkan proses verifikasi identitas.'
                             : 'Foto KTP berhasil diambil. Lanjutkan proses verifikasi identitas.'
@@ -277,7 +420,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                             ? 'Pastikan KTP dan wajah terlihat di dalam bingkai dan pencahayaan yang cukup terang.'
                             : 'Pastikan KTP terlihat di dalam bingkai dan pencahayaan yang cukup terang.',
                     style: AppTypography.bodySmRegular.copyWith(
-                        color: path == null
+                        color: !hasPhoto
                             ? AppColors.grey700
                             : const Color(0xFF249A67)),
                   ),
@@ -294,28 +437,56 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                   key: cameraKey,
                   selfie: selfie,
                   capturedPath: path,
-                  onCaptured: (value) => setState(() {
-                    if (selfie) {
-                      _selfieKtpPath = value;
-                    } else {
-                      _ktpPath = value;
+                  capturedUrl: url,
+                  onCaptured: (value) {
+                    setState(() {
+                      if (selfie) {
+                        _selfieKtpPath = value;
+                        _selfieKtpUrl = null;
+                        _selfieUploaded = false;
+                      } else {
+                        _ktpPath = value;
+                        _ktpUrl = null;
+                        _ktpUploaded = false;
+                      }
+                    });
+                    if (!selfie) {
+                      _ocrFuture = _readKtp(value);
+                      _ocrFuture!.then((data) {
+                        if (!mounted ||
+                            _stage != _KycStage.ktp ||
+                            _ktpPath != value) {
+                          return;
+                        }
+                        if (data?.nik == null || data?.name == null) {
+                          _message(
+                            'Teks utama KTP belum terbaca. Dekatkan kartu, tambah cahaya, lalu ambil ulang foto.',
+                          );
+                        }
+                      });
                     }
-                  }),
+                  },
                   onBusyChanged: (value) => setState(() => _capturing = value),
                   onError: _message,
                 ),
               ),
             ),
           ),
-          if (path != null)
+          if (hasPhoto)
             TextButton(
               onPressed: () {
+                if (_uploading) return;
                 unawaited(_deleteTemporaryPhoto(path));
                 setState(() {
                   if (selfie) {
                     _selfieKtpPath = null;
+                    _selfieKtpUrl = null;
+                    _selfieUploaded = false;
                   } else {
                     _ktpPath = null;
+                    _ktpUrl = null;
+                    _ktpUploaded = false;
+                    _ocrFuture = null;
                   }
                 });
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -328,10 +499,11 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
             child: DsButton(
-              text: path == null ? 'Ambil Gambar' : 'Selanjutnya',
+              text: !hasPhoto ? 'Ambil Gambar' : 'Selanjutnya',
               borderRadius: 8,
-              state:
-                  _capturing ? DsButtonState.disabled : DsButtonState.enabled,
+              state: _capturing || _uploading
+                  ? DsButtonState.disabled
+                  : DsButtonState.enabled,
               onPressed: _next,
             ),
           ),
@@ -471,6 +643,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
             _field('Nama', _name),
             _field('Tempat Lahir', _birthPlace),
             FormField<String>(
+              key: _birthDateFieldKey,
               initialValue: _birthDate.text,
               validator: (value) =>
                   value == null || value.isEmpty ? 'Wajib diisi' : null,
