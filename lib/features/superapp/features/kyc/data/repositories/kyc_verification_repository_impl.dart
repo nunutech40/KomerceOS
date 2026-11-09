@@ -22,7 +22,9 @@ class KycVerificationRepositoryImpl implements KycVerificationRepository {
 
   @override
   Future<void> upload(
-          {String? ktpPath, String? selfieKtpPath, String? livenessPath}) =>
+          {required String ktpPath,
+          required String selfieKtpPath,
+          required String livenessPath}) =>
       remote.upload(
           ktpPath: ktpPath,
           selfieKtpPath: selfieKtpPath,

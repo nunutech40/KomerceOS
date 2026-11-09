@@ -10,7 +10,8 @@ class _FakeKycRepository implements KycVerificationRepository {
   @override
   Future<KycHistory?> latestHistory() async => null;
   @override
-  Future<void> upload({String? ktpPath, String? selfieKtpPath, String? livenessPath}) async {}
+  Future<void> upload(
+      {String? ktpPath, String? selfieKtpPath, String? livenessPath}) async {}
   @override
   Future<void> checkNik({required String nik, required String email}) async {}
   @override
@@ -18,7 +19,8 @@ class _FakeKycRepository implements KycVerificationRepository {
 }
 
 void main() {
-  setUpAll(() => locator.registerSingleton<KycVerificationRepository>(_FakeKycRepository()));
+  setUpAll(() => locator
+      .registerSingleton<KycVerificationRepository>(_FakeKycRepository()));
   tearDownAll(() => locator.unregister<KycVerificationRepository>());
   testWidgets('setelah liveness, langkah pertama adalah foto KTP',
       (tester) async {
@@ -34,5 +36,23 @@ void main() {
     expect(find.text('Langkah 1 dari 4'), findsNothing);
     expect(find.text('Ambil Foto Selfie & KTP'), findsNothing);
     expect(find.text('Informasi Data Partner'), findsNothing);
+  });
+
+  testWidgets('draft lengkap dari latest-history langsung membuka form akhir',
+      (tester) async {
+    const history = KycHistory(
+      livenessStatus: 'draft',
+      ktpUrl: 'https://example.com/ktp.jpg',
+      selfieKtpUrl: 'https://example.com/selfie.jpg',
+      partnerData: {'nik': '1234567890123456'},
+    );
+    await tester.pumpWidget(const MaterialApp(
+      home: KycSubmissionPage(history: history),
+    ));
+
+    expect(find.text('Informasi Data Partner'), findsWidgets);
+    expect(find.text('Ajukan Verifikasi'), findsOneWidget);
+    expect(find.text('Simpan sebagai Draft'), findsOneWidget);
+    expect(find.byType(KycPhotoCaptureSection), findsNothing);
   });
 }

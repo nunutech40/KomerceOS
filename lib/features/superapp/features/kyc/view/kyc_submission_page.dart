@@ -7,6 +7,7 @@ import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/data/repositories/ml_kit_ktp_ocr_repository.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_upload_image_preparer.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/ktp_ocr_data.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_history.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/ktp_ocr_repository.dart';
@@ -26,10 +27,12 @@ class KycSubmissionPage extends StatefulWidget {
     super.key,
     this.startWithKtpCamera = false,
     this.history,
+    this.livenessPath,
   });
 
   final bool startWithKtpCamera;
   final KycHistory? history;
+  final String? livenessPath;
 
   @override
   State<KycSubmissionPage> createState() => _KycSubmissionPageState();
@@ -58,18 +61,23 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   _KycStage _stage = _KycStage.ktp;
   String? _ktpPath;
   String? _selfieKtpPath;
+  String? _ktpUploadPath;
+  String? _selfieKtpUploadPath;
   String? _ktpUrl;
   String? _selfieKtpUrl;
   bool _capturing = false;
+  bool _preparingPhoto = false;
   bool _uploading = false;
-  bool _ktpUploaded = false;
-  bool _selfieUploaded = false;
+  String _submitProgress = 'Mengirim pengajuan...';
   bool _confirmed = false;
   Future<KtpOcrData?>? _ocrFuture;
 
   @override
   void initState() {
     super.initState();
+    if (widget.history?.hasCompleteImages == true) {
+      _stage = _KycStage.identity;
+    }
     _ktpUrl = widget.history?.ktpUrl;
     _selfieKtpUrl = widget.history?.selfieKtpUrl;
     final previous = widget.history?.partnerData;
@@ -88,6 +96,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_stage == _KycStage.identity) return;
       if (_ktpUrl != null) return;
       if (widget.startWithKtpCamera) {
         _ktpCameraKey.currentState?.startCamera();
@@ -101,6 +110,8 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   void dispose() {
     unawaited(_deleteTemporaryPhoto(_ktpPath));
     unawaited(_deleteTemporaryPhoto(_selfieKtpPath));
+    unawaited(_deleteTemporaryPhoto(_ktpUploadPath));
+    unawaited(_deleteTemporaryPhoto(_selfieKtpUploadPath));
     _nik.dispose();
     _name.dispose();
     _birthPlace.dispose();
@@ -206,7 +217,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   }
 
   void _back() {
-    if (_uploading) return;
+    if (_uploading || _preparingPhoto || _capturing) return;
     if (_stage != _KycStage.ktp) {
       setState(() => _stage = _KycStage.values[_stage.index - 1]);
       return;
@@ -223,16 +234,15 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   }
 
   Future<void> _next() async {
-    if (_uploading) return;
+    if (_uploading || _capturing || _preparingPhoto) return;
     switch (_stage) {
       case _KycStage.ktp:
         if (_ktpPath == null && _ktpUrl == null) {
           _ktpCameraKey.currentState?.takePhoto();
           return;
         }
-        if (_ktpPath != null && !_ktpUploaded) {
-          if (!await _uploadPhoto(ktpPath: _ktpPath)) return;
-          _ktpUploaded = true;
+        if (_ktpPath != null && _ktpUploadPath == null) {
+          if (!await _prepareCapturedPhoto(selfie: false)) return;
         }
         if (!mounted) return;
         setState(() => _stage = _KycStage.selfieKtp);
@@ -247,9 +257,8 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
           _selfieCameraKey.currentState?.takePhoto();
           return;
         }
-        if (_selfieKtpPath != null && !_selfieUploaded) {
-          if (!await _uploadPhoto(selfieKtpPath: _selfieKtpPath)) return;
-          _selfieUploaded = true;
+        if (_selfieKtpPath != null && _selfieKtpUploadPath == null) {
+          if (!await _prepareCapturedPhoto(selfie: true)) return;
         }
         if (!mounted) return;
         setState(() => _stage = _KycStage.identity);
@@ -278,18 +287,50 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
     }
   }
 
-  Future<bool> _uploadPhoto({String? ktpPath, String? selfieKtpPath}) async {
-    setState(() => _uploading = true);
+  Future<bool> _prepareCapturedPhoto({required bool selfie}) async {
+    final sourcePath = selfie ? _selfieKtpPath : _ktpPath;
+    if (sourcePath == null) return false;
+    setState(() => _preparingPhoto = true);
     try {
-      await _verificationRepository.upload(
-          ktpPath: ktpPath, selfieKtpPath: selfieKtpPath);
-      return mounted;
-    } catch (_) {
-      _message('Foto belum berhasil diunggah. Coba lagi.');
+      final prepared = await KycUploadImagePreparer.prepare(sourcePath);
+      if (!mounted || sourcePath != (selfie ? _selfieKtpPath : _ktpPath)) {
+        await prepared.delete();
+        return false;
+      }
+      if (selfie) {
+        _selfieKtpUploadPath = prepared.path;
+      } else {
+        _ktpUploadPath = prepared.path;
+      }
+      return true;
+    } on Exception {
+      _message('Foto belum berhasil dikompres. Ambil ulang atau coba lagi.');
       return false;
     } finally {
-      if (mounted) setState(() => _uploading = false);
+      if (mounted) setState(() => _preparingPhoto = false);
     }
+  }
+
+  Future<void> _uploadDraftImages() async {
+    // A complete saved draft already has the three images on the server.
+    // Submitting its form must not require temporary files from an old session.
+    if (widget.history?.hasCompleteImages == true &&
+        widget.livenessPath == null &&
+        _ktpPath == null &&
+        _selfieKtpPath == null) {
+      return;
+    }
+    final livenessPath = widget.livenessPath;
+    final ktpPath = _ktpUploadPath;
+    final selfieKtpPath = _selfieKtpUploadPath;
+    if (livenessPath == null || ktpPath == null || selfieKtpPath == null) {
+      throw StateError('Foto liveness, KTP, dan selfie harus lengkap.');
+    }
+    await _verificationRepository.upload(
+      livenessPath: livenessPath,
+      ktpPath: ktpPath,
+      selfieKtpPath: selfieKtpPath,
+    );
   }
 
   Future<void> _submitVerification() async {
@@ -300,10 +341,16 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
       _message('Email atau nomor HP akun belum tersedia. Muat ulang profil.');
       return;
     }
-    setState(() => _uploading = true);
+    setState(() {
+      _uploading = true;
+      _submitProgress = 'Memeriksa NIK...';
+    });
     try {
       await _verificationRepository.checkNik(
           nik: _nik.text.trim(), email: email);
+      if (mounted) setState(() => _submitProgress = 'Mengunggah foto...');
+      await _uploadDraftImages();
+      if (mounted) setState(() => _submitProgress = 'Mengirim pengajuan...');
       await _verificationRepository.submit({
         'nik': _nik.text.trim(),
         'name': _name.text.trim(),
@@ -320,6 +367,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         'pos_code': _postalCode.text.trim(),
       });
       if (!mounted) return;
+      locator<SuperappProfileBloc>().add(const FetchSuperappProfileEvent());
       _showSubmissionResult();
     } catch (_) {
       _message('Pengajuan verifikasi gagal. Periksa NIK dan coba lagi.');
@@ -441,13 +489,15 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                   onCaptured: (value) {
                     setState(() {
                       if (selfie) {
+                        unawaited(_deleteTemporaryPhoto(_selfieKtpUploadPath));
+                        _selfieKtpUploadPath = null;
                         _selfieKtpPath = value;
                         _selfieKtpUrl = null;
-                        _selfieUploaded = false;
                       } else {
+                        unawaited(_deleteTemporaryPhoto(_ktpUploadPath));
+                        _ktpUploadPath = null;
                         _ktpPath = value;
                         _ktpUrl = null;
-                        _ktpUploaded = false;
                       }
                     });
                     if (!selfie) {
@@ -475,17 +525,19 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
           if (hasPhoto)
             TextButton(
               onPressed: () {
-                if (_uploading) return;
+                if (_uploading || _preparingPhoto || _capturing) return;
                 unawaited(_deleteTemporaryPhoto(path));
                 setState(() {
                   if (selfie) {
+                    unawaited(_deleteTemporaryPhoto(_selfieKtpUploadPath));
+                    _selfieKtpUploadPath = null;
                     _selfieKtpPath = null;
                     _selfieKtpUrl = null;
-                    _selfieUploaded = false;
                   } else {
+                    unawaited(_deleteTemporaryPhoto(_ktpUploadPath));
+                    _ktpUploadPath = null;
                     _ktpPath = null;
                     _ktpUrl = null;
-                    _ktpUploaded = false;
                     _ocrFuture = null;
                   }
                 });
@@ -500,10 +552,13 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
             padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
             child: DsButton(
               text: !hasPhoto ? 'Ambil Gambar' : 'Selanjutnya',
+              loadingText: 'Menyiapkan foto...',
               borderRadius: 8,
-              state: _capturing || _uploading
-                  ? DsButtonState.disabled
-                  : DsButtonState.enabled,
+              state: _preparingPhoto
+                  ? DsButtonState.loading
+                  : _capturing || _uploading
+                      ? DsButtonState.disabled
+                      : DsButtonState.enabled,
               onPressed: _next,
             ),
           ),
@@ -557,21 +612,37 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
               child: TextButton(
-                onPressed: _showDraftPreview,
-                child: const Text('Simpan sebagai Draft',
-                    style: TextStyle(color: AppColors.errorBase)),
+                onPressed: _uploading ? null : _saveDraft,
+                child: _uploading
+                    ? const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 8),
+                          Text('Memproses...'),
+                        ],
+                      )
+                    : const Text('Simpan sebagai Draft',
+                        style: TextStyle(color: AppColors.errorBase)),
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
               child: DsButton(
                 text: 'Ajukan Verifikasi',
+                loadingText: _submitProgress,
                 height: 44,
                 borderRadius: 10,
                 disabledBackgroundColor: const Color(0xFFFFAE8C),
-                state: canContinue
-                    ? DsButtonState.enabled
-                    : DsButtonState.disabled,
+                state: _uploading
+                    ? DsButtonState.loading
+                    : canContinue
+                        ? DsButtonState.enabled
+                        : DsButtonState.disabled,
                 onPressed: _next,
               ),
             ),
@@ -579,15 +650,35 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         ),
       );
 
-  void _showDraftPreview() {
-    KycSuccessBottomSheet.show<void>(
-      context,
-      title: 'Pratinjau Draft',
-      subtitle: 'Draft belum disimpan ke server. Data pada halaman ini '
-          'tetap tersedia selama halaman masih terbuka.',
-      imagePath: 'assets/images/ilustrated-success.svg',
-      buttonText: 'Mengerti',
-    );
+  Future<void> _saveDraft() async {
+    if (_uploading) return;
+    setState(() {
+      _uploading = true;
+      _submitProgress = 'Menyimpan draft...';
+    });
+    try {
+      await _uploadDraftImages();
+      if (!mounted) return;
+      KycSuccessBottomSheet.show<void>(
+        context,
+        title: 'Draft Verifikasi Berhasil Disimpan',
+        subtitle: 'Berkas verifikasi berhasil disimpan sebagai draft.',
+        imagePath: 'assets/images/ilustrated-success.svg',
+        buttonText: 'Selesai',
+        onButtonPressed: () {
+          final navigator = Navigator.of(context);
+          navigator.pop();
+          navigator.pop();
+          if (widget.history == null && widget.livenessPath != null) {
+            navigator.pop();
+          }
+        },
+      );
+    } catch (_) {
+      _message('Draft belum berhasil disimpan. Pastikan semua foto tersedia.');
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   Widget _identityForm() => Form(

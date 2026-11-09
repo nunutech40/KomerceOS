@@ -8,7 +8,9 @@ import '../services/kyc_upload_image_preparer.dart';
 abstract class KycVerificationRemoteDataSource {
   Future<dynamic> latestHistory();
   Future<void> upload(
-      {String? ktpPath, String? selfieKtpPath, String? livenessPath});
+      {required String ktpPath,
+      required String selfieKtpPath,
+      required String livenessPath});
   Future<void> checkNik({required String nik, required String email});
   Future<void> submit(Map<String, String> partnerData);
 }
@@ -41,38 +43,43 @@ class KycVerificationRemoteDataSourceImpl
 
   @override
   Future<void> upload(
-      {String? ktpPath, String? selfieKtpPath, String? livenessPath}) async {
-    if ([ktpPath, selfieKtpPath, livenessPath].every((path) => path == null)) {
-      throw ArgumentError('At least one KYC image is required');
+      {required String ktpPath,
+      required String selfieKtpPath,
+      required String livenessPath}) async {
+    if ([ktpPath, selfieKtpPath, livenessPath].any((path) => path.isEmpty)) {
+      throw ArgumentError('All three KYC images are required');
     }
-    final prepared = <String, File>{};
-    try {
-      if (ktpPath != null) {
-        prepared['imageKtp'] = await KycUploadImagePreparer.prepare(ktpPath);
+    final prepared = <String, File>{
+      'image_ktp': File(ktpPath),
+      'image_ktp_with_face': File(selfieKtpPath),
+      'image_liveness': File(livenessPath),
+    };
+    final data = FormData();
+    // Each local image was compressed when its capture step completed.
+    for (final name in const [
+      'image_ktp',
+      'image_ktp_with_face',
+      'image_liveness',
+    ]) {
+      final file = prepared[name];
+      if (file == null) throw ArgumentError('Missing KYC image: $name');
+      final bytes = await file.readAsBytes();
+      if (bytes.length < 4 || bytes[0] != 0xff || bytes[1] != 0xd8) {
+        throw const FileSystemException('Foto KYC bukan JPEG yang valid');
       }
-      if (selfieKtpPath != null) {
-        prepared['imageKtpWithFace'] =
-            await KycUploadImagePreparer.prepare(selfieKtpPath);
+      if (bytes.length > KycUploadImagePreparer.maxBytes) {
+        throw const FileSystemException('Foto KYC melebihi 1 MB');
       }
-      if (livenessPath != null) {
-        prepared['imageLiveness'] =
-            await KycUploadImagePreparer.prepare(livenessPath);
-      }
-      final data = FormData.fromMap({
-        for (final entry in prepared.entries)
-          entry.key: await MultipartFile.fromFile(entry.value.path,
-              filename: '${entry.key}.jpg',
-              contentType: DioMediaType('image', 'jpeg')),
-      });
-      final response = await client.post(Endpoints.kycUpload,
-          data: data,
-          options: Options(contentType: Headers.multipartFormDataContentType));
-      _ensureSuccess(response.data);
-    } finally {
-      for (final file in prepared.values) {
-        if (await file.exists()) await file.delete();
-      }
+      data.files.add(MapEntry(
+        name,
+        MultipartFile.fromBytes(bytes,
+            filename: '$name.jpg', contentType: DioMediaType('image', 'jpeg')),
+      ));
     }
+    final response = await client.post(Endpoints.kycUpload,
+        data: data,
+        options: Options(contentType: Headers.multipartFormDataContentType));
+    _ensureSuccess(response.data);
   }
 
   @override

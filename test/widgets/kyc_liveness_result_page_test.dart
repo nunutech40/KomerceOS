@@ -12,7 +12,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MaterialApp(
-      home: KycLivenessResultPage(),
+      home: KycLivenessResultPage(livenessPath: '/tmp/kyc-liveness-test.jpg'),
     ));
     await tester.pumpAndSettle();
 

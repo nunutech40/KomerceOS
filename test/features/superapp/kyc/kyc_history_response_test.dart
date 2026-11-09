@@ -14,6 +14,7 @@ void main() {
     });
     expect(history?.hasUploadedLiveness, false);
     expect(history?.hasKtp, false);
+    expect(history?.hasCompleteImages, false);
   });
 
   test('riwayat liveness yang punya URL melanjutkan foto KTP', () {
@@ -29,5 +30,59 @@ void main() {
     expect(history?.hasUploadedLiveness, true);
     expect(history?.hasKtp, false);
     expect(history?.partnerData['name'], 'Sample');
+    expect(history?.hasCompleteImages, false);
+  });
+
+  test('draft dengan tiga gambar server langsung bisa ke formulir akhir', () {
+    final history = KycHistoryResponse.parse({
+      'meta': {'status': 'success'},
+      'data': {
+        'liveness_picture': {'url': 'https://example.com/liveness.jpg'},
+        'ktp_picture': {'url': 'https://example.com/ktp.jpg'},
+        'ktp_face_picture': {'url': 'https://example.com/selfie.jpg'},
+        'info_data_partner': {'nik': '1234567890123456'},
+      },
+    });
+    expect(history?.hasCompleteImages, true);
+    expect(history?.partnerData['nik'], '1234567890123456');
+  });
+
+  test('draft liveness tanpa URL tetap bisa submit bila KTP dan selfie ada',
+      () {
+    final history = KycHistoryResponse.parse({
+      'meta': {'status': 'success'},
+      'data': {
+        'liveness_picture': {'status': 'draft', 'url': ''},
+        'ktp_picture': {
+          'status': 'draft',
+          'url': 'https://example.com/ktp.jpg'
+        },
+        'ktp_face_picture': {
+          'status': 'draft',
+          'url': 'https://example.com/selfie.jpg'
+        },
+        'info_data_partner': null,
+      },
+    });
+    expect(history?.hasCompleteImages, true);
+  });
+
+  test('riwayat requested dikenali sesudah pengajuan berhasil', () {
+    final history = KycHistoryResponse.parse({
+      'meta': {'status': 'success'},
+      'data': {
+        'status': 'requested',
+        'liveness_picture': {'status': 'requested', 'url': ''},
+        'ktp_picture': {
+          'status': 'requested',
+          'url': 'https://example.com/ktp.jpg'
+        },
+        'ktp_face_picture': {
+          'status': 'requested',
+          'url': 'https://example.com/selfie.jpg'
+        },
+      },
+    });
+    expect(history?.isRequested, true);
   });
 }

@@ -122,10 +122,15 @@ class KycVerificationBottomSheet extends StatefulWidget {
 class _KycVerificationBottomSheetState
     extends State<KycVerificationBottomSheet> {
   DsButtonState _buttonState = DsButtonState.enabled;
+  String _loadingText = 'Memeriksa saldo...';
 
   /// Validasi saldo sebelum memproses verifikasi
   Future<void> _handleAjukanVerifikasi() async {
     if (_buttonState == DsButtonState.loading) return;
+    setState(() {
+      _buttonState = DsButtonState.loading;
+      _loadingText = 'Memeriksa saldo...';
+    });
 
     final safeContext = widget.parentContext ?? context;
     final onTopupCallback = widget.onTopupTap;
@@ -150,11 +155,21 @@ class _KycVerificationBottomSheetState
     final int saldo = currentSaldo ?? 0;
     debugPrint('[KYC] Pengecekan saldo sebelum verifikasi: Rp $saldo');
 
-    if (!mounted) return;
+    if (!mounted || !safeContext.mounted) return;
+
+    if (currentSaldo == null) {
+      setState(() => _buttonState = DsButtonState.enabled);
+      ScaffoldMessenger.of(safeContext)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+            content: Text('Saldo belum berhasil dimuat. Coba lagi.')));
+      return;
+    }
 
     // KASUS 1: Saldo < Rp 25.000
     // Tombol TIDAK loading, tutup sheet verifikasi, lalu tampilkan pop-up Saldo Tidak Mencukupi
     if (saldo < 25000) {
+      setState(() => _buttonState = DsButtonState.enabled);
       Navigator.pop(context);
 
       KycInsufficientBalanceBottomSheet.show(
@@ -162,7 +177,8 @@ class _KycVerificationBottomSheetState
         totalAmount: 25000,
         currentBalance: saldo,
         onTopup: () {
-          debugPrint('[KYC] onTopup ditekan di KycInsufficientBalanceBottomSheet');
+          debugPrint(
+              '[KYC] onTopup ditekan di KycInsufficientBalanceBottomSheet');
           if (onTopupCallback != null) {
             onTopupCallback();
           } else {
@@ -188,7 +204,7 @@ class _KycVerificationBottomSheetState
     // KASUS 2: Saldo >= Rp 25.000
     // Tombol loading, hit API pembayaran verifikasi KTP
     setState(() {
-      _buttonState = DsButtonState.loading;
+      _loadingText = 'Memproses pembayaran...';
     });
 
     final navigator = Navigator.of(safeContext);
@@ -196,10 +212,13 @@ class _KycVerificationBottomSheetState
 
     try {
       final dioClient = locator<DioClient>();
-      debugPrint('[KYC] Hit API pay verification: ${Endpoints.payKtpVerification}');
+      debugPrint(
+          '[KYC] Hit API pay verification: ${Endpoints.payKtpVerification}');
 
       final response = await dioClient.post(Endpoints.payKtpVerification);
-      debugPrint('[KYC] Response pay verification: ${response.statusCode} => ${response.data}');
+      if (!mounted || !safeContext.mounted) return;
+      debugPrint(
+          '[KYC] Response pay verification: ${response.statusCode} => ${response.data}');
 
       final isSuccess = response.statusCode == 200 ||
           (response.data is Map &&
@@ -212,8 +231,6 @@ class _KycVerificationBottomSheetState
               : 'Gagal melakukan pembayaran verifikasi.',
         );
       }
-
-      if (!mounted) return;
 
       // Reset state tombol sebelum sheet di-pop
       setState(() {
@@ -403,8 +420,7 @@ class _KycVerificationBottomSheetState
                           padding: const EdgeInsets.all(AppSpacing.insetLg),
                           decoration: BoxDecoration(
                             color: AppColors.alwaysWhite,
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.lg),
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.06),
@@ -421,7 +437,8 @@ class _KycVerificationBottomSheetState
                         TextButton(
                           onPressed: _buttonState == DsButtonState.loading
                               ? null
-                              : (widget.onCancel ?? () => Navigator.pop(context)),
+                              : (widget.onCancel ??
+                                  () => Navigator.pop(context)),
                           style: TextButton.styleFrom(
                             foregroundColor: AppColors.primaryBase,
                             textStyle: AppTypography.bodyMdSemiBold,
@@ -437,6 +454,7 @@ class _KycVerificationBottomSheetState
                         // Ajukan Verifikasi button
                         DsButton(
                           text: 'Ajukan Verifikasi',
+                          loadingText: _loadingText,
                           state: _buttonState,
                           onPressed: _handleAjukanVerifikasi,
                         ),

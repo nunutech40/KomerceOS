@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_liveness_sdk/flutter_liveness_sdk.dart';
-import 'package:komtim_partner/DI/injection.dart';
-import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/kyc_verification_repository.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_upload_image_preparer.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_camera_permission_dialog.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_liveness_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_liveness_result_page.dart';
@@ -79,24 +78,49 @@ abstract final class KycLivenessFlow {
             _message(context, 'Foto liveness tidak tersedia. Coba lagi.');
             return;
           }
+          final navigator = Navigator.of(context, rootNavigator: true);
           showDialog<void>(
             context: context,
             barrierDismissible: false,
-            builder: (_) => const Center(child: CircularProgressIndicator()),
+            builder: (_) => const PopScope(
+              canPop: false,
+              child: Center(
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 14),
+                        Text('Menyiapkan foto wajah...'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           );
+          late final File prepared;
           try {
-            await locator<KycVerificationRepository>()
-                .upload(livenessPath: imagePath);
-          } catch (_) {
-            if (context.mounted) {
-              Navigator.of(context, rootNavigator: true).pop();
-              _message(context, 'Upload liveness gagal. Coba lagi.');
-            }
+            prepared = await KycUploadImagePreparer.prepare(imagePath);
+          } finally {
+            if (navigator.mounted) navigator.pop();
+          }
+          try {
+            await File(imagePath).delete();
+          } on FileSystemException {
+            // The SDK may already have removed its temporary capture.
+          }
+          if (!context.mounted) {
+            await prepared.delete();
             return;
           }
-          if (!context.mounted) return;
-          Navigator.of(context, rootNavigator: true).pop();
-          _showResult(context);
+          _showResult(context, prepared.path);
           return;
         case LivenessStatus.cancelled:
           return;
@@ -121,12 +145,16 @@ abstract final class KycLivenessFlow {
       if (context.mounted) {
         _message(context, 'Kamera tidak dapat dibuka. Silakan coba lagi.');
       }
+    } on Exception {
+      if (context.mounted) {
+        _message(context, 'Foto liveness belum berhasil disiapkan. Coba lagi.');
+      }
     }
   }
 
-  static void _showResult(BuildContext context) {
+  static void _showResult(BuildContext context, String livenessPath) {
     Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => const KycLivenessResultPage(),
+      builder: (_) => KycLivenessResultPage(livenessPath: livenessPath),
     ));
   }
 

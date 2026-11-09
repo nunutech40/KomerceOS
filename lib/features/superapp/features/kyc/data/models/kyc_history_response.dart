@@ -42,6 +42,7 @@ class KycHistoryResponse {
     final ktp = picture('ktp_picture');
     final selfie = picture('ktp_face_picture');
     return KycHistory(
+      status: field(data, 'status'),
       livenessStatus: field(liveness, 'status'),
       livenessUrl: field(liveness, 'url'),
       ktpStatus: field(ktp, 'status'),

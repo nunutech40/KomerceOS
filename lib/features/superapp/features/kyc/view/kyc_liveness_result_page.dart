@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_submission_page.dart';
@@ -6,21 +9,38 @@ import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_ktp_gui
 
 /// Liveness result page shown before the KTP tutorial sheet.
 class KycLivenessResultPage extends StatefulWidget {
-  const KycLivenessResultPage({super.key});
+  const KycLivenessResultPage({super.key, required this.livenessPath});
+
+  final String livenessPath;
 
   @override
   State<KycLivenessResultPage> createState() => _KycLivenessResultPageState();
 }
 
 class _KycLivenessResultPageState extends State<KycLivenessResultPage> {
+  @override
+  void dispose() {
+    unawaited(_deletePreparedPhoto());
+    super.dispose();
+  }
+
+  Future<void> _deletePreparedPhoto() async {
+    try {
+      await File(widget.livenessPath).delete();
+    } on FileSystemException {
+      // The temporary upload copy may already have been removed.
+    }
+  }
+
   void _showKtpGuide() {
     KycKtpGuideBottomSheet.show<void>(
       context,
       onStartPhoto: () {
         Navigator.of(context).pop();
         Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => const KycSubmissionPage(
+          builder: (_) => KycSubmissionPage(
             startWithKtpCamera: true,
+            livenessPath: widget.livenessPath,
           ),
         ));
       },
