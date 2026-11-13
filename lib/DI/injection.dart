@@ -183,11 +183,14 @@ import '../core/domain/usecases/get_notification_info_use_case.dart';
 import '../core/domain/usecases/get_notification_v2_list_use_case.dart';
 import '../core/domain/usecases/get_profile_use_case.dart';
 import '../core/domain/usecases/get_revenue_performance_use_case.dart';
+import '../core/domain/usecases/partner_login_use_case.dart';
 import '../core/domain/usecases/read_notification_v2_use_case.dart';
+import '../core/domain/usecases/request_login_otp_use_case.dart';
 import '../core/domain/usecases/resend_verification_use_case.dart';
 import '../core/domain/usecases/reset_password_use_case.dart';
 import '../core/domain/usecases/send_forgot_password_use_case.dart';
 import '../core/domain/usecases/update_selected_talent_use_case.dart';
+import '../core/domain/usecases/verify_login_otp_use_case.dart';
 import '../features/profile/bloc/profile_bloc.dart';
 import '../features/superapp/features/authentication/bloc/check_email_bloc.dart';
 import '../features/superapp/features/authentication/bloc/forgot_password_bloc.dart';
@@ -226,7 +229,9 @@ Future<void> initDependencies() async {
       checkEmailLoginUseCase: locator(), recaptchaUseCase: locator()));
   locator.registerFactory(() => superapp_auth.LoginBloc(
         checkEmailLoginUseCase: locator(),
-        doLoginUseCase: locator(),
+        partnerLoginUseCase: locator(),
+        requestLoginOtpUseCase: locator(),
+        verifyLoginOtpUseCase: locator(),
         recaptchaUseCase: locator(),
       ));
   locator.registerFactory(
@@ -349,6 +354,10 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton(() => RecaptchaUseCase());
   locator.registerLazySingleton(() => CheckEmailLoginUseCase(locator()));
   locator.registerLazySingleton(() => DoLoginUseCase(locator(), locator()));
+  locator.registerLazySingleton(() => PartnerLoginUseCase(locator()));
+  locator.registerLazySingleton(() => RequestLoginOtpUseCase(locator()));
+  locator
+      .registerLazySingleton(() => VerifyLoginOtpUseCase(locator(), locator()));
   locator.registerLazySingleton(() => ResendVerificationUseCase(locator()));
   locator.registerLazySingleton(() => GetAuthStateUseCase(locator()));
   locator.registerLazySingleton(() => DoLogoutUseCase(
@@ -446,8 +455,11 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<RevenuePerformanceRepository>(
       () => RevenuePerformanceRepositoryImpl(remoteDataSource: locator()));
 
-  locator.registerLazySingleton<AuthRepository>(() =>
-      AuthRepositoryImpl(remoteDataSource: locator(), sharedPref: locator()));
+  locator.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
+        remoteDataSource: locator(),
+        sharedPref: locator(),
+        superappProfileRepository: locator(),
+      ));
   locator.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(
       remoteDataSource: locator(), sharedPref: locator()));
   locator.registerLazySingleton<TalentRepository>(() =>

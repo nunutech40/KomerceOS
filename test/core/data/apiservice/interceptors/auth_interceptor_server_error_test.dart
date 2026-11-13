@@ -16,6 +16,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:komtim_partner/core/data/apiservice/constat_endpoint.dart';
 import 'package:komtim_partner/core/data/apiservice/interceptors/auth_interceptor.dart';
 import 'package:komtim_partner/core/data/apiservice/token_provider.dart';
 import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
@@ -65,6 +66,23 @@ class _FakeErrorInterceptorHandler extends ErrorInterceptorHandler {
   @override
   void resolve(Response response) {
     resolveCalled = true;
+  }
+}
+
+class _FakeResponseInterceptorHandler extends ResponseInterceptorHandler {
+  bool nextCalled = false;
+  bool rejectCalled = false;
+  DioException? rejectedError;
+
+  @override
+  void next(Response response) {
+    nextCalled = true;
+  }
+
+  @override
+  void reject(DioException err, [bool callFollowingErrorInterceptor = false]) {
+    rejectCalled = true;
+    rejectedError = err;
   }
 }
 
@@ -172,6 +190,146 @@ void main() {
         await interceptor.onError(makeDioException(422), fakeHandler);
 
         expect(fakeGlobalAlertBloc.serverErrorEventAdded, false);
+      },
+    );
+
+    test(
+      'onError 500 "user not found" di Endpoints.partnerLogin tidak memicu ShowServerErrorEvent',
+      () async {
+        for (final data in [
+          {
+            'meta': {'status': 'error', 'code': 500, 'message': 'user not found'}
+          },
+          {
+            'meta': {'status': 'error', 'code': 500, 'message': ' User Not Found '}
+          },
+          {'message': 'user not found'},
+        ]) {
+          final alertBloc = FakeGlobalAlertBloc();
+          final handler = _FakeErrorInterceptorHandler();
+          final localInterceptor = AuthInterceptor(
+            authBloc: AuthBloc(sharedPref: MockSharedPref()),
+            globalAlertBloc: alertBloc,
+            tokenProvider: mockTokenProvider,
+          );
+          final req = RequestOptions(path: Endpoints.partnerLogin);
+          final err = DioException(
+            requestOptions: req,
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: req,
+              statusCode: 500,
+              data: data,
+            ),
+          );
+
+          await localInterceptor.onError(err, handler);
+
+          expect(alertBloc.serverErrorEventAdded, isFalse);
+          expect(handler.nextCalled, isTrue);
+        }
+      },
+    );
+
+    test(
+      'onError 500 message lain di Endpoints.partnerLogin tetap memicu ShowServerErrorEvent',
+      () async {
+        final req = RequestOptions(path: Endpoints.partnerLogin);
+        final err = DioException(
+          requestOptions: req,
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: req,
+            statusCode: 500,
+            data: {
+              'meta': {
+                'status': 'error',
+                'code': 500,
+                'message': 'Internal Server Error'
+              }
+            },
+          ),
+        );
+
+        await interceptor.onError(err, fakeHandler);
+
+        expect(fakeGlobalAlertBloc.serverErrorEventAdded, isTrue);
+        expect(fakeHandler.nextCalled, isTrue);
+      },
+    );
+
+    test(
+      'onError 500 "user not found" di endpoint lain tetap memicu ShowServerErrorEvent',
+      () async {
+        final req = RequestOptions(path: Endpoints.checkEmail);
+        final err = DioException(
+          requestOptions: req,
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: req,
+            statusCode: 500,
+            data: {
+              'meta': {
+                'status': 'error',
+                'code': 500,
+                'message': 'user not found'
+              }
+            },
+          ),
+        );
+
+        await interceptor.onError(err, fakeHandler);
+
+        expect(fakeGlobalAlertBloc.serverErrorEventAdded, isTrue);
+        expect(fakeHandler.nextCalled, isTrue);
+      },
+    );
+
+    test(
+      'onResponse HTTP 200 dengan meta.code 500 "user not found" di Endpoints.partnerLogin suppress ShowServerErrorEvent tapi tetap reject',
+      () async {
+        final req = RequestOptions(path: Endpoints.partnerLogin);
+        final resHandler = _FakeResponseInterceptorHandler();
+        final response = Response(
+          requestOptions: req,
+          statusCode: 200,
+          data: {
+            'meta': {
+              'status': 'error',
+              'code': 500,
+              'message': 'user not found'
+            },
+          },
+        );
+
+        interceptor.onResponse(response, resHandler);
+
+        expect(fakeGlobalAlertBloc.serverErrorEventAdded, isFalse);
+        expect(resHandler.rejectCalled, isTrue);
+      },
+    );
+
+    test(
+      'onResponse HTTP 200 dengan meta.code 500 message lain di Endpoints.partnerLogin tetap memicu ShowServerErrorEvent dan reject',
+      () async {
+        final req = RequestOptions(path: Endpoints.partnerLogin);
+        final resHandler = _FakeResponseInterceptorHandler();
+        final response = Response(
+          requestOptions: req,
+          statusCode: 200,
+          data: {
+            'meta': {
+              'status': 'error',
+              'code': 500,
+              'message': 'Database error'
+            },
+          },
+        );
+
+        interceptor.onResponse(response, resHandler);
+
+        expect(fakeGlobalAlertBloc.serverErrorEventAdded, isTrue);
+        expect(resHandler.rejectCalled, isTrue);
       },
     );
   });

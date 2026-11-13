@@ -25,6 +25,14 @@ abstract class SuperappProfileRepository {
   /// Trigger refresh — dipanggil dari repository lain
   void notifyProfileRefresh();
 
+  /// Seed profil segar dalam memori sementara (misal hasil verifikasi 2FA).
+  /// Disimpan untuk dikonsumsi 1x oleh consumer berikutnya tanpa fetch ulang ke server.
+  void seedPendingProfile(SuperappProfileModel profile);
+
+  /// Ambil dan hapus profil sementara dari memori (consume-once).
+  /// Mengembalikan `null` jika tidak ada profil yang di-seed atau sudah dikonsumsi.
+  SuperappProfileModel? consumePendingProfile();
+
   /// Hapus cache lokal saat logout
   Future<void> clearCache();
 }
@@ -35,6 +43,8 @@ class SuperappProfileRepositoryImpl implements SuperappProfileRepository {
 
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
+
+  SuperappProfileModel? _pendingFreshProfile;
 
   SuperappProfileRepositoryImpl({
     required this.remoteDataSource,
@@ -78,7 +88,20 @@ class SuperappProfileRepositoryImpl implements SuperappProfileRepository {
   }
 
   @override
+  void seedPendingProfile(SuperappProfileModel profile) {
+    _pendingFreshProfile = profile;
+  }
+
+  @override
+  SuperappProfileModel? consumePendingProfile() {
+    final profile = _pendingFreshProfile;
+    _pendingFreshProfile = null;
+    return profile;
+  }
+
+  @override
   Future<void> clearCache() async {
+    _pendingFreshProfile = null;
     final prefs = await sharedPreferences;
     await prefs.remove(_kSuperappProfileCacheKey);
   }

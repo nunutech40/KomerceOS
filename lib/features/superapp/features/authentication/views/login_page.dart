@@ -4,12 +4,16 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/global/router/router_utils.dart';
+import 'package:komtim_partner/core/domain/entities/two_fa_failure.dart';
 import 'package:komtim_partner/features/superapp/features/authentication/widgets/email_check_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../common/enum_status.dart';
 import '../bloc/login_bloc.dart';
 import '../widgets/login_error_popups.dart';
+import '../widgets/two_fa_locked_bottom_sheet.dart';
+import '../widgets/two_fa_method_bottom_sheet.dart';
+import '../widgets/two_fa_verify_otp_bottom_sheet.dart';
 import '../widgets/verification_required_bottom_sheet.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   late final TextEditingController _passwordController;
   String? _inlineError;
   bool _awaitingPrecheckedState = false;
+  bool _isTwoFaSheetOpen = false;
 
   /// Guard: cegah listener trigger saat controller baru di-init dengan initial value.
   /// Tanpa ini, addListener dipanggil saat text berubah dari '' → widget.email,
@@ -149,6 +154,10 @@ class _LoginPageState extends State<LoginPage> {
         partnerProducts: state.unverifiedProducts,
       );
       context.read<LoginBloc>().add(LoginStatusResetEvent());
+    } else if (state.twoFaStage != LoginTwoFaStage.none) {
+      if (!_isTwoFaSheetOpen) {
+        _openTwoFaBottomSheet(context);
+      }
     } else if (state.status == RequestStatus.failure) {
       final errorMsg = state.passwordErrorMessage.isNotEmpty
           ? state.passwordErrorMessage
@@ -189,6 +198,17 @@ class _LoginPageState extends State<LoginPage> {
           context,
           onClose: () => context.read<LoginBloc>().add(LoginStatusResetEvent()),
         );
+      } else if (state.partnerLoginErrorType ==
+          PartnerLoginErrorType.passwordLocked24Hours) {
+        _showPasswordLockedBottomSheet(context);
+      } else if (state.partnerLoginErrorType ==
+          PartnerLoginErrorType.incorrectPassword) {
+        final int remaining = state.loginAttemptsLeft ?? 2;
+        if (remaining <= 0) {
+          _showPasswordLockedBottomSheet(context);
+        } else {
+          _showIncorrectPasswordBottomSheet(context, remaining);
+        }
       } else if (lowerError.contains('login_attempt') ||
           RegExp(r'\block:\s*\d+').hasMatch(lowerError) ||
           lowerError.contains('account locked') ||
@@ -217,49 +237,9 @@ class _LoginPageState extends State<LoginPage> {
         if (lock == 1 ||
             remaining == 0 ||
             lowerError.contains('please wait 24 hour')) {
-          DsBottomSheet.show(
-            context: context,
-            title: 'Gagal Login',
-            description:
-                'Anda telah gagal login sebanyak 3 kali.\nSilakan coba kembali dalam 24 jam ke\ndepan atau reset password',
-            image: SvgPicture.asset(
-              'assets/images/superapp/auth/attempt_count_login.svg',
-              height: 200,
-            ),
-            secondaryButtonText: 'Kembali',
-            onSecondaryPressed: () {
-              Navigator.pop(context);
-              context.read<LoginBloc>().add(LoginStatusResetEvent());
-            },
-            primaryButtonText: 'Reset Password',
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              context.pushNamed(PAGES.forgotPasswrod.screenName);
-            },
-            isDismissible: true,
-          );
+          _showPasswordLockedBottomSheet(context);
         } else {
-          DsBottomSheet.show(
-            context: context,
-            title: 'Gagal Login',
-            description:
-                'Periksa kembali email dan password\nyang kamu masukkan. Tersisa $remaining kali\npercobaan.',
-            image: SvgPicture.asset(
-              'assets/images/superapp/auth/attempt_count_login.svg',
-              height: 200,
-            ),
-            secondaryButtonText: 'Kembali',
-            onSecondaryPressed: () {
-              Navigator.pop(context);
-              context.read<LoginBloc>().add(LoginStatusResetEvent());
-            },
-            primaryButtonText: 'Coba Lagi',
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              context.read<LoginBloc>().add(LoginStatusResetEvent());
-            },
-            isDismissible: true,
-          );
+          _showIncorrectPasswordBottomSheet(context, remaining);
         }
       } else if (lowerError.contains('user not registered')) {
         DsBottomSheet.show(
@@ -300,6 +280,106 @@ class _LoginPageState extends State<LoginPage> {
     } else if (state.status == RequestStatus.success) {
       // Navigasi ke halaman beranda sudah di-handle oleh GoRouter via AuthBloc.
       // Tidak perlu menampilkan SnackBar sukses.
+    }
+  }
+
+  void _showPasswordLockedBottomSheet(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    final loginBloc = context.read<LoginBloc>();
+    DsBottomSheet.show(
+      context: context,
+      title: 'Gagal Login',
+      description:
+          'Anda telah gagal login sebanyak 3 kali.\nSilakan coba kembali dalam 24 jam ke\ndepan atau reset password',
+      image: SvgPicture.asset(
+        'assets/images/superapp/auth/attempt_count_login.svg',
+        height: 200,
+      ),
+      secondaryButtonText: 'Kembali',
+      onSecondaryPressed: () {
+        Navigator.pop(context);
+        loginBloc.add(LoginStatusResetEvent());
+      },
+      primaryButtonText: 'Reset Password',
+      onPrimaryPressed: () {
+        Navigator.pop(context);
+        loginBloc.add(LoginStatusResetEvent());
+        context.pushNamed(PAGES.forgotPasswrod.screenName);
+      },
+      onClosePressed: () {
+        Navigator.pop(context);
+        loginBloc.add(LoginStatusResetEvent());
+      },
+      isDismissible: true,
+    ).whenComplete(() {
+      if (mounted && loginBloc.state.status == RequestStatus.failure) {
+        loginBloc.add(LoginStatusResetEvent());
+      }
+    });
+  }
+
+  void _showIncorrectPasswordBottomSheet(
+    BuildContext context,
+    int remaining,
+  ) {
+    FocusScope.of(context).unfocus();
+    final loginBloc = context.read<LoginBloc>();
+    DsBottomSheet.show(
+      context: context,
+      title: 'Gagal Login',
+      description:
+          'Periksa kembali email dan password\nyang kamu masukkan. Tersisa $remaining kali\npercobaan.',
+      image: SvgPicture.asset(
+        'assets/images/superapp/auth/attempt_count_login.svg',
+        height: 200,
+      ),
+      secondaryButtonText: 'Kembali',
+      onSecondaryPressed: () {
+        Navigator.pop(context);
+        loginBloc.add(LoginStatusResetEvent());
+      },
+      primaryButtonText: 'Coba Lagi',
+      onPrimaryPressed: () {
+        Navigator.pop(context);
+        loginBloc.add(LoginStatusResetEvent());
+      },
+      onClosePressed: () {
+        Navigator.pop(context);
+        loginBloc.add(LoginStatusResetEvent());
+      },
+      isDismissible: true,
+    ).whenComplete(() {
+      if (mounted && loginBloc.state.status == RequestStatus.failure) {
+        loginBloc.add(LoginStatusResetEvent());
+      }
+    });
+  }
+
+  Future<void> _openTwoFaBottomSheet(BuildContext context) async {
+    if (_isTwoFaSheetOpen) return;
+    _isTwoFaSheetOpen = true;
+    FocusScope.of(context).unfocus();
+
+    final loginBloc = context.read<LoginBloc>();
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isDismissible: true,
+        enableDrag: true,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        barrierColor: Colors.black45,
+        builder: (_) => BlocProvider<LoginBloc>.value(
+          value: loginBloc,
+          child: const _TwoFaModalContent(),
+        ),
+      );
+    } finally {
+      _isTwoFaSheetOpen = false;
+      if (mounted && loginBloc.state.twoFaStage != LoginTwoFaStage.none) {
+        loginBloc.add(const LoginTwoFaDismissedEvent());
+      }
     }
   }
 
@@ -506,6 +586,187 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         );
+      },
+    );
+  }
+}
+
+class _TwoFaModalContent extends StatefulWidget {
+  const _TwoFaModalContent();
+
+  @override
+  State<_TwoFaModalContent> createState() => _TwoFaModalContentState();
+}
+
+class _TwoFaModalContentState extends State<_TwoFaModalContent> {
+  late final TextEditingController _otpController;
+  bool _hasPopped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (context.read<LoginBloc>().state.twoFaStage == LoginTwoFaStage.none) {
+        _dismissIfCurrent();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  void _dismissIfCurrent() {
+    if (_hasPopped || !mounted) return;
+    final route = ModalRoute.of(context);
+    if (route != null && route.isCurrent) {
+      _hasPopped = true;
+      Navigator.of(context).pop();
+    }
+  }
+
+  String _resolveOtpTarget(LoginState sheetState, TwoFaMethodType method) {
+    final email = sheetState.twoFaEmail.isNotEmpty
+        ? sheetState.twoFaEmail
+        : sheetState.username;
+    final phone = sheetState.twoFaPhone;
+    switch (method) {
+      case TwoFaMethodType.email:
+        return email;
+      case TwoFaMethodType.whatsapp:
+      case TwoFaMethodType.sms:
+        return phone.isNotEmpty ? phone : email;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<LoginBloc, LoginState>(
+      listenWhen: (previous, current) =>
+          previous.twoFaStage != current.twoFaStage ||
+          previous.otpCountdownKey != current.otpCountdownKey,
+      listener: (modalContext, sheetState) {
+        if (sheetState.twoFaStage == LoginTwoFaStage.none) {
+          _dismissIfCurrent();
+          return;
+        }
+        if (sheetState.twoFaStage == LoginTwoFaStage.verifyOtp) {
+          _otpController.clear();
+        }
+      },
+      buildWhen: (previous, current) =>
+          current.twoFaStage != LoginTwoFaStage.none,
+      builder: (modalContext, sheetState) {
+        final isSheetBusy = sheetState.isRequestingOtp ||
+            sheetState.isResendingOtp ||
+            sheetState.isVerifyingOtp;
+
+        switch (sheetState.twoFaStage) {
+          case LoginTwoFaStage.none:
+            return const SizedBox.shrink();
+          case LoginTwoFaStage.selectMethod:
+            return TwoFaMethodBottomSheet(
+              email: sheetState.twoFaEmail.isNotEmpty
+                  ? sheetState.twoFaEmail
+                  : sheetState.username,
+              phone: sheetState.twoFaPhone,
+              otpLimitExceeded: sheetState.otpLimitExceeded,
+              initialSelectedType: sheetState.selectedMethod,
+              isLoading: sheetState.isRequestingOtp,
+              errorMessage: sheetState.twoFaActionErrorMessage,
+              onConfirm: (option) {
+                modalContext
+                    .read<LoginBloc>()
+                    .add(LoginTwoFaMethodSelectedEvent(option.type));
+              },
+              onCancel: () {
+                if (isSheetBusy) return;
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginTwoFaDismissedEvent());
+              },
+              onClose: () {
+                if (isSheetBusy) return;
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginTwoFaDismissedEvent());
+              },
+            );
+          case LoginTwoFaStage.verifyOtp:
+            final method = sheetState.selectedMethod ?? TwoFaMethodType.email;
+            final target = _resolveOtpTarget(sheetState, method);
+            return TwoFaVerifyOtpBottomSheet(
+              methodType: method,
+              target: target,
+              controller: _otpController,
+              initialCountdownSeconds: sheetState.otpExpiresIn,
+              countdownKey: sheetState.otpCountdownKey,
+              errorMessage: sheetState.otpErrorMessage,
+              attemptsLeft: sheetState.otpAttemptsLeft,
+              otpLimitExceeded: sheetState.otpLimitExceeded,
+              isSessionExpired: sheetState.isOtpSessionExpired,
+              isLocked: sheetState.isOtpLocked,
+              isLoading: sheetState.isVerifyingOtp,
+              isResending: sheetState.isResendingOtp,
+              autoFocusOtp: true,
+              onConfirm: (otp) {
+                FocusScope.of(modalContext).unfocus();
+                modalContext
+                    .read<LoginBloc>()
+                    .add(LoginOtpSubmittedEvent(otp));
+              },
+              onResend: () {
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginOtpResendRequestedEvent());
+              },
+              onChangeMethod: () {
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginTwoFaChangeMethodRequestedEvent());
+              },
+              onClose: () {
+                if (isSheetBusy) return;
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginTwoFaDismissedEvent());
+              },
+            );
+          case LoginTwoFaStage.otpLocked24Hours:
+            final variant = sheetState.twoFaLockedVariant ??
+                TwoFaLockedVariant.accountRestricted;
+            if (variant == TwoFaLockedVariant.otpVerificationFailed) {
+              return TwoFaLockedBottomSheet.otpVerificationFailed(
+                onPrimaryPressed: () {
+                  modalContext
+                      .read<LoginBloc>()
+                      .add(const LoginTwoFaDismissedEvent());
+                },
+                onClose: () {
+                  modalContext
+                      .read<LoginBloc>()
+                      .add(const LoginTwoFaDismissedEvent());
+                },
+              );
+            }
+            return TwoFaLockedBottomSheet.accountRestricted(
+              onPrimaryPressed: () async {
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginTwoFaDismissedEvent());
+                await TwoFaLockedBottomSheet.openCustomerServiceUrl();
+              },
+              onClose: () {
+                modalContext
+                    .read<LoginBloc>()
+                    .add(const LoginTwoFaDismissedEvent());
+              },
+            );
+        }
       },
     );
   }

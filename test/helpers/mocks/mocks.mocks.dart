@@ -4,84 +4,108 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
-import 'dart:typed_data' as _i23;
-import 'dart:ui' as _i43;
+import 'dart:typed_data' as _i25;
+import 'dart:ui' as _i50;
 
-import 'package:dartz/dartz.dart' as _i13;
+import 'package:dartz/dartz.dart' as _i16;
 import 'package:dio/dio.dart' as _i4;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i6;
-import 'package:komtim_partner/common/failure.dart' as _i28;
-import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart' as _i17;
-import 'package:komtim_partner/core/data/apiservice/dio_client.dart' as _i18;
+import 'package:komtim_partner/common/failure.dart' as _i30;
+import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart' as _i19;
+import 'package:komtim_partner/core/data/apiservice/dio_client.dart' as _i20;
 import 'package:komtim_partner/core/data/apiservice/dio_response_parser.dart'
-    as _i19;
+    as _i21;
 import 'package:komtim_partner/core/data/apiservice/interceptors/auth_interceptor.dart'
     as _i3;
 import 'package:komtim_partner/core/data/datasources/preferences/secure_storage_service.dart'
-    as _i11;
+    as _i14;
 import 'package:komtim_partner/core/data/datasources/preferences/shared_pref.dart'
     as _i2;
 import 'package:komtim_partner/core/data/datasources/remote/auth_remote_datasource.dart'
-    as _i24;
+    as _i26;
 import 'package:komtim_partner/core/data/datasources/remote/invoice_remote_datasource.dart'
-    as _i21;
+    as _i23;
 import 'package:komtim_partner/core/data/models/check_email_response.dart'
     as _i8;
 import 'package:komtim_partner/core/data/models/forget_pin_response.dart'
-    as _i12;
+    as _i15;
 import 'package:komtim_partner/core/data/models/invoice_detail_response.dart'
     as _i7;
-import 'package:komtim_partner/core/data/models/invoices_response.dart' as _i22;
+import 'package:komtim_partner/core/data/models/invoices_response.dart' as _i24;
 import 'package:komtim_partner/core/data/models/login_response.dart' as _i9;
-import 'package:komtim_partner/core/data/models/profile_response.dart' as _i26;
-import 'package:komtim_partner/core/data/models/talents_response.dart' as _i25;
-import 'package:komtim_partner/core/domain/entities/attendance_model.dart'
-    as _i41;
-import 'package:komtim_partner/core/domain/entities/auth_state.dart' as _i14;
-import 'package:komtim_partner/core/domain/entities/check_email_model.dart'
-    as _i36;
-import 'package:komtim_partner/core/domain/entities/invoice_detail_model.dart'
-    as _i30;
-import 'package:komtim_partner/core/domain/entities/invoices_model.dart'
+import 'package:komtim_partner/core/data/models/partner_login_response.dart'
+    as _i10;
+import 'package:komtim_partner/core/data/models/profile_response.dart' as _i28;
+import 'package:komtim_partner/core/data/models/request_login_otp_response.dart'
+    as _i11;
+import 'package:komtim_partner/core/data/models/talents_response.dart' as _i27;
+import 'package:komtim_partner/core/data/models/verify_login_otp_response.dart'
+    as _i12;
+import 'package:komtim_partner/core/data/repositories/superapp_profile_repository_impl.dart'
     as _i29;
-import 'package:komtim_partner/core/domain/entities/login_model.dart' as _i37;
-import 'package:komtim_partner/core/domain/entities/profile_model.dart' as _i39;
-import 'package:komtim_partner/core/domain/entities/report_performance_model.dart'
-    as _i32;
-import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart'
-    as _i35;
-import 'package:komtim_partner/core/domain/entities/report_performance_product_model.dart'
-    as _i33;
-import 'package:komtim_partner/core/domain/entities/report_performance_weekly_model.dart'
-    as _i34;
-import 'package:komtim_partner/core/domain/managers/authentication_manager.dart'
-    as _i42;
-import 'package:komtim_partner/core/domain/repositories/attendance_repository.dart'
-    as _i40;
-import 'package:komtim_partner/core/domain/repositories/auth_repository.dart'
-    as _i15;
-import 'package:komtim_partner/core/domain/repositories/invoice_repository.dart'
-    as _i27;
-import 'package:komtim_partner/core/domain/repositories/profile_repository.dart'
-    as _i38;
-import 'package:komtim_partner/core/domain/repositories/report_performance_repository.dart'
-    as _i31;
-import 'package:komtim_partner/core/domain/usecases/change_password_use_case.dart'
-    as _i47;
-import 'package:komtim_partner/core/domain/usecases/do_login_use_case.dart'
-    as _i44;
-import 'package:komtim_partner/core/domain/usecases/do_logout_use_case.dart'
-    as _i45;
-import 'package:komtim_partner/core/domain/usecases/get_profile_use_case.dart'
-    as _i16;
-import 'package:komtim_partner/core/domain/usecases/recaptcha_use_case.dart'
+import 'package:komtim_partner/core/domain/entities/attendance_model.dart'
     as _i48;
+import 'package:komtim_partner/core/domain/entities/auth_state.dart' as _i17;
+import 'package:komtim_partner/core/domain/entities/check_email_model.dart'
+    as _i40;
+import 'package:komtim_partner/core/domain/entities/invoice_detail_model.dart'
+    as _i34;
+import 'package:komtim_partner/core/domain/entities/invoices_model.dart'
+    as _i33;
+import 'package:komtim_partner/core/domain/entities/login_model.dart' as _i41;
+import 'package:komtim_partner/core/domain/entities/partner_login_model.dart'
+    as _i42;
+import 'package:komtim_partner/core/domain/entities/profile_model.dart' as _i46;
+import 'package:komtim_partner/core/domain/entities/report_performance_model.dart'
+    as _i36;
+import 'package:komtim_partner/core/domain/entities/report_performance_monthly_model.dart'
+    as _i39;
+import 'package:komtim_partner/core/domain/entities/report_performance_product_model.dart'
+    as _i37;
+import 'package:komtim_partner/core/domain/entities/report_performance_weekly_model.dart'
+    as _i38;
+import 'package:komtim_partner/core/domain/entities/request_login_otp_model.dart'
+    as _i43;
+import 'package:komtim_partner/core/domain/entities/superapp_profile_model.dart'
+    as _i31;
+import 'package:komtim_partner/core/domain/entities/verify_login_otp_model.dart'
+    as _i44;
+import 'package:komtim_partner/core/domain/managers/authentication_manager.dart'
+    as _i49;
+import 'package:komtim_partner/core/domain/repositories/attendance_repository.dart'
+    as _i47;
+import 'package:komtim_partner/core/domain/repositories/auth_repository.dart'
+    as _i18;
+import 'package:komtim_partner/core/domain/repositories/invoice_repository.dart'
+    as _i32;
+import 'package:komtim_partner/core/domain/repositories/profile_repository.dart'
+    as _i45;
+import 'package:komtim_partner/core/domain/repositories/report_performance_repository.dart'
+    as _i35;
+import 'package:komtim_partner/core/domain/usecases/change_password_use_case.dart'
+    as _i58;
+import 'package:komtim_partner/core/domain/usecases/check_email_login_use_case.dart'
+    as _i52;
+import 'package:komtim_partner/core/domain/usecases/do_login_use_case.dart'
+    as _i51;
+import 'package:komtim_partner/core/domain/usecases/do_logout_use_case.dart'
+    as _i56;
+import 'package:komtim_partner/core/domain/usecases/get_profile_use_case.dart'
+    as _i59;
+import 'package:komtim_partner/core/domain/usecases/partner_login_use_case.dart'
+    as _i53;
+import 'package:komtim_partner/core/domain/usecases/recaptcha_use_case.dart'
+    as _i60;
+import 'package:komtim_partner/core/domain/usecases/request_login_otp_use_case.dart'
+    as _i54;
 import 'package:komtim_partner/core/domain/usecases/send_forgot_password_use_case.dart'
-    as _i46;
+    as _i57;
+import 'package:komtim_partner/core/domain/usecases/verify_login_otp_use_case.dart'
+    as _i55;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i20;
-import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart' as _i49;
-import 'package:shared_preferences/shared_preferences.dart' as _i10;
+import 'package:mockito/src/dummies.dart' as _i22;
+import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart' as _i61;
+import 'package:shared_preferences/shared_preferences.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -254,9 +278,9 @@ class _FakeLoginResponse_14 extends _i1.SmartFake implements _i9.LoginResponse {
         );
 }
 
-class _FakeSharedPreferences_15 extends _i1.SmartFake
-    implements _i10.SharedPreferences {
-  _FakeSharedPreferences_15(
+class _FakePartnerLoginResponse_15 extends _i1.SmartFake
+    implements _i10.PartnerLoginResponse {
+  _FakePartnerLoginResponse_15(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -265,9 +289,9 @@ class _FakeSharedPreferences_15 extends _i1.SmartFake
         );
 }
 
-class _FakeSecureStorageService_16 extends _i1.SmartFake
-    implements _i11.SecureStorageService {
-  _FakeSecureStorageService_16(
+class _FakeRequestLoginOtpResponse_16 extends _i1.SmartFake
+    implements _i11.RequestLoginOtpResponse {
+  _FakeRequestLoginOtpResponse_16(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -276,9 +300,9 @@ class _FakeSecureStorageService_16 extends _i1.SmartFake
         );
 }
 
-class _FakeForgetPinResponse_17 extends _i1.SmartFake
-    implements _i12.ForgetPinResponse {
-  _FakeForgetPinResponse_17(
+class _FakeVerifyLoginOtpResponse_17 extends _i1.SmartFake
+    implements _i12.VerifyLoginOtpResponse {
+  _FakeVerifyLoginOtpResponse_17(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -287,8 +311,9 @@ class _FakeForgetPinResponse_17 extends _i1.SmartFake
         );
 }
 
-class _FakeEither_18<L, R> extends _i1.SmartFake implements _i13.Either<L, R> {
-  _FakeEither_18(
+class _FakeSharedPreferences_18 extends _i1.SmartFake
+    implements _i13.SharedPreferences {
+  _FakeSharedPreferences_18(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -297,8 +322,9 @@ class _FakeEither_18<L, R> extends _i1.SmartFake implements _i13.Either<L, R> {
         );
 }
 
-class _FakeAuthState_19 extends _i1.SmartFake implements _i14.AuthState {
-  _FakeAuthState_19(
+class _FakeSecureStorageService_19 extends _i1.SmartFake
+    implements _i14.SecureStorageService {
+  _FakeSecureStorageService_19(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -307,9 +333,9 @@ class _FakeAuthState_19 extends _i1.SmartFake implements _i14.AuthState {
         );
 }
 
-class _FakeAuthRepository_20 extends _i1.SmartFake
-    implements _i15.AuthRepository {
-  _FakeAuthRepository_20(
+class _FakeForgetPinResponse_20 extends _i1.SmartFake
+    implements _i15.ForgetPinResponse {
+  _FakeForgetPinResponse_20(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -318,9 +344,8 @@ class _FakeAuthRepository_20 extends _i1.SmartFake
         );
 }
 
-class _FakeGetProfileUseCase_21 extends _i1.SmartFake
-    implements _i16.GetProfileUseCase {
-  _FakeGetProfileUseCase_21(
+class _FakeEither_21<L, R> extends _i1.SmartFake implements _i16.Either<L, R> {
+  _FakeEither_21(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -329,8 +354,29 @@ class _FakeGetProfileUseCase_21 extends _i1.SmartFake
         );
 }
 
-class _FakeAuthBloc_22 extends _i1.SmartFake implements _i17.AuthBloc {
-  _FakeAuthBloc_22(
+class _FakeAuthState_22 extends _i1.SmartFake implements _i17.AuthState {
+  _FakeAuthState_22(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeAuthRepository_23 extends _i1.SmartFake
+    implements _i18.AuthRepository {
+  _FakeAuthRepository_23(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeAuthBloc_24 extends _i1.SmartFake implements _i19.AuthBloc {
+  _FakeAuthBloc_24(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -342,7 +388,7 @@ class _FakeAuthBloc_22 extends _i1.SmartFake implements _i17.AuthBloc {
 /// A class which mocks [DioClient].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDioClient extends _i1.Mock implements _i18.DioClient {
+class MockDioClient extends _i1.Mock implements _i20.DioClient {
   MockDioClient() {
     _i1.throwOnMissingStub(this);
   }
@@ -571,7 +617,7 @@ class MockDioClient extends _i1.Mock implements _i18.DioClient {
 /// A class which mocks [DioResponseParser].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDioResponseParser extends _i1.Mock implements _i19.DioResponseParser {
+class MockDioResponseParser extends _i1.Mock implements _i21.DioResponseParser {
   MockDioResponseParser() {
     _i1.throwOnMissingStub(this);
   }
@@ -589,7 +635,7 @@ class MockDioResponseParser extends _i1.Mock implements _i19.DioResponseParser {
             fromJson,
           ],
         ),
-        returnValue: _i20.dummyValue<T>(
+        returnValue: _i22.dummyValue<T>(
           this,
           Invocation.method(
             #parseResponse,
@@ -614,7 +660,7 @@ class MockDioResponseParser extends _i1.Mock implements _i19.DioResponseParser {
             fromJson,
           ],
         ),
-        returnValue: _i20.dummyValue<T>(
+        returnValue: _i22.dummyValue<T>(
           this,
           Invocation.method(
             #parseResponseMetaData,
@@ -639,8 +685,8 @@ class MockDioResponseParser extends _i1.Mock implements _i19.DioResponseParser {
             successHandler,
           ],
         ),
-        returnValue: _i20.ifNotNull(
-              _i20.dummyValueOrNull<T>(
+        returnValue: _i22.ifNotNull(
+              _i22.dummyValueOrNull<T>(
                 this,
                 Invocation.method(
                   #parseResponseMeta,
@@ -668,7 +714,7 @@ class MockDioResponseParser extends _i1.Mock implements _i19.DioResponseParser {
 /// A class which mocks [SharedPreferences].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSharedPreferences extends _i1.Mock implements _i10.SharedPreferences {
+class MockSharedPreferences extends _i1.Mock implements _i13.SharedPreferences {
   MockSharedPreferences() {
     _i1.throwOnMissingStub(this);
   }
@@ -1077,13 +1123,13 @@ class MockFlutterSecureStorage extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockInvoiceRemoteDataSource extends _i1.Mock
-    implements _i21.InvoiceRemoteDataSource {
+    implements _i23.InvoiceRemoteDataSource {
   MockInvoiceRemoteDataSource() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<List<_i22.InvoicesResponseData>> getDataInvoices(
+  _i5.Future<List<_i24.InvoicesResponseData>> getDataInvoices(
     String? type,
     int? offset,
     int? limit,
@@ -1097,9 +1143,9 @@ class MockInvoiceRemoteDataSource extends _i1.Mock
             limit,
           ],
         ),
-        returnValue: _i5.Future<List<_i22.InvoicesResponseData>>.value(
-            <_i22.InvoicesResponseData>[]),
-      ) as _i5.Future<List<_i22.InvoicesResponseData>>);
+        returnValue: _i5.Future<List<_i24.InvoicesResponseData>>.value(
+            <_i24.InvoicesResponseData>[]),
+      ) as _i5.Future<List<_i24.InvoicesResponseData>>);
 
   @override
   _i5.Future<_i7.InvoiceDetailResponse> getInvoiceDetail(String? invoiceCode) =>
@@ -1119,14 +1165,14 @@ class MockInvoiceRemoteDataSource extends _i1.Mock
       ) as _i5.Future<_i7.InvoiceDetailResponse>);
 
   @override
-  _i5.Future<_i23.Uint8List> downLoadInvoice(String? invoiceCode) =>
+  _i5.Future<_i25.Uint8List> downLoadInvoice(String? invoiceCode) =>
       (super.noSuchMethod(
         Invocation.method(
           #downLoadInvoice,
           [invoiceCode],
         ),
-        returnValue: _i5.Future<_i23.Uint8List>.value(_i23.Uint8List(0)),
-      ) as _i5.Future<_i23.Uint8List>);
+        returnValue: _i5.Future<_i25.Uint8List>.value(_i25.Uint8List(0)),
+      ) as _i5.Future<_i25.Uint8List>);
 
   @override
   _i5.Future<_i7.CheckEvaluationResponse> checkTalentEvaluation(
@@ -1151,7 +1197,7 @@ class MockInvoiceRemoteDataSource extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAuthRemoteDataSource extends _i1.Mock
-    implements _i24.AuthRemoteDataSource {
+    implements _i26.AuthRemoteDataSource {
   MockAuthRemoteDataSource() {
     _i1.throwOnMissingStub(this);
   }
@@ -1205,6 +1251,93 @@ class MockAuthRemoteDataSource extends _i1.Mock
           ),
         )),
       ) as _i5.Future<_i9.LoginResponse>);
+
+  @override
+  _i5.Future<_i10.PartnerLoginResponse> partnerLogin(
+    String? username,
+    String? password, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #partnerLogin,
+          [
+            username,
+            password,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue: _i5.Future<_i10.PartnerLoginResponse>.value(
+            _FakePartnerLoginResponse_15(
+          this,
+          Invocation.method(
+            #partnerLogin,
+            [
+              username,
+              password,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i10.PartnerLoginResponse>);
+
+  @override
+  _i5.Future<_i11.RequestLoginOtpResponse> requestLoginOtp(
+    String? loginToken,
+    String? method, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #requestLoginOtp,
+          [
+            loginToken,
+            method,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue: _i5.Future<_i11.RequestLoginOtpResponse>.value(
+            _FakeRequestLoginOtpResponse_16(
+          this,
+          Invocation.method(
+            #requestLoginOtp,
+            [
+              loginToken,
+              method,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i11.RequestLoginOtpResponse>);
+
+  @override
+  _i5.Future<_i12.VerifyLoginOtpResponse> verifyLoginOtp(
+    String? otpToken,
+    String? otp, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyLoginOtp,
+          [
+            otpToken,
+            otp,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue: _i5.Future<_i12.VerifyLoginOtpResponse>.value(
+            _FakeVerifyLoginOtpResponse_17(
+          this,
+          Invocation.method(
+            #verifyLoginOtp,
+            [
+              otpToken,
+              otp,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i12.VerifyLoginOtpResponse>);
 
   @override
   _i5.Future<bool> doLogout() => (super.noSuchMethod(
@@ -1280,6 +1413,129 @@ class MockAuthRemoteDataSource extends _i1.Mock
       ) as _i5.Future<bool>);
 }
 
+/// A class which mocks [SecureStorageService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSecureStorageService extends _i1.Mock
+    implements _i14.SecureStorageService {
+  MockSecureStorageService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<void> saveOtpChallenge(
+    String? purpose,
+    Map<String, String>? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #saveOtpChallenge,
+          [
+            purpose,
+            value,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<Map<String, String>?> readOtpChallenge(String? purpose) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #readOtpChallenge,
+          [purpose],
+        ),
+        returnValue: _i5.Future<Map<String, String>?>.value(),
+      ) as _i5.Future<Map<String, String>?>);
+
+  @override
+  _i5.Future<void> clearOtpChallenge(String? purpose) => (super.noSuchMethod(
+        Invocation.method(
+          #clearOtpChallenge,
+          [purpose],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> clearAllOtpChallenges() => (super.noSuchMethod(
+        Invocation.method(
+          #clearAllOtpChallenges,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> saveTokens({
+    required String? accessToken,
+    required String? refreshToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #saveTokens,
+          [],
+          {
+            #accessToken: accessToken,
+            #refreshToken: refreshToken,
+          },
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> saveAccessToken(String? accessToken) => (super.noSuchMethod(
+        Invocation.method(
+          #saveAccessToken,
+          [accessToken],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<String?> getAccessToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getAccessToken,
+          [],
+        ),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
+
+  @override
+  _i5.Future<String?> getRefreshToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getRefreshToken,
+          [],
+        ),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
+
+  @override
+  _i5.Future<void> deleteTokens() => (super.noSuchMethod(
+        Invocation.method(
+          #deleteTokens,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deleteAll() => (super.noSuchMethod(
+        Invocation.method(
+          #deleteAll,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
 /// A class which mocks [SharedPref].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -1289,24 +1545,24 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
   }
 
   @override
-  _i5.Future<_i10.SharedPreferences> get sharedPreferences =>
+  _i5.Future<_i13.SharedPreferences> get sharedPreferences =>
       (super.noSuchMethod(
         Invocation.getter(#sharedPreferences),
         returnValue:
-            _i5.Future<_i10.SharedPreferences>.value(_FakeSharedPreferences_15(
+            _i5.Future<_i13.SharedPreferences>.value(_FakeSharedPreferences_18(
           this,
           Invocation.getter(#sharedPreferences),
         )),
-      ) as _i5.Future<_i10.SharedPreferences>);
+      ) as _i5.Future<_i13.SharedPreferences>);
 
   @override
-  _i11.SecureStorageService get secureStorage => (super.noSuchMethod(
+  _i14.SecureStorageService get secureStorage => (super.noSuchMethod(
         Invocation.getter(#secureStorage),
-        returnValue: _FakeSecureStorageService_16(
+        returnValue: _FakeSecureStorageService_19(
           this,
           Invocation.getter(#secureStorage),
         ),
-      ) as _i11.SecureStorageService);
+      ) as _i14.SecureStorageService);
 
   @override
   _i5.Future<void> saveUserAndToken(_i9.LoginResponse? userAndToken) =>
@@ -1373,20 +1629,20 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
       ) as _i5.Future<bool>);
 
   @override
-  _i5.Future<_i12.ForgetPinResponse> getTime() => (super.noSuchMethod(
+  _i5.Future<_i15.ForgetPinResponse> getTime() => (super.noSuchMethod(
         Invocation.method(
           #getTime,
           [],
         ),
         returnValue:
-            _i5.Future<_i12.ForgetPinResponse>.value(_FakeForgetPinResponse_17(
+            _i5.Future<_i15.ForgetPinResponse>.value(_FakeForgetPinResponse_20(
           this,
           Invocation.method(
             #getTime,
             [],
           ),
         )),
-      ) as _i5.Future<_i12.ForgetPinResponse>);
+      ) as _i5.Future<_i15.ForgetPinResponse>);
 
   @override
   _i5.Future<void> saveFcmToken(String? fcmToken) => (super.noSuchMethod(
@@ -1404,7 +1660,7 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
           #getFcmToken,
           [],
         ),
-        returnValue: _i5.Future<String>.value(_i20.dummyValue<String>(
+        returnValue: _i5.Future<String>.value(_i22.dummyValue<String>(
           this,
           Invocation.method(
             #getFcmToken,
@@ -1429,7 +1685,7 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
           #getRemoteVersion,
           [],
         ),
-        returnValue: _i5.Future<String>.value(_i20.dummyValue<String>(
+        returnValue: _i5.Future<String>.value(_i22.dummyValue<String>(
           this,
           Invocation.method(
             #getRemoteVersion,
@@ -1439,7 +1695,7 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
       ) as _i5.Future<String>);
 
   @override
-  _i5.Future<bool> saveTalents(List<_i25.TalentsSelectedData>? talents) =>
+  _i5.Future<bool> saveTalents(List<_i27.TalentsSelectedData>? talents) =>
       (super.noSuchMethod(
         Invocation.method(
           #saveTalents,
@@ -1449,15 +1705,15 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
       ) as _i5.Future<bool>);
 
   @override
-  _i5.Future<List<_i25.TalentsSelectedData>> getTalents() =>
+  _i5.Future<List<_i27.TalentsSelectedData>> getTalents() =>
       (super.noSuchMethod(
         Invocation.method(
           #getTalents,
           [],
         ),
-        returnValue: _i5.Future<List<_i25.TalentsSelectedData>>.value(
-            <_i25.TalentsSelectedData>[]),
-      ) as _i5.Future<List<_i25.TalentsSelectedData>>);
+        returnValue: _i5.Future<List<_i27.TalentsSelectedData>>.value(
+            <_i27.TalentsSelectedData>[]),
+      ) as _i5.Future<List<_i27.TalentsSelectedData>>);
 
   @override
   _i5.Future<bool> updateReasonByJobAssigneeId(
@@ -1488,7 +1744,7 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> saveProfileData(_i26.ProfileResponse? profileData) =>
+  _i5.Future<void> saveProfileData(_i28.ProfileResponse? profileData) =>
       (super.noSuchMethod(
         Invocation.method(
           #saveProfileData,
@@ -1499,13 +1755,13 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<_i26.ProfileResponse?> getProfileResponse() => (super.noSuchMethod(
+  _i5.Future<_i28.ProfileResponse?> getProfileResponse() => (super.noSuchMethod(
         Invocation.method(
           #getProfileResponse,
           [],
         ),
-        returnValue: _i5.Future<_i26.ProfileResponse?>.value(),
-      ) as _i5.Future<_i26.ProfileResponse?>);
+        returnValue: _i5.Future<_i28.ProfileResponse?>.value(),
+      ) as _i5.Future<_i28.ProfileResponse?>);
 
   @override
   _i5.Future<int?> getPartnerIdFromSuperappLogin() => (super.noSuchMethod(
@@ -1573,17 +1829,102 @@ class MockSharedPref extends _i1.Mock implements _i2.SharedPref {
       ) as _i5.Future<bool>);
 }
 
+/// A class which mocks [SuperappProfileRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSuperappProfileRepository extends _i1.Mock
+    implements _i29.SuperappProfileRepository {
+  MockSuperappProfileRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Stream<void> get profileShouldRefresh => (super.noSuchMethod(
+        Invocation.getter(#profileShouldRefresh),
+        returnValue: _i5.Stream<void>.empty(),
+      ) as _i5.Stream<void>);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i31.SuperappProfileModel>>
+      getProfile() => (super.noSuchMethod(
+            Invocation.method(
+              #getProfile,
+              [],
+            ),
+            returnValue: _i5.Future<
+                    _i16.Either<_i30.Failure, _i31.SuperappProfileModel>>.value(
+                _FakeEither_21<_i30.Failure, _i31.SuperappProfileModel>(
+              this,
+              Invocation.method(
+                #getProfile,
+                [],
+              ),
+            )),
+          ) as _i5
+              .Future<_i16.Either<_i30.Failure, _i31.SuperappProfileModel>>);
+
+  @override
+  _i5.Future<_i31.SuperappProfileModel?> getCachedProfile() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCachedProfile,
+          [],
+        ),
+        returnValue: _i5.Future<_i31.SuperappProfileModel?>.value(),
+      ) as _i5.Future<_i31.SuperappProfileModel?>);
+
+  @override
+  void notifyProfileRefresh() => super.noSuchMethod(
+        Invocation.method(
+          #notifyProfileRefresh,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void seedPendingProfile(_i31.SuperappProfileModel? profile) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #seedPendingProfile,
+          [profile],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i31.SuperappProfileModel? consumePendingProfile() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #consumePendingProfile,
+          [],
+        ),
+        returnValue: null,
+        returnValueForMissingStub: null,
+      ) as _i31.SuperappProfileModel?);
+
+  @override
+  _i5.Future<void> clearCache() => (super.noSuchMethod(
+        Invocation.method(
+          #clearCache,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
 /// A class which mocks [InvoiceRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockInvoiceRepository extends _i1.Mock implements _i27.InvoiceRepository {
+class MockInvoiceRepository extends _i1.Mock implements _i32.InvoiceRepository {
   MockInvoiceRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i5.Future<
-      _i13.Either<_i28.Failure, List<_i29.InvoicesDataModel>>> getInvoices(
+      _i16.Either<_i30.Failure, List<_i33.InvoicesDataModel>>> getInvoices(
     String? type,
     int? offset,
     int? limit,
@@ -1598,8 +1939,8 @@ class MockInvoiceRepository extends _i1.Mock implements _i27.InvoiceRepository {
           ],
         ),
         returnValue: _i5.Future<
-                _i13.Either<_i28.Failure, List<_i29.InvoicesDataModel>>>.value(
-            _FakeEither_18<_i28.Failure, List<_i29.InvoicesDataModel>>(
+                _i16.Either<_i30.Failure, List<_i33.InvoicesDataModel>>>.value(
+            _FakeEither_21<_i30.Failure, List<_i33.InvoicesDataModel>>(
           this,
           Invocation.method(
             #getInvoices,
@@ -1610,28 +1951,28 @@ class MockInvoiceRepository extends _i1.Mock implements _i27.InvoiceRepository {
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, List<_i29.InvoicesDataModel>>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, List<_i33.InvoicesDataModel>>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i30.InvoiceDetailModel>>
+  _i5.Future<_i16.Either<_i30.Failure, _i34.InvoiceDetailModel>>
       getInvoiceDetail(String? invoiceCode) => (super.noSuchMethod(
             Invocation.method(
               #getInvoiceDetail,
               [invoiceCode],
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure, _i30.InvoiceDetailModel>>.value(
-                _FakeEither_18<_i28.Failure, _i30.InvoiceDetailModel>(
+                    _i16.Either<_i30.Failure, _i34.InvoiceDetailModel>>.value(
+                _FakeEither_21<_i30.Failure, _i34.InvoiceDetailModel>(
               this,
               Invocation.method(
                 #getInvoiceDetail,
                 [invoiceCode],
               ),
             )),
-          ) as _i5.Future<_i13.Either<_i28.Failure, _i30.InvoiceDetailModel>>);
+          ) as _i5.Future<_i16.Either<_i30.Failure, _i34.InvoiceDetailModel>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i23.Uint8List>> downloadInvoice(
+  _i5.Future<_i16.Either<_i30.Failure, _i25.Uint8List>> downloadInvoice(
           String? invoiceCode) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1639,27 +1980,27 @@ class MockInvoiceRepository extends _i1.Mock implements _i27.InvoiceRepository {
           [invoiceCode],
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i23.Uint8List>>.value(
-                _FakeEither_18<_i28.Failure, _i23.Uint8List>(
+            _i5.Future<_i16.Either<_i30.Failure, _i25.Uint8List>>.value(
+                _FakeEither_21<_i30.Failure, _i25.Uint8List>(
           this,
           Invocation.method(
             #downloadInvoice,
             [invoiceCode],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i23.Uint8List>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i25.Uint8List>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i7.CheckEvaluationResponse>>
+  _i5.Future<_i16.Either<_i30.Failure, _i7.CheckEvaluationResponse>>
       checkTalentsEvaluation(String? id) => (super.noSuchMethod(
             Invocation.method(
               #checkTalentsEvaluation,
               [id],
             ),
             returnValue: _i5.Future<
-                    _i13
-                    .Either<_i28.Failure, _i7.CheckEvaluationResponse>>.value(
-                _FakeEither_18<_i28.Failure, _i7.CheckEvaluationResponse>(
+                    _i16
+                    .Either<_i30.Failure, _i7.CheckEvaluationResponse>>.value(
+                _FakeEither_21<_i30.Failure, _i7.CheckEvaluationResponse>(
               this,
               Invocation.method(
                 #checkTalentsEvaluation,
@@ -1667,20 +2008,20 @@ class MockInvoiceRepository extends _i1.Mock implements _i27.InvoiceRepository {
               ),
             )),
           ) as _i5
-              .Future<_i13.Either<_i28.Failure, _i7.CheckEvaluationResponse>>);
+              .Future<_i16.Either<_i30.Failure, _i7.CheckEvaluationResponse>>);
 }
 
 /// A class which mocks [ReportPerformanceRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockReportPerformanceRepository extends _i1.Mock
-    implements _i31.ReportPerformanceRepository {
+    implements _i35.ReportPerformanceRepository {
   MockReportPerformanceRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, List<_i32.ReportPerformanceModel>>>
+  _i5.Future<_i16.Either<_i30.Failure, List<_i36.ReportPerformanceModel>>>
       getReportPerformance({
     required String? search,
     required String? limit,
@@ -1701,9 +2042,9 @@ class MockReportPerformanceRepository extends _i1.Mock
               },
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure,
-                        List<_i32.ReportPerformanceModel>>>.value(
-                _FakeEither_18<_i28.Failure, List<_i32.ReportPerformanceModel>>(
+                    _i16.Either<_i30.Failure,
+                        List<_i36.ReportPerformanceModel>>>.value(
+                _FakeEither_21<_i30.Failure, List<_i36.ReportPerformanceModel>>(
               this,
               Invocation.method(
                 #getReportPerformance,
@@ -1718,11 +2059,11 @@ class MockReportPerformanceRepository extends _i1.Mock
               ),
             )),
           ) as _i5.Future<
-              _i13.Either<_i28.Failure, List<_i32.ReportPerformanceModel>>>);
+              _i16.Either<_i30.Failure, List<_i36.ReportPerformanceModel>>>);
 
   @override
   _i5.Future<
-          _i13.Either<_i28.Failure, List<_i33.ReportPerformanceProductModel>>>
+          _i16.Either<_i30.Failure, List<_i37.ReportPerformanceProductModel>>>
       getProductReportPerformance({
     required String? keyword,
     required String? partnerId,
@@ -1737,10 +2078,10 @@ class MockReportPerformanceRepository extends _i1.Mock
               },
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure,
-                        List<_i33.ReportPerformanceProductModel>>>.value(
-                _FakeEither_18<_i28.Failure,
-                    List<_i33.ReportPerformanceProductModel>>(
+                    _i16.Either<_i30.Failure,
+                        List<_i37.ReportPerformanceProductModel>>>.value(
+                _FakeEither_21<_i30.Failure,
+                    List<_i37.ReportPerformanceProductModel>>(
               this,
               Invocation.method(
                 #getProductReportPerformance,
@@ -1752,11 +2093,11 @@ class MockReportPerformanceRepository extends _i1.Mock
               ),
             )),
           ) as _i5.Future<
-              _i13
-              .Either<_i28.Failure, List<_i33.ReportPerformanceProductModel>>>);
+              _i16
+              .Either<_i30.Failure, List<_i37.ReportPerformanceProductModel>>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, List<_i34.ReportPerformanceWeeklyModel>>>
+  _i5.Future<_i16.Either<_i30.Failure, List<_i38.ReportPerformanceWeeklyModel>>>
       getWeeklyReportPerformance({
     required String? limit,
     required String? offset,
@@ -1777,10 +2118,10 @@ class MockReportPerformanceRepository extends _i1.Mock
               },
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure,
-                        List<_i34.ReportPerformanceWeeklyModel>>>.value(
-                _FakeEither_18<_i28.Failure,
-                    List<_i34.ReportPerformanceWeeklyModel>>(
+                    _i16.Either<_i30.Failure,
+                        List<_i38.ReportPerformanceWeeklyModel>>>.value(
+                _FakeEither_21<_i30.Failure,
+                    List<_i38.ReportPerformanceWeeklyModel>>(
               this,
               Invocation.method(
                 #getWeeklyReportPerformance,
@@ -1795,12 +2136,12 @@ class MockReportPerformanceRepository extends _i1.Mock
               ),
             )),
           ) as _i5.Future<
-              _i13
-              .Either<_i28.Failure, List<_i34.ReportPerformanceWeeklyModel>>>);
+              _i16
+              .Either<_i30.Failure, List<_i38.ReportPerformanceWeeklyModel>>>);
 
   @override
   _i5.Future<
-          _i13.Either<_i28.Failure, List<_i35.ReportPerformanceMonthlyModel>>>
+          _i16.Either<_i30.Failure, List<_i39.ReportPerformanceMonthlyModel>>>
       getMonthlyReportPerformance({
     required String? limit,
     required String? offset,
@@ -1817,10 +2158,10 @@ class MockReportPerformanceRepository extends _i1.Mock
               },
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure,
-                        List<_i35.ReportPerformanceMonthlyModel>>>.value(
-                _FakeEither_18<_i28.Failure,
-                    List<_i35.ReportPerformanceMonthlyModel>>(
+                    _i16.Either<_i30.Failure,
+                        List<_i39.ReportPerformanceMonthlyModel>>>.value(
+                _FakeEither_21<_i30.Failure,
+                    List<_i39.ReportPerformanceMonthlyModel>>(
               this,
               Invocation.method(
                 #getMonthlyReportPerformance,
@@ -1833,20 +2174,20 @@ class MockReportPerformanceRepository extends _i1.Mock
               ),
             )),
           ) as _i5.Future<
-              _i13
-              .Either<_i28.Failure, List<_i35.ReportPerformanceMonthlyModel>>>);
+              _i16
+              .Either<_i30.Failure, List<_i39.ReportPerformanceMonthlyModel>>>);
 }
 
 /// A class which mocks [AuthRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
+class MockAuthRepository extends _i1.Mock implements _i18.AuthRepository {
   MockAuthRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i36.CheckEmailModel>> checkEmailLogin(
+  _i5.Future<_i16.Either<_i30.Failure, _i40.CheckEmailModel>> checkEmailLogin(
     String? email, {
     String? recaptchaToken,
   }) =>
@@ -1857,8 +2198,8 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
           {#recaptchaToken: recaptchaToken},
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i36.CheckEmailModel>>.value(
-                _FakeEither_18<_i28.Failure, _i36.CheckEmailModel>(
+            _i5.Future<_i16.Either<_i30.Failure, _i40.CheckEmailModel>>.value(
+                _FakeEither_21<_i30.Failure, _i40.CheckEmailModel>(
           this,
           Invocation.method(
             #checkEmailLogin,
@@ -1866,10 +2207,10 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             {#recaptchaToken: recaptchaToken},
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i36.CheckEmailModel>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i40.CheckEmailModel>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i37.LoginModel>> doLogin(
+  _i5.Future<_i16.Either<_i30.Failure, _i41.LoginModel>> doLogin(
     String? username,
     String? password, {
     String? recaptchaToken,
@@ -1884,8 +2225,8 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
           {#recaptchaToken: recaptchaToken},
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i37.LoginModel>>.value(
-                _FakeEither_18<_i28.Failure, _i37.LoginModel>(
+            _i5.Future<_i16.Either<_i30.Failure, _i41.LoginModel>>.value(
+                _FakeEither_21<_i30.Failure, _i41.LoginModel>(
           this,
           Invocation.method(
             #doLogin,
@@ -1896,43 +2237,153 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             {#recaptchaToken: recaptchaToken},
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i37.LoginModel>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i41.LoginModel>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> getAuthState() =>
+  _i5.Future<_i16.Either<_i30.Failure, _i42.PartnerLoginModel>> partnerLogin(
+    String? username,
+    String? password, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #partnerLogin,
+          [
+            username,
+            password,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue:
+            _i5.Future<_i16.Either<_i30.Failure, _i42.PartnerLoginModel>>.value(
+                _FakeEither_21<_i30.Failure, _i42.PartnerLoginModel>(
+          this,
+          Invocation.method(
+            #partnerLogin,
+            [
+              username,
+              password,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i42.PartnerLoginModel>>);
+
+  @override
+  _i5.Future<
+      _i16.Either<_i30.Failure, _i43.RequestLoginOtpModel>> requestLoginOtp(
+    String? loginToken,
+    String? method, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #requestLoginOtp,
+          [
+            loginToken,
+            method,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue: _i5
+            .Future<_i16.Either<_i30.Failure, _i43.RequestLoginOtpModel>>.value(
+            _FakeEither_21<_i30.Failure, _i43.RequestLoginOtpModel>(
+          this,
+          Invocation.method(
+            #requestLoginOtp,
+            [
+              loginToken,
+              method,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i43.RequestLoginOtpModel>>);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i44.VerifyLoginOtpModel>>
+      verifyLoginOtp(
+    String? otpToken,
+    String? otp, {
+    String? recaptchaToken,
+  }) =>
+          (super.noSuchMethod(
+            Invocation.method(
+              #verifyLoginOtp,
+              [
+                otpToken,
+                otp,
+              ],
+              {#recaptchaToken: recaptchaToken},
+            ),
+            returnValue: _i5.Future<
+                    _i16.Either<_i30.Failure, _i44.VerifyLoginOtpModel>>.value(
+                _FakeEither_21<_i30.Failure, _i44.VerifyLoginOtpModel>(
+              this,
+              Invocation.method(
+                #verifyLoginOtp,
+                [
+                  otpToken,
+                  otp,
+                ],
+                {#recaptchaToken: recaptchaToken},
+              ),
+            )),
+          ) as _i5.Future<_i16.Either<_i30.Failure, _i44.VerifyLoginOtpModel>>);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i41.UserLoginModel>>
+      completeTwoFaSession(String? jwtToken) => (super.noSuchMethod(
+            Invocation.method(
+              #completeTwoFaSession,
+              [jwtToken],
+            ),
+            returnValue: _i5
+                .Future<_i16.Either<_i30.Failure, _i41.UserLoginModel>>.value(
+                _FakeEither_21<_i30.Failure, _i41.UserLoginModel>(
+              this,
+              Invocation.method(
+                #completeTwoFaSession,
+                [jwtToken],
+              ),
+            )),
+          ) as _i5.Future<_i16.Either<_i30.Failure, _i41.UserLoginModel>>);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, bool>> getAuthState() =>
       (super.noSuchMethod(
         Invocation.method(
           #getAuthState,
           [],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #getAuthState,
             [],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> doLogout() => (super.noSuchMethod(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> doLogout() => (super.noSuchMethod(
         Invocation.method(
           #doLogout,
           [],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #doLogout,
             [],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> sendForgotPass(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> sendForgotPass(
     String? email, {
     String? recaptchaToken,
   }) =>
@@ -1942,8 +2393,8 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
           [email],
           {#recaptchaToken: recaptchaToken},
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #sendForgotPass,
@@ -1951,10 +2402,10 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             {#recaptchaToken: recaptchaToken},
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> changePassword(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> changePassword(
     String? oldPass,
     String? newPass,
     String? confirmPass,
@@ -1968,8 +2419,8 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             confirmPass,
           ],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #changePassword,
@@ -1980,10 +2431,10 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> resetPassword(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> resetPassword(
     String? code,
     String? password,
   ) =>
@@ -1995,8 +2446,8 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             password,
           ],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #resetPassword,
@@ -2006,10 +2457,10 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> resendVerification(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> resendVerification(
     String? email,
     String? productName,
   ) =>
@@ -2021,8 +2472,8 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             productName,
           ],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #resendVerification,
@@ -2032,66 +2483,66 @@ class MockAuthRepository extends _i1.Mock implements _i15.AuthRepository {
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 }
 
 /// A class which mocks [ProfileRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockProfileRepository extends _i1.Mock implements _i38.ProfileRepository {
+class MockProfileRepository extends _i1.Mock implements _i45.ProfileRepository {
   MockProfileRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>> getProfile() =>
+  _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>> getProfile() =>
       (super.noSuchMethod(
         Invocation.method(
           #getProfile,
           [],
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>>.value(
-                _FakeEither_18<_i28.Failure, _i39.ProfileModel>(
+            _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>>.value(
+                _FakeEither_21<_i30.Failure, _i46.ProfileModel>(
           this,
           Invocation.method(
             #getProfile,
             [],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>> getProfileLocal() =>
+  _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>> getProfileLocal() =>
       (super.noSuchMethod(
         Invocation.method(
           #getProfileLocal,
           [],
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>>.value(
-                _FakeEither_18<_i28.Failure, _i39.ProfileModel>(
+            _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>>.value(
+                _FakeEither_21<_i30.Failure, _i46.ProfileModel>(
           this,
           Invocation.method(
             #getProfileLocal,
             [],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>>);
 }
 
 /// A class which mocks [AttendanceRepostiory].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAttendanceRepostiory extends _i1.Mock
-    implements _i40.AttendanceRepostiory {
+    implements _i47.AttendanceRepostiory {
   MockAttendanceRepostiory() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i5.Future<
-      _i13.Either<_i28.Failure, List<_i41.AttendanceModel>>> getAttendance(
+      _i16.Either<_i30.Failure, List<_i48.AttendanceModel>>> getAttendance(
     int? offset,
     int? limit,
     String? name,
@@ -2110,8 +2561,8 @@ class MockAttendanceRepostiory extends _i1.Mock
           ],
         ),
         returnValue: _i5.Future<
-                _i13.Either<_i28.Failure, List<_i41.AttendanceModel>>>.value(
-            _FakeEither_18<_i28.Failure, List<_i41.AttendanceModel>>(
+                _i16.Either<_i30.Failure, List<_i48.AttendanceModel>>>.value(
+            _FakeEither_21<_i30.Failure, List<_i48.AttendanceModel>>(
           this,
           Invocation.method(
             #getAttendance,
@@ -2124,10 +2575,10 @@ class MockAttendanceRepostiory extends _i1.Mock
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, List<_i41.AttendanceModel>>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, List<_i48.AttendanceModel>>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, List<_i41.AttendanceFailModel>>>
+  _i5.Future<_i16.Either<_i30.Failure, List<_i48.AttendanceFailModel>>>
       getAttendanceFail(
     int? offset,
     int? limit,
@@ -2147,9 +2598,9 @@ class MockAttendanceRepostiory extends _i1.Mock
               ],
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure,
-                        List<_i41.AttendanceFailModel>>>.value(
-                _FakeEither_18<_i28.Failure, List<_i41.AttendanceFailModel>>(
+                    _i16.Either<_i30.Failure,
+                        List<_i48.AttendanceFailModel>>>.value(
+                _FakeEither_21<_i30.Failure, List<_i48.AttendanceFailModel>>(
               this,
               Invocation.method(
                 #getAttendanceFail,
@@ -2163,10 +2614,10 @@ class MockAttendanceRepostiory extends _i1.Mock
               ),
             )),
           ) as _i5.Future<
-              _i13.Either<_i28.Failure, List<_i41.AttendanceFailModel>>>);
+              _i16.Either<_i30.Failure, List<_i48.AttendanceFailModel>>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, List<_i41.AttendanceAbsenceModel>>>
+  _i5.Future<_i16.Either<_i30.Failure, List<_i48.AttendanceAbsenceModel>>>
       getAttendanceAbsense(
     String? name,
     String? startDate,
@@ -2182,9 +2633,9 @@ class MockAttendanceRepostiory extends _i1.Mock
               ],
             ),
             returnValue: _i5.Future<
-                    _i13.Either<_i28.Failure,
-                        List<_i41.AttendanceAbsenceModel>>>.value(
-                _FakeEither_18<_i28.Failure, List<_i41.AttendanceAbsenceModel>>(
+                    _i16.Either<_i30.Failure,
+                        List<_i48.AttendanceAbsenceModel>>>.value(
+                _FakeEither_21<_i30.Failure, List<_i48.AttendanceAbsenceModel>>(
               this,
               Invocation.method(
                 #getAttendanceAbsense,
@@ -2196,10 +2647,10 @@ class MockAttendanceRepostiory extends _i1.Mock
               ),
             )),
           ) as _i5.Future<
-              _i13.Either<_i28.Failure, List<_i41.AttendanceAbsenceModel>>>);
+              _i16.Either<_i30.Failure, List<_i48.AttendanceAbsenceModel>>>);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i23.Uint8List>> downloadAttendance(
+  _i5.Future<_i16.Either<_i30.Failure, _i25.Uint8List>> downloadAttendance(
     String? startDate,
     String? endDate,
   ) =>
@@ -2212,8 +2663,8 @@ class MockAttendanceRepostiory extends _i1.Mock
           ],
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i23.Uint8List>>.value(
-                _FakeEither_18<_i28.Failure, _i23.Uint8List>(
+            _i5.Future<_i16.Either<_i30.Failure, _i25.Uint8List>>.value(
+                _FakeEither_21<_i30.Failure, _i25.Uint8List>(
           this,
           Invocation.method(
             #downloadAttendance,
@@ -2223,14 +2674,14 @@ class MockAttendanceRepostiory extends _i1.Mock
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i23.Uint8List>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i25.Uint8List>>);
 }
 
 /// A class which mocks [AuthenticationManager].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAuthenticationManager extends _i1.Mock
-    implements _i42.AuthenticationManager {
+    implements _i49.AuthenticationManager {
   MockAuthenticationManager() {
     _i1.throwOnMissingStub(this);
   }
@@ -2245,22 +2696,22 @@ class MockAuthenticationManager extends _i1.Mock
       ) as _i2.SharedPref);
 
   @override
-  _i14.AuthStatus get status => (super.noSuchMethod(
+  _i17.AuthStatus get status => (super.noSuchMethod(
         Invocation.getter(#status),
-        returnValue: _i14.AuthStatus.initial,
-      ) as _i14.AuthStatus);
+        returnValue: _i17.AuthStatus.initial,
+      ) as _i17.AuthStatus);
 
   @override
-  _i14.AuthState get value => (super.noSuchMethod(
+  _i17.AuthState get value => (super.noSuchMethod(
         Invocation.getter(#value),
-        returnValue: _FakeAuthState_19(
+        returnValue: _FakeAuthState_22(
           this,
           Invocation.getter(#value),
         ),
-      ) as _i14.AuthState);
+      ) as _i17.AuthState);
 
   @override
-  set value(_i14.AuthState? newValue) => super.noSuchMethod(
+  set value(_i17.AuthState? newValue) => super.noSuchMethod(
         Invocation.setter(
           #value,
           newValue,
@@ -2285,7 +2736,7 @@ class MockAuthenticationManager extends _i1.Mock
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> login(_i37.UserLoginModel? newUser) => (super.noSuchMethod(
+  _i5.Future<void> login(_i41.UserLoginModel? newUser) => (super.noSuchMethod(
         Invocation.method(
           #login,
           [newUser],
@@ -2305,7 +2756,7 @@ class MockAuthenticationManager extends _i1.Mock
       ) as _i5.Future<void>);
 
   @override
-  void addListener(_i43.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i50.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -2314,7 +2765,7 @@ class MockAuthenticationManager extends _i1.Mock
       );
 
   @override
-  void removeListener(_i43.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i50.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -2344,40 +2795,31 @@ class MockAuthenticationManager extends _i1.Mock
 /// A class which mocks [DoLoginUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDoLoginUseCase extends _i1.Mock implements _i44.DoLoginUseCase {
+class MockDoLoginUseCase extends _i1.Mock implements _i51.DoLoginUseCase {
   MockDoLoginUseCase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i15.AuthRepository get repository => (super.noSuchMethod(
+  _i18.AuthRepository get repository => (super.noSuchMethod(
         Invocation.getter(#repository),
-        returnValue: _FakeAuthRepository_20(
+        returnValue: _FakeAuthRepository_23(
           this,
           Invocation.getter(#repository),
         ),
-      ) as _i15.AuthRepository);
+      ) as _i18.AuthRepository);
 
   @override
-  _i16.GetProfileUseCase get getProfileUseCase => (super.noSuchMethod(
-        Invocation.getter(#getProfileUseCase),
-        returnValue: _FakeGetProfileUseCase_21(
-          this,
-          Invocation.getter(#getProfileUseCase),
-        ),
-      ) as _i16.GetProfileUseCase);
-
-  @override
-  _i17.AuthBloc get authBloc => (super.noSuchMethod(
+  _i19.AuthBloc get authBloc => (super.noSuchMethod(
         Invocation.getter(#authBloc),
-        returnValue: _FakeAuthBloc_22(
+        returnValue: _FakeAuthBloc_24(
           this,
           Invocation.getter(#authBloc),
         ),
-      ) as _i17.AuthBloc);
+      ) as _i19.AuthBloc);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i37.LoginModel>> execute(
+  _i5.Future<_i16.Either<_i30.Failure, _i41.LoginModel>> execute(
     String? username,
     String? password, {
     String? recaptchaToken,
@@ -2392,8 +2834,8 @@ class MockDoLoginUseCase extends _i1.Mock implements _i44.DoLoginUseCase {
           {#recaptchaToken: recaptchaToken},
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i37.LoginModel>>.value(
-                _FakeEither_18<_i28.Failure, _i37.LoginModel>(
+            _i5.Future<_i16.Either<_i30.Failure, _i41.LoginModel>>.value(
+                _FakeEither_21<_i30.Failure, _i41.LoginModel>(
           this,
           Invocation.method(
             #execute,
@@ -2404,72 +2846,270 @@ class MockDoLoginUseCase extends _i1.Mock implements _i44.DoLoginUseCase {
             {#recaptchaToken: recaptchaToken},
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i37.LoginModel>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i41.LoginModel>>);
+}
+
+/// A class which mocks [CheckEmailLoginUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCheckEmailLoginUseCase extends _i1.Mock
+    implements _i52.CheckEmailLoginUseCase {
+  MockCheckEmailLoginUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i18.AuthRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeAuthRepository_23(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i18.AuthRepository);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i40.CheckEmailModel>> call(
+    String? email, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [email],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue:
+            _i5.Future<_i16.Either<_i30.Failure, _i40.CheckEmailModel>>.value(
+                _FakeEither_21<_i30.Failure, _i40.CheckEmailModel>(
+          this,
+          Invocation.method(
+            #call,
+            [email],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i40.CheckEmailModel>>);
+}
+
+/// A class which mocks [PartnerLoginUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockPartnerLoginUseCase extends _i1.Mock
+    implements _i53.PartnerLoginUseCase {
+  MockPartnerLoginUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i18.AuthRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeAuthRepository_23(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i18.AuthRepository);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i42.PartnerLoginModel>> call(
+    String? username,
+    String? password, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [
+            username,
+            password,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue:
+            _i5.Future<_i16.Either<_i30.Failure, _i42.PartnerLoginModel>>.value(
+                _FakeEither_21<_i30.Failure, _i42.PartnerLoginModel>(
+          this,
+          Invocation.method(
+            #call,
+            [
+              username,
+              password,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i42.PartnerLoginModel>>);
+}
+
+/// A class which mocks [RequestLoginOtpUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockRequestLoginOtpUseCase extends _i1.Mock
+    implements _i54.RequestLoginOtpUseCase {
+  MockRequestLoginOtpUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i18.AuthRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeAuthRepository_23(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i18.AuthRepository);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i43.RequestLoginOtpModel>> call(
+    String? loginToken,
+    String? method, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [
+            loginToken,
+            method,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue: _i5
+            .Future<_i16.Either<_i30.Failure, _i43.RequestLoginOtpModel>>.value(
+            _FakeEither_21<_i30.Failure, _i43.RequestLoginOtpModel>(
+          this,
+          Invocation.method(
+            #call,
+            [
+              loginToken,
+              method,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i43.RequestLoginOtpModel>>);
+}
+
+/// A class which mocks [VerifyLoginOtpUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockVerifyLoginOtpUseCase extends _i1.Mock
+    implements _i55.VerifyLoginOtpUseCase {
+  MockVerifyLoginOtpUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i18.AuthRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeAuthRepository_23(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i18.AuthRepository);
+
+  @override
+  _i19.AuthBloc get authBloc => (super.noSuchMethod(
+        Invocation.getter(#authBloc),
+        returnValue: _FakeAuthBloc_24(
+          this,
+          Invocation.getter(#authBloc),
+        ),
+      ) as _i19.AuthBloc);
+
+  @override
+  _i5.Future<_i16.Either<_i30.Failure, _i44.VerifyLoginOtpModel>> call(
+    String? otpToken,
+    String? otp, {
+    String? recaptchaToken,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [
+            otpToken,
+            otp,
+          ],
+          {#recaptchaToken: recaptchaToken},
+        ),
+        returnValue: _i5
+            .Future<_i16.Either<_i30.Failure, _i44.VerifyLoginOtpModel>>.value(
+            _FakeEither_21<_i30.Failure, _i44.VerifyLoginOtpModel>(
+          this,
+          Invocation.method(
+            #call,
+            [
+              otpToken,
+              otp,
+            ],
+            {#recaptchaToken: recaptchaToken},
+          ),
+        )),
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i44.VerifyLoginOtpModel>>);
 }
 
 /// A class which mocks [DoLogoutUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDoLogoutUseCase extends _i1.Mock implements _i45.DoLogoutUseCase {
+class MockDoLogoutUseCase extends _i1.Mock implements _i56.DoLogoutUseCase {
   MockDoLogoutUseCase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i15.AuthRepository get repository => (super.noSuchMethod(
+  _i18.AuthRepository get repository => (super.noSuchMethod(
         Invocation.getter(#repository),
-        returnValue: _FakeAuthRepository_20(
+        returnValue: _FakeAuthRepository_23(
           this,
           Invocation.getter(#repository),
         ),
-      ) as _i15.AuthRepository);
+      ) as _i18.AuthRepository);
 
   @override
-  _i17.AuthBloc get authBloc => (super.noSuchMethod(
+  _i19.AuthBloc get authBloc => (super.noSuchMethod(
         Invocation.getter(#authBloc),
-        returnValue: _FakeAuthBloc_22(
+        returnValue: _FakeAuthBloc_24(
           this,
           Invocation.getter(#authBloc),
         ),
-      ) as _i17.AuthBloc);
+      ) as _i19.AuthBloc);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> execute() => (super.noSuchMethod(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> execute() => (super.noSuchMethod(
         Invocation.method(
           #execute,
           [],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #execute,
             [],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 }
 
 /// A class which mocks [SendForgotPasswordUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockSendForgotPasswordUseCase extends _i1.Mock
-    implements _i46.SendForgotPasswordUseCase {
+    implements _i57.SendForgotPasswordUseCase {
   MockSendForgotPasswordUseCase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i15.AuthRepository get repository => (super.noSuchMethod(
+  _i18.AuthRepository get repository => (super.noSuchMethod(
         Invocation.getter(#repository),
-        returnValue: _FakeAuthRepository_20(
+        returnValue: _FakeAuthRepository_23(
           this,
           Invocation.getter(#repository),
         ),
-      ) as _i15.AuthRepository);
+      ) as _i18.AuthRepository);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> execute(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> execute(
     String? email, {
     String? recaptchaToken,
   }) =>
@@ -2479,8 +3119,8 @@ class MockSendForgotPasswordUseCase extends _i1.Mock
           [email],
           {#recaptchaToken: recaptchaToken},
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #execute,
@@ -2488,29 +3128,29 @@ class MockSendForgotPasswordUseCase extends _i1.Mock
             {#recaptchaToken: recaptchaToken},
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 }
 
 /// A class which mocks [ChangePasswordUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockChangePasswordUseCase extends _i1.Mock
-    implements _i47.ChangePasswordUseCase {
+    implements _i58.ChangePasswordUseCase {
   MockChangePasswordUseCase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i15.AuthRepository get repository => (super.noSuchMethod(
+  _i18.AuthRepository get repository => (super.noSuchMethod(
         Invocation.getter(#repository),
-        returnValue: _FakeAuthRepository_20(
+        returnValue: _FakeAuthRepository_23(
           this,
           Invocation.getter(#repository),
         ),
-      ) as _i15.AuthRepository);
+      ) as _i18.AuthRepository);
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, bool>> execute(
+  _i5.Future<_i16.Either<_i30.Failure, bool>> execute(
     String? oldPass,
     String? newPass,
     String? confirmPass,
@@ -2524,8 +3164,8 @@ class MockChangePasswordUseCase extends _i1.Mock
             confirmPass,
           ],
         ),
-        returnValue: _i5.Future<_i13.Either<_i28.Failure, bool>>.value(
-            _FakeEither_18<_i28.Failure, bool>(
+        returnValue: _i5.Future<_i16.Either<_i30.Failure, bool>>.value(
+            _FakeEither_21<_i30.Failure, bool>(
           this,
           Invocation.method(
             #execute,
@@ -2536,40 +3176,40 @@ class MockChangePasswordUseCase extends _i1.Mock
             ],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, bool>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, bool>>);
 }
 
 /// A class which mocks [GetProfileUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetProfileUseCase extends _i1.Mock implements _i16.GetProfileUseCase {
+class MockGetProfileUseCase extends _i1.Mock implements _i59.GetProfileUseCase {
   MockGetProfileUseCase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>> execute() =>
+  _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>> execute() =>
       (super.noSuchMethod(
         Invocation.method(
           #execute,
           [],
         ),
         returnValue:
-            _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>>.value(
-                _FakeEither_18<_i28.Failure, _i39.ProfileModel>(
+            _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>>.value(
+                _FakeEither_21<_i30.Failure, _i46.ProfileModel>(
           this,
           Invocation.method(
             #execute,
             [],
           ),
         )),
-      ) as _i5.Future<_i13.Either<_i28.Failure, _i39.ProfileModel>>);
+      ) as _i5.Future<_i16.Either<_i30.Failure, _i46.ProfileModel>>);
 }
 
 /// A class which mocks [RecaptchaUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockRecaptchaUseCase extends _i1.Mock implements _i48.RecaptchaUseCase {
+class MockRecaptchaUseCase extends _i1.Mock implements _i60.RecaptchaUseCase {
   MockRecaptchaUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -2591,13 +3231,13 @@ class MockRecaptchaUseCase extends _i1.Mock implements _i48.RecaptchaUseCase {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<String> getToken(_i49.RecaptchaAction? action) =>
+  _i5.Future<String> getToken(_i61.RecaptchaAction? action) =>
       (super.noSuchMethod(
         Invocation.method(
           #getToken,
           [action],
         ),
-        returnValue: _i5.Future<String>.value(_i20.dummyValue<String>(
+        returnValue: _i5.Future<String>.value(_i22.dummyValue<String>(
           this,
           Invocation.method(
             #getToken,

@@ -28,14 +28,14 @@ part 'superapp_profile_state.dart';
 /// - Silent fail saat background refresh: data lama tidak di-reset saat error
 class SuperappProfileBloc
     extends Bloc<SuperappProfileEvent, SuperappProfileState> {
-  final SuperappProfileRepositoryImpl _repository;
+  final SuperappProfileRepository _repository;
   final AuthBloc _authBloc;
 
   late final StreamSubscription<AuthState> _authSub;
   late final StreamSubscription<void> _refreshSub;
 
   SuperappProfileBloc({
-    required SuperappProfileRepositoryImpl repository,
+    required SuperappProfileRepository repository,
     required AuthBloc authBloc,
   })  : _repository = repository,
         _authBloc = authBloc,
@@ -52,13 +52,13 @@ class SuperappProfileBloc
     // Cek state AuthBloc SEKARANG, bukan hanya menunggu stream.
     // Kalau AuthBloc sudah authenticated sebelum ProfileBloc di-init → tetap fetch.
     if (_authBloc.state.status == AuthStatus.authenticated) {
-      add(const FetchSuperappProfileEvent());
+      add(const FetchSuperappProfileEvent(usePreloaded: true));
     }
 
     // Bug fix #1 (lanjutan): Subscribe ke stream untuk perubahan berikutnya
     _authSub = _authBloc.stream.listen((authState) {
       if (authState.status == AuthStatus.authenticated) {
-        add(const FetchSuperappProfileEvent());
+        add(const FetchSuperappProfileEvent(usePreloaded: true));
       } else if (authState.status == AuthStatus.unauthenticated) {
         add(const ClearSuperappProfileEvent());
       }
@@ -74,6 +74,24 @@ class SuperappProfileBloc
     FetchSuperappProfileEvent event,
     Emitter<SuperappProfileState> emit,
   ) async {
+    // Optimisasi: Jika diminta menggunakan preloaded profile (misal setelah login 2FA),
+    // cek apakah ada profil yang sudah di-seed ke memori repository.
+    if (event.usePreloaded) {
+      final preloaded = _repository.consumePendingProfile();
+      if (preloaded != null) {
+        emit(state.copyWith(
+          status: SuperappProfileStatus.loaded,
+          freshProfile: preloaded,
+          cachedProfile: preloaded,
+          isBalanceLoading: false,
+          isBalanceError: false,
+          isBackgroundRefresh: false,
+          errorMessage: null,
+        ));
+        return;
+      }
+    }
+
     final isFirstLoad = state.cachedProfile == null && state.freshProfile == null;
 
     if (isFirstLoad) {

@@ -14,7 +14,14 @@ class Endpoints {
   // These are the endpoints
 
   // Auth Endpoints
+  /// [LEGACY] Endpoint login lama sebelum flow 2FA OTP partner.
   static String get login => '$_BaseURLSuperApp/auth/api/v1/komship/login';
+  static String get partnerLogin =>
+      '$_BaseURLSuperApp/auth/api/v1/auth/partner/login';
+  static String get requestLoginOtp =>
+      '$_BaseURLSuperApp/auth/api/v2/otp/request';
+  static String get verifyLoginOtp =>
+      '$_BaseURLSuperApp/auth/api/v2/otp/verify-login';
   static String get checkEmail =>
       '$_BaseURLSuperApp/auth/api/v1/auth/check-login';
   static String get resendVerification =>

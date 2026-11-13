@@ -2,10 +2,16 @@ import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:komtim_partner/common/exception.dart';
 import 'package:komtim_partner/core/data/apiservice/constat_endpoint.dart';
 import 'package:komtim_partner/core/data/datasources/remote/auth_remote_datasource.dart';
 import 'package:komtim_partner/core/data/models/check_email_response.dart';
 import 'package:komtim_partner/core/data/models/login_response.dart';
+import 'package:komtim_partner/core/data/models/partner_login_response.dart';
+import 'package:komtim_partner/core/data/models/request_login_otp_response.dart';
+import 'package:komtim_partner/core/data/models/two_fa_auth_exception.dart';
+import 'package:komtim_partner/core/data/models/verify_login_otp_response.dart';
+import 'package:komtim_partner/core/domain/entities/two_fa_failure.dart';
 import 'package:mockito/mockito.dart';
 
 import '../../../../helpers/helpers.dart';
@@ -40,6 +46,15 @@ void main() {
     ));
     provideDummy<CheckEmailResponse>(
       const CheckEmailResponse(allowedLogin: true),
+    );
+    provideDummy<PartnerLoginResponse>(
+      const PartnerLoginResponse(),
+    );
+    provideDummy<RequestLoginOtpResponse>(
+      const RequestLoginOtpResponse(),
+    );
+    provideDummy<VerifyLoginOtpResponse>(
+      const VerifyLoginOtpResponse(),
     );
   });
 
@@ -326,6 +341,390 @@ void main() {
 
       expect(
         () => dataSource.changePassword(tOld, tNew, tConfirm),
+        throwsA(isA<TypeError>()),
+      );
+    });
+  });
+
+  // ── partnerLogin ──────────────────────────────────────────────────────────
+  group('partnerLogin', () {
+    const tUser = 'partner@example.com';
+    const tPass = 'secret123';
+    const tRecaptcha = 'recaptcha-login-token';
+
+    final tExpectedBodyWithRecaptcha = {
+      'username_email': tUser,
+      'password': tPass,
+      'recaptcha_token': tRecaptcha,
+      'device': Platform.isAndroid ? 'android' : 'ios',
+    };
+
+    final tExpectedBodyWithoutRecaptcha = {
+      'username_email': tUser,
+      'password': tPass,
+      'device': Platform.isAndroid ? 'android' : 'ios',
+    };
+
+    const tResponse = PartnerLoginResponse(
+      token: 'login-token-abc',
+      email: 'par***@example.com',
+      phone: '*******0034',
+      pendingOtp: PendingOtpResponse(
+        token: 'otp-token-123',
+        expiredAt: '2026-11-12T12:00:00Z',
+        expiresIn: 60,
+        typeToken: 'wa',
+      ),
+      otpLimitExceeded: false,
+    );
+
+    test(
+        'return PartnerLoginResponse dan mengirim exact payload komship tanpa field app',
+        () async {
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<PartnerLoginResponse>(any, any))
+          .thenReturn(tResponse);
+
+      final result = await dataSource.partnerLogin(
+        tUser,
+        tPass,
+        recaptchaToken: tRecaptcha,
+      );
+
+      expect(result.token, 'login-token-abc');
+      expect(result.email, 'par***@example.com');
+      expect(result.phone, '*******0034');
+      expect(result.pendingOtp?.token, 'otp-token-123');
+      expect(result.pendingOtp?.typeToken, 'wa');
+      expect(result.otpLimitExceeded, isFalse);
+
+      final verification = verify(mockClient.post(
+        Endpoints.partnerLogin,
+        data: captureAnyNamed('data'),
+      ));
+      verification.called(1);
+      final sentBody = verification.captured.single as Map<String, dynamic>;
+      expect(sentBody, tExpectedBodyWithRecaptcha);
+      expect(sentBody.containsKey('app'), isFalse);
+    });
+
+    test('tidak menyertakan recaptcha_token jika recaptchaToken null', () async {
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<PartnerLoginResponse>(any, any))
+          .thenReturn(tResponse);
+
+      await dataSource.partnerLogin(tUser, tPass);
+
+      verify(mockClient.post(
+        Endpoints.partnerLogin,
+        data: tExpectedBodyWithoutRecaptcha,
+      )).called(1);
+    });
+
+    test('throw PartnerLoginException saat HTTP 200 memuat meta error terstruktur',
+        () async {
+      final errorDioResponse = Response(
+        requestOptions: RequestOptions(path: Endpoints.partnerLogin),
+        statusCode: 200,
+        data: {
+          'meta': {
+            'status': 'error',
+            'code': 400,
+            'message': 'Incorrect Password',
+          },
+          'data': {'login_attempt': 1, 'lock': 0},
+        },
+      );
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenAnswer((_) async => errorDioResponse);
+      when(mockParser.parseResponse<PartnerLoginResponse>(any, any))
+          .thenThrow(Exception('Incorrect Password'));
+
+      await expectLater(
+        () => dataSource.partnerLogin(tUser, tPass),
+        throwsA(
+          isA<PartnerLoginException>()
+              .having((e) => e.errorType, 'errorType',
+                  PartnerLoginErrorType.incorrectPassword)
+              .having((e) => e.loginAttempt, 'loginAttempt', 1)
+              .having((e) => e.lock, 'lock', 0),
+        ),
+      );
+    });
+
+    test('tetap preserve ServerException (Team Internal) tanpa menimpanya',
+        () async {
+      final blockedResponse = Response(
+        requestOptions: RequestOptions(path: Endpoints.partnerLogin),
+        statusCode: 200,
+        data: {
+          'meta': {
+            'status': 'error',
+            'code': 'ERR_ROLE_TEAM_INTERNAL_BLOCKED',
+            'message': 'Team internal diblokir',
+          },
+          'data': null,
+        },
+      );
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenAnswer((_) async => blockedResponse);
+      when(mockParser.parseResponse<PartnerLoginResponse>(any, any))
+          .thenThrow(
+        ServerException('ERR_ROLE_TEAM_INTERNAL_BLOCKED: Team internal diblokir'),
+      );
+
+      await expectLater(
+        () => dataSource.partnerLogin(tUser, tPass),
+        throwsA(
+          isA<ServerException>().having(
+            (e) => e.message,
+            'message',
+            contains('ERR_ROLE_TEAM_INTERNAL_BLOCKED'),
+          ),
+        ),
+      );
+    });
+
+    test('throw Exception asli saat parseResponse gagal pada response sukses',
+        () async {
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<PartnerLoginResponse>(any, any))
+          .thenThrow(Exception('meta error'));
+
+      expect(
+        () => dataSource.partnerLogin(tUser, tPass),
+        throwsException,
+      );
+    });
+
+    test('throw DioException saat network error', () async {
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenThrow(DioException(
+        requestOptions: RequestOptions(path: ''),
+        type: DioExceptionType.connectionTimeout,
+      ));
+
+      expect(
+        () => dataSource.partnerLogin(tUser, tPass),
+        throwsA(isA<DioException>()),
+      );
+    });
+
+    test('throw TypeError saat parsing mismatch pada data null', () async {
+      when(mockClient.post(Endpoints.partnerLogin, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<PartnerLoginResponse>(any, any))
+          .thenThrow(TypeError());
+
+      expect(
+        () => dataSource.partnerLogin(tUser, tPass),
+        throwsA(isA<TypeError>()),
+      );
+    });
+  });
+
+  // ── requestLoginOtp ───────────────────────────────────────────────────────
+  group('requestLoginOtp', () {
+    const tLoginToken = 'login-token-abc';
+    const tMethod = 'sms';
+    const tRecaptcha = 'recaptcha-otp-req';
+
+    final tExpectedBody = {
+      'token': tLoginToken,
+      'type': tMethod,
+      'recaptcha_token': tRecaptcha,
+      'device': Platform.isAndroid ? 'android' : 'ios',
+    };
+
+    const tResponse = RequestLoginOtpResponse(
+      token: 'otp-token-new',
+      expiredAt: '2026-11-12T12:10:00Z',
+      expiresIn: 60,
+      email: 'par***@example.com',
+      phone: '*******0034',
+      otpLimitExceeded: false,
+    );
+
+    test(
+        'return RequestLoginOtpResponse dan mengirim exact payload komship tanpa field app',
+        () async {
+      when(mockClient.post(Endpoints.requestLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<RequestLoginOtpResponse>(any, any))
+          .thenReturn(tResponse);
+
+      final result = await dataSource.requestLoginOtp(
+        tLoginToken,
+        tMethod,
+        recaptchaToken: tRecaptcha,
+      );
+
+      expect(result.token, 'otp-token-new');
+      expect(result.expiresIn, 60);
+      expect(result.phone, '*******0034');
+      expect(result.otpLimitExceeded, isFalse);
+
+      final verification = verify(mockClient.post(
+        Endpoints.requestLoginOtp,
+        data: captureAnyNamed('data'),
+      ));
+      verification.called(1);
+      final sentBody = verification.captured.single as Map<String, dynamic>;
+      expect(sentBody, tExpectedBody);
+      expect(sentBody.containsKey('app'), isFalse);
+    });
+
+    test('throw Exception saat parseResponse gagal', () async {
+      when(mockClient.post(Endpoints.requestLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<RequestLoginOtpResponse>(any, any))
+          .thenThrow(Exception('OTP limit exceeded'));
+
+      expect(
+        () => dataSource.requestLoginOtp(tLoginToken, tMethod),
+        throwsException,
+      );
+    });
+
+    test('throw DioException saat network error', () async {
+      when(mockClient.post(Endpoints.requestLoginOtp, data: anyNamed('data')))
+          .thenThrow(DioException(
+        requestOptions: RequestOptions(path: ''),
+        type: DioExceptionType.connectionTimeout,
+      ));
+
+      expect(
+        () => dataSource.requestLoginOtp(tLoginToken, tMethod),
+        throwsA(isA<DioException>()),
+      );
+    });
+
+    test('throw TypeError saat parsing mismatch', () async {
+      when(mockClient.post(Endpoints.requestLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<RequestLoginOtpResponse>(any, any))
+          .thenThrow(TypeError());
+
+      expect(
+        () => dataSource.requestLoginOtp(tLoginToken, tMethod),
+        throwsA(isA<TypeError>()),
+      );
+    });
+  });
+
+  // ── verifyLoginOtp ────────────────────────────────────────────────────────
+  group('verifyLoginOtp', () {
+    const tOtpToken = 'otp-token-123';
+    const tOtp = '123456';
+    const tRecaptcha = 'recaptcha-otp-verify';
+
+    final tExpectedBody = {
+      'token': tOtpToken,
+      'otp_value': tOtp,
+      'recaptcha_token': tRecaptcha,
+      'device': Platform.isAndroid ? 'android' : 'ios',
+    };
+
+    const tResponse = VerifyLoginOtpResponse(
+      jwtToken: 'jwt-final-xyz',
+      attemptLeft: null,
+    );
+
+    test(
+        'return VerifyLoginOtpResponse dan mengirim exact payload komship tanpa field app',
+        () async {
+      when(mockClient.post(Endpoints.verifyLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<VerifyLoginOtpResponse>(any, any))
+          .thenReturn(tResponse);
+
+      final result = await dataSource.verifyLoginOtp(
+        tOtpToken,
+        tOtp,
+        recaptchaToken: tRecaptcha,
+      );
+
+      expect(result.jwtToken, 'jwt-final-xyz');
+      expect(result.attemptLeft, isNull);
+
+      final verification = verify(mockClient.post(
+        Endpoints.verifyLoginOtp,
+        data: captureAnyNamed('data'),
+      ));
+      verification.called(1);
+      final sentBody = verification.captured.single as Map<String, dynamic>;
+      expect(sentBody, tExpectedBody);
+      expect(sentBody.containsKey('app'), isFalse);
+    });
+
+    test('throw VerifyOtpException saat HTTP 200 memuat meta error 422',
+        () async {
+      final errorDioResponse = Response(
+        requestOptions: RequestOptions(path: Endpoints.verifyLoginOtp),
+        statusCode: 200,
+        data: {
+          'meta': {
+            'status': 'error',
+            'code': 422,
+            'message': 'OTP not valid',
+          },
+          'data': {'attempt_left': 2, 'lock': 0},
+        },
+      );
+      when(mockClient.post(Endpoints.verifyLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => errorDioResponse);
+      when(mockParser.parseResponse<VerifyLoginOtpResponse>(any, any))
+          .thenThrow(Exception('OTP not valid'));
+
+      await expectLater(
+        () => dataSource.verifyLoginOtp(tOtpToken, tOtp),
+        throwsA(
+          isA<VerifyOtpException>()
+              .having((e) => e.errorType, 'errorType',
+                  VerifyOtpErrorType.otpInvalid)
+              .having((e) => e.attemptLeft, 'attemptLeft', 2)
+              .having((e) => e.lock, 'lock', 0),
+        ),
+      );
+    });
+
+    test('throw Exception asli saat parseResponse gagal pada response sukses',
+        () async {
+      when(mockClient.post(Endpoints.verifyLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<VerifyLoginOtpResponse>(any, any))
+          .thenThrow(Exception('meta error'));
+
+      expect(
+        () => dataSource.verifyLoginOtp(tOtpToken, tOtp),
+        throwsException,
+      );
+    });
+
+    test('throw DioException saat network error', () async {
+      when(mockClient.post(Endpoints.verifyLoginOtp, data: anyNamed('data')))
+          .thenThrow(DioException(
+        requestOptions: RequestOptions(path: ''),
+        type: DioExceptionType.connectionTimeout,
+      ));
+
+      expect(
+        () => dataSource.verifyLoginOtp(tOtpToken, tOtp),
+        throwsA(isA<DioException>()),
+      );
+    });
+
+    test('throw TypeError saat parsing mismatch', () async {
+      when(mockClient.post(Endpoints.verifyLoginOtp, data: anyNamed('data')))
+          .thenAnswer((_) async => tDioResponse);
+      when(mockParser.parseResponse<VerifyLoginOtpResponse>(any, any))
+          .thenThrow(TypeError());
+
+      expect(
+        () => dataSource.verifyLoginOtp(tOtpToken, tOtp),
         throwsA(isA<TypeError>()),
       );
     });

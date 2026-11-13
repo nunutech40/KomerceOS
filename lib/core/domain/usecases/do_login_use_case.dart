@@ -6,6 +6,8 @@ import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
 import 'package:komtim_partner/common/global/bloc/auth/auth_event.dart';
 import '../repositories/auth_repository.dart';
 
+/// [LEGACY] Gunakan flow [PartnerLoginUseCase] -> [RequestLoginOtpUseCase] ->
+/// [VerifyLoginOtpUseCase] untuk login 2FA partner.
 class DoLoginUseCase {
   final AuthRepository repository;
   final AuthBloc authBloc;

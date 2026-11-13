@@ -69,6 +69,10 @@ class TestGlobalProfileRepository implements SuperappProfileRepository {
   Future<Either<Failure, SuperappProfileModel>> getProfile() async =>
       Right(profile);
   @override
+  void seedPendingProfile(SuperappProfileModel profile) {}
+  @override
+  SuperappProfileModel? consumePendingProfile() => null;
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

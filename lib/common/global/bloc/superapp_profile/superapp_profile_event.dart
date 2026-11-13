@@ -9,7 +9,14 @@ abstract class SuperappProfileEvent extends Equatable {
 
 /// Trigger fetch profile dari API
 class FetchSuperappProfileEvent extends SuperappProfileEvent {
-  const FetchSuperappProfileEvent();
+  /// Jika true, BLoC akan memeriksa apakah ada profile yang sudah di-seed
+  /// (misal dari post-verify 2FA) sebelum melakukan network call.
+  final bool usePreloaded;
+
+  const FetchSuperappProfileEvent({this.usePreloaded = false});
+
+  @override
+  List<Object?> get props => [usePreloaded];
 }
 
 /// Clear data saat logout (mencegah data user A terlihat oleh user B)

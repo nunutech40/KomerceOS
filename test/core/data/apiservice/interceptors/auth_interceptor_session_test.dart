@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komtim_partner/common/global/bloc/auth/auth_bloc.dart';
@@ -21,6 +23,19 @@ class _ErrorHandler extends ErrorInterceptorHandler {
   @override
   void next(DioException err) {
     forwarded = true;
+  }
+}
+
+class _RequestHandler extends RequestInterceptorHandler {
+  final Completer<RequestOptions> _completed = Completer<RequestOptions>();
+
+  Future<RequestOptions> get done => _completed.future;
+
+  @override
+  void next(RequestOptions requestOptions) {
+    if (!_completed.isCompleted) {
+      _completed.complete(requestOptions);
+    }
   }
 }
 
@@ -119,6 +134,9 @@ void main() {
   test('401 pada endpoint publik tidak mengeluarkan pengguna', () async {
     for (final path in [
       Endpoints.login,
+      Endpoints.partnerLogin,
+      Endpoints.requestLoginOtp,
+      Endpoints.verifyLoginOtp,
       Endpoints.checkEmail,
       Endpoints.forgotPassword,
       Endpoints.resetPassword,
@@ -126,9 +144,32 @@ void main() {
     ]) {
       final handler = _ErrorHandler();
       await interceptor.onError(_error(path, 401), handler);
-      expect(handler.forwarded, isTrue);
+      expect(handler.forwarded, isTrue, reason: 'Harus forward 401 untuk $path');
     }
     verifyNever(prefs.removeDataPref());
+  });
+
+  test('onRequest melewati penyisipan Bearer header untuk 3 endpoint publik 2FA',
+      () async {
+    for (final path in [
+      Endpoints.partnerLogin,
+      Endpoints.requestLoginOtp,
+      Endpoints.verifyLoginOtp,
+    ]) {
+      final options = RequestOptions(path: path);
+      final handler = _RequestHandler();
+      interceptor.onRequest(options, handler);
+      final passed = await handler.done;
+      expect(passed.headers.containsKey('Authorization'), isFalse,
+          reason: '$path tidak boleh mengirim header Authorization');
+    }
+    verifyNever(tokens.getAccessToken());
+
+    final privateOptions = RequestOptions(path: Endpoints.superappGetProfile);
+    final privateHandler = _RequestHandler();
+    interceptor.onRequest(privateOptions, privateHandler);
+    final passedPrivate = await privateHandler.done;
+    expect(passedPrivate.headers['Authorization'], 'Bearer active');
   });
 
   test('401 layanan lama tidak otomatis menghapus sesi', () async {

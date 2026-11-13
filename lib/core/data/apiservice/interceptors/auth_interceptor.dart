@@ -23,6 +23,9 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
 
   static List<String> get _publicEndpoints => [
         Endpoints.login,
+        Endpoints.partnerLogin,
+        Endpoints.requestLoginOtp,
+        Endpoints.verifyLoginOtp,
         Endpoints.refreshToken,
         Endpoints.forgotPassword,
         Endpoints.checkEmail,
@@ -58,7 +61,10 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
       final metaCode = (meta is Map<String, dynamic>) ? meta['code'] : null;
 
       if (code == 500 || metaCode == 500) {
-        globalAlertBloc.add(ShowServerErrorEvent());
+        if (!_shouldSuppressServerErrorAlert(
+            response.requestOptions.path, responseBody)) {
+          globalAlertBloc.add(ShowServerErrorEvent());
+        }
         return handler.reject(
           DioException(
             requestOptions: response.requestOptions,
@@ -92,8 +98,12 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     final statusCode = err.response?.statusCode ?? 0;
 
     // Intercept server errors (5xx) — tampilkan global Server Error bottom sheet
+    // Kecualikan HTTP 500 "user not found" pada partnerLogin karena di-handle sebagai business error.
     if (statusCode >= 500) {
-      globalAlertBloc.add(ShowServerErrorEvent());
+      if (!_shouldSuppressServerErrorAlert(
+          err.requestOptions.path, err.response?.data)) {
+        globalAlertBloc.add(ShowServerErrorEvent());
+      }
       return handler.next(err);
     }
 
@@ -154,6 +164,17 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
   /// (tidak memerlukan token Authorization).
   bool _isPublicEndpoint(String path) {
     return _publicEndpoints.contains(path);
+  }
+
+  /// Mengecek apakah response 500 merupakan business error "user not found"
+  /// pada endpoint [Endpoints.partnerLogin] yang tidak boleh memicu popup Server Error global.
+  bool _shouldSuppressServerErrorAlert(String path, dynamic responseBody) {
+    if (path != Endpoints.partnerLogin) return false;
+    if (responseBody is! Map) return false;
+    final meta = responseBody['meta'];
+    final metaMessage = meta is Map ? meta['message']?.toString() : null;
+    final rawMessage = metaMessage ?? responseBody['message']?.toString();
+    return rawMessage?.trim().toLowerCase() == 'user not found';
   }
 
   /// Mengecek apakah [DioException] disebabkan oleh masalah jaringan

@@ -3,6 +3,7 @@ part of 'login_bloc.dart';
 @immutable
 abstract class LoginEvent extends Equatable {
   const LoginEvent();
+
   @override
   List<Object?> get props => [];
 }
@@ -42,4 +43,48 @@ class LoginPasswordChangedEvent extends LoginEvent {
 
   @override
   List<Object> get props => [password];
+}
+
+/// User memilih metode 2FA dan menekan "Konfirmasi" untuk request OTP.
+class LoginTwoFaMethodSelectedEvent extends LoginEvent {
+  const LoginTwoFaMethodSelectedEvent(this.method);
+
+  final TwoFaMethodType method;
+
+  @override
+  List<Object> get props => [method];
+}
+
+/// User menekan "Kirim Ulang" di bottom sheet verifikasi OTP.
+class LoginOtpResendRequestedEvent extends LoginEvent {
+  const LoginOtpResendRequestedEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+/// User mengirim kode OTP 6 digit di bottom sheet verifikasi OTP.
+class LoginOtpSubmittedEvent extends LoginEvent {
+  const LoginOtpSubmittedEvent(this.otp);
+
+  final String otp;
+
+  @override
+  List<Object> get props => [otp];
+}
+
+/// User menekan "Gunakan Metode Lain" di bottom sheet verifikasi OTP.
+class LoginTwoFaChangeMethodRequestedEvent extends LoginEvent {
+  const LoginTwoFaChangeMethodRequestedEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+/// Bottom sheet 2FA ditutup / dibatalkan sebelum verifikasi selesai.
+class LoginTwoFaDismissedEvent extends LoginEvent {
+  const LoginTwoFaDismissedEvent();
+
+  @override
+  List<Object> get props => [];
 }
