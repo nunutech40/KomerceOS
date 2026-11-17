@@ -82,6 +82,8 @@ class Endpoints {
       '$_BaseURL/api/v1/mobile/transaction/bank_accounts';
   static String get komshipBankAccounts =>
       '$_BaseURLKomship/api/v1/bank-account';
+  static String get komshipCheckPossibleWithdraw =>
+      '$_BaseURLKomship/api/v1/partner/withdrawal/check-possible-withdraw';
   static String get komshipAvailableBanks =>
       '$_BaseURLKomshipHiring/api/xendit/disbursementbankAvailable';
   static String get komshipCheckBankOwner =>

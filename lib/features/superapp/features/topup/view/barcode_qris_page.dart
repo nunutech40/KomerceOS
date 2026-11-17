@@ -261,9 +261,9 @@ class _BarcodeQrisPageState extends State<BarcodeQrisPage> {
                           MaterialPageRoute(
                             builder: (context) => DsAppResultPage(
                               illustration: SvgPicture.asset(
-                                'assets/images/superapp/topu/ilustration_top_up_success.svg',
+                                'assets/images/superapp/topup/ilustration_top_up_success.svg',
                               ),
-                              title: 'Top Up Berhasil',
+                              title: 'Top Up Saldo Berhasil',
                               description:
                                   'Top up saldo berhasil, silahkan refresh halaman beranda kamu, ya',
                               action: DsButton(

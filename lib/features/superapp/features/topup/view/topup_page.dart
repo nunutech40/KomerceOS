@@ -175,15 +175,20 @@ class _TopupViewState extends State<TopupView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Metode Pembayaran',
-                      style: AppTypography.bodyMdMedium.copyWith(
-                        color: AppColors.alwaysBlack,
+                    Expanded(
+                      child: Text(
+                        'Metode Pembayaran',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.bodySmMedium.copyWith(
+                          color: AppColors.alwaysBlack,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       paymentLabel,
-                      style: AppTypography.bodyMdMedium.copyWith(
+                      style: AppTypography.bodySmMedium.copyWith(
                         color: AppColors.textDark,
                       ),
                     ),
@@ -199,15 +204,20 @@ class _TopupViewState extends State<TopupView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Nominal Top Up',
-                      style: AppTypography.bodyMdMedium.copyWith(
-                        color: AppColors.alwaysBlack,
+                    Expanded(
+                      child: Text(
+                        'Nominal Top Up',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.bodySmMedium.copyWith(
+                          color: AppColors.alwaysBlack,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       amountText,
-                      style: AppTypography.bodyMdMedium.copyWith(
+                      style: AppTypography.bodySmMedium.copyWith(
                         color: AppColors.textDark,
                       ),
                     ),
@@ -223,17 +233,22 @@ class _TopupViewState extends State<TopupView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Biaya Layanan',
-                      style: AppTypography.bodyMdMedium.copyWith(
-                        color: AppColors.alwaysBlack,
+                    Expanded(
+                      child: Text(
+                        'Biaya Layanan',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.bodySmMedium.copyWith(
+                          color: AppColors.alwaysBlack,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       adminFee == 0
                           ? 'Gratis'
                           : CurrencyFormat.convertToIdrWithSpasi(adminFee, 0),
-                      style: AppTypography.bodyMdSemiBold.copyWith(
+                      style: AppTypography.bodySmSemiBold.copyWith(
                         color: adminFee == 0
                             ? AppColors.primaryBase
                             : AppColors.primaryBase,
@@ -260,10 +275,14 @@ class _TopupViewState extends State<TopupView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total Tagihan',
-                style: AppTypography.bodyMdMedium.copyWith(
-                  color: AppColors.grey800,
+              Flexible(
+                child: Text(
+                  'Total Tagihan',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodyMdMedium.copyWith(
+                    color: AppColors.grey800,
+                  ),
                 ),
               ),
               Text(
@@ -497,7 +516,8 @@ class _TopupViewState extends State<TopupView> {
                           size: 20,
                         ),
                         const SizedBox(width: AppSpacing.xs2),
-                        RichText(
+                        Expanded(
+                            child: RichText(
                           text: TextSpan(
                             text: 'Verifikasi Akun bernilai ',
                             style: AppTypography.bodySmRegular.copyWith(
@@ -512,7 +532,7 @@ class _TopupViewState extends State<TopupView> {
                               ),
                             ],
                           ),
-                        ),
+                        )),
                       ],
                     ),
                   ),
@@ -681,8 +701,12 @@ class _TopupViewState extends State<TopupView> {
                         if (context.read<CreateInvoiceBloc>().state
                                 is CreateInvoiceLoading ||
                             context.read<CreateQrcodeBloc>().state
-                                is CreateQrcodeLoading) return;
-                        if (isClicked) return;
+                                is CreateQrcodeLoading) {
+                          return;
+                        }
+                        if (isClicked) {
+                          return;
+                        }
                         isClicked = true;
 
                         Navigator.pop(context); // Close bottom sheet
@@ -690,7 +714,7 @@ class _TopupViewState extends State<TopupView> {
                         if (finalMethod == 'qris') {
                           context.read<CreateQrcodeBloc>().add(
                                 DoCreateQrcode(
-                                  channelPay: 'qris',
+                                  channelPay: 'dana',
                                   description: 'topup using QRIS',
                                   amount: finalAmount,
                                   duration: 1440,
