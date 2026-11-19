@@ -280,6 +280,35 @@ class KycStatusBadge extends StatelessWidget {
     );
   }
 
+  /// Draft = Pengajuan sudah tersimpan sebagai draft (latest-history `draft`).
+  /// Kuning dengan icon dokumen di kiri, sesuai Figma section "Draft".
+  factory KycStatusBadge.draft({
+    Key? key,
+    String text = 'Draft',
+    IconData? iconData = Icons.description_outlined,
+    Widget? icon,
+    Color textColor = const Color(0xFF8F7314),
+    Color? iconColor,
+    Color backgroundColor = const Color(0xFFFDE784),
+    Color? borderColor,
+    bool isClickable = false,
+    VoidCallback? onTap,
+  }) {
+    return KycStatusBadge(
+      key: key,
+      text: text,
+      iconData: iconData,
+      icon: icon,
+      iconPosition: KycBadgeIconPosition.leading,
+      textColor: textColor,
+      iconColor: iconColor ?? textColor,
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      isClickable: isClickable,
+      onTap: onTap,
+    );
+  }
+
   /// 1 = Dalam Proses Verifikasi (Peach oranye dengan icon info biru di kanan)
   /// Otomatis bisa diklik. Jika [context] dioper, otomatis membuka sheet info proses.
   factory KycStatusBadge.inProgress({

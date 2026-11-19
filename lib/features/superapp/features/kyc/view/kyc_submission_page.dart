@@ -1,17 +1,22 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/DI/injection.dart';
 import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_profile_bloc.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/datasources/kyc_verification_remote_datasource.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/data/repositories/ml_kit_ktp_ocr_repository.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_server_photo_downloader.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_upload_image_preparer.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/ktp_ocr_data.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_history.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/ktp_ocr_repository.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/kyc_verification_repository.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_rejection_prompt.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_resume_flow.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_cancel_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_ktp_guide_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_photo_capture_section.dart';
@@ -20,6 +25,10 @@ import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_success
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_verifying_document_bottom_sheet.dart';
 
 enum _KycStage { ktp, selfieKtp, identity }
+
+/// Orange success illustration used by the KYC result sheets in Figma.
+const _successIllustration =
+    'assets/images/superapp/topup/ilustration_top_up_success.svg';
 
 /// KTP, selfie with KTP, and partner information after liveness.
 class KycSubmissionPage extends StatefulWidget {
@@ -65,9 +74,24 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   String? _selfieKtpUploadPath;
   String? _ktpUrl;
   String? _selfieKtpUrl;
+
+  /// Local copies of the draft photos from `latest-history`. The signed URLs
+  /// expire quickly, so these are used for preview and OCR instead.
+  String? _ktpServerPath;
+  String? _selfieKtpServerPath;
+  String? _livenessServerPath;
+  String? _livenessUploadPath;
+
+  /// KTP photo whose OCR result was last written into the form, so a new KTP
+  /// photo overwrites the form once but going back and forth does not.
+  String? _ocrAppliedPath;
   bool _capturing = false;
   bool _preparingPhoto = false;
   bool _uploading = false;
+
+  /// True while the server already holds the current liveness, KTP and
+  /// selfie images, so submit/draft does not upload them again.
+  bool _imagesSavedOnServer = false;
   String _submitProgress = 'Mengirim pengajuan...';
   bool _confirmed = false;
   Future<KtpOcrData?>? _ocrFuture;
@@ -75,11 +99,21 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.history?.hasCompleteImages == true) {
+    final history = widget.history;
+    if (history != null && history.isRejected) {
+      // Only partner data rejected: the server photos stand, go to the form.
+      if (!history.mustRetakeKtp) {
+        _stage = _KycStage.identity;
+        _imagesSavedOnServer = true;
+      }
+    } else if (history?.hasCompleteImages == true) {
       _stage = _KycStage.identity;
+      _imagesSavedOnServer = true;
     }
-    _ktpUrl = widget.history?.ktpUrl;
-    _selfieKtpUrl = widget.history?.selfieKtpUrl;
+    // A photo that must be redone starts empty so the camera opens.
+    _ktpUrl = _rejected && history!.mustRetakeKtp ? null : history?.ktpUrl;
+    _selfieKtpUrl =
+        _rejected && history!.mustRetakeSelfieKtp ? null : history?.selfieKtpUrl;
     final previous = widget.history?.partnerData;
     if (previous != null) {
       _nik.text = previous['nik'] ?? '';
@@ -94,6 +128,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
       _rtRw.text = previous['rt_rw'] ?? '';
       _postalCode.text = previous['pos_code'] ?? '';
     }
+    unawaited(_restoreServerPhotos());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (_stage == _KycStage.identity) return;
@@ -112,6 +147,10 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
     unawaited(_deleteTemporaryPhoto(_selfieKtpPath));
     unawaited(_deleteTemporaryPhoto(_ktpUploadPath));
     unawaited(_deleteTemporaryPhoto(_selfieKtpUploadPath));
+    unawaited(_deleteTemporaryPhoto(_ktpServerPath));
+    unawaited(_deleteTemporaryPhoto(_selfieKtpServerPath));
+    unawaited(_deleteTemporaryPhoto(_livenessServerPath));
+    unawaited(_deleteTemporaryPhoto(_livenessUploadPath));
     _nik.dispose();
     _name.dispose();
     _birthPlace.dispose();
@@ -151,9 +190,87 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
     }
   }
 
-  void _fillFromOcr(KtpOcrData data) {
+  /// Resuming a draft: download the server photos while their signed URLs
+  /// are still valid, then run OCR on the KTP so the form is filled again
+  /// (the draft API stores only the photos, not the form text).
+  Future<void> _restoreServerPhotos() async {
+    final ktpUrl = _ktpUrl;
+    final selfieUrl = _selfieKtpUrl;
+    // A kept (not redone) liveness photo is needed again for the upload.
+    final livenessUrl = widget.livenessPath == null && _rejected
+        ? widget.history?.livenessUrl
+        : null;
+    if (livenessUrl != null && livenessUrl.isNotEmpty) {
+      unawaited(KycServerPhotoDownloader.tryDownload(livenessUrl,
+              name: 'liveness')
+          .then((file) {
+        if (file == null) return;
+        if (!mounted) {
+          unawaited(_deleteTemporaryPhoto(file.path));
+          return;
+        }
+        _livenessServerPath = file.path;
+      }));
+    }
+    if (ktpUrl == null && selfieUrl == null) return;
+    final ktpDownload = ktpUrl == null
+        ? Future<File?>.value()
+        : KycServerPhotoDownloader.tryDownload(ktpUrl, name: 'ktp');
+    final selfieDownload = selfieUrl == null
+        ? Future<File?>.value()
+        : KycServerPhotoDownloader.tryDownload(selfieUrl, name: 'selfie_ktp');
+    final ktpFile = await ktpDownload;
+    final selfieFile = await selfieDownload;
+
+    // Drop a download if the page closed or the user retook that photo.
+    final keepKtp = mounted && ktpFile != null && _ktpUrl == ktpUrl;
+    final keepSelfie =
+        mounted && selfieFile != null && _selfieKtpUrl == selfieUrl;
+    if (!keepKtp) unawaited(_deleteTemporaryPhoto(ktpFile?.path));
+    if (!keepSelfie) unawaited(_deleteTemporaryPhoto(selfieFile?.path));
+    if (!mounted) return;
+    setState(() {
+      if (keepKtp) _ktpServerPath = ktpFile.path;
+      if (keepSelfie) _selfieKtpServerPath = selfieFile.path;
+    });
+
+    final ktpPath = _ktpServerPath;
+    if (ktpPath == null) {
+      if (ktpUrl != null && _ktpUrl == ktpUrl) {
+        _message(
+            'Foto KTP dari draft belum dapat dimuat. Isi data secara manual atau ambil ulang foto KTP.');
+      }
+      return;
+    }
+    final ocr = _readKtp(ktpPath);
+    _ocrFuture = ocr;
+    final data = await ocr;
+    debugPrint('[KYC] OCR foto draft: '
+        '${data?.hasRecognizedFields == true ? 'terbaca' : 'tidak terbaca'}, '
+        'nik=${data?.nik != null}, nama=${data?.name != null}');
+    if (!mounted || _ktpServerPath != ktpPath) return;
+    if (data != null && data.hasRecognizedFields) {
+      setState(() => _fillFromOcr(data));
+    }
+  }
+
+  bool get _rejected => widget.history?.isRejected == true;
+
+  /// Rejected selfie kept as-is (liveness-only rejection): skip that step.
+  bool get _skipSelfie =>
+      _rejected && widget.history?.mustRetakeSelfieKtp != true;
+
+  /// Only partner data rejected: the form is the first and only step.
+  _KycStage get _firstStage => _rejected && widget.history?.mustRetakeKtp != true
+      ? _KycStage.identity
+      : _KycStage.ktp;
+
+  /// [overwrite] is used for a newly taken KTP photo: per AC, OCR of a
+  /// retaken KTP replaces the form data. Otherwise only empty fields fill.
+  void _fillFromOcr(KtpOcrData data, {bool overwrite = false}) {
     void fill(TextEditingController controller, String? value) {
-      if (controller.text.trim().isEmpty && value != null && value.isNotEmpty) {
+      if (value == null || value.isEmpty) return;
+      if (overwrite || controller.text.trim().isEmpty) {
         controller.text = value;
       }
     }
@@ -218,8 +335,12 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
 
   void _back() {
     if (_uploading || _preparingPhoto || _capturing) return;
-    if (_stage != _KycStage.ktp) {
-      setState(() => _stage = _KycStage.values[_stage.index - 1]);
+    if (_stage != _firstStage) {
+      var previous = _KycStage.values[_stage.index - 1];
+      if (previous == _KycStage.selfieKtp && _skipSelfie) {
+        previous = _KycStage.ktp;
+      }
+      setState(() => _stage = previous);
       return;
     }
     KycCancelBottomSheet.show<void>(
@@ -228,7 +349,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         final navigator = Navigator.of(context);
         navigator.pop(); // Confirmation sheet.
         navigator.pop(); // Photo or form page.
-        if (widget.history == null) navigator.pop(); // Liveness result page.
+        if (widget.livenessPath != null) navigator.pop(); // Liveness result.
       },
     );
   }
@@ -245,6 +366,19 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
           if (!await _prepareCapturedPhoto(selfie: false)) return;
         }
         if (!mounted) return;
+        if (_skipSelfie) {
+          setState(() => _stage = _KycStage.selfieKtp);
+          return _next();
+        }
+        final history = widget.history;
+        // A later rejection popup: "Tutup" stays on the KTP step (AC).
+        if (history != null &&
+            history.isSelfieKtpRejected &&
+            history.rejectedItems.first != KycRejectedItem.selfieKtp) {
+          final retry = await KycRejectionPrompt.show(context,
+              history: history, item: KycRejectedItem.selfieKtp);
+          if (!retry || !mounted) return;
+        }
         setState(() => _stage = _KycStage.selfieKtp);
         if (_selfieKtpPath == null && _selfieKtpUrl == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -263,11 +397,20 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         if (!mounted) return;
         setState(() => _stage = _KycStage.identity);
         KycVerifyingDocumentBottomSheet.show<void>(context);
+        // Per AC 6 Nov: entering the OCR step saves the submission as Draft.
+        final draftSaved = _autoSaveDraft();
         final data = await _ocrFuture;
+        final saved = await draftSaved;
         if (!mounted || _stage != _KycStage.identity) return;
         Navigator.of(context).pop();
+        if (!saved) {
+          _message(
+              'Draft belum tersimpan otomatis. Tekan "Simpan sebagai Draft" sebelum keluar.');
+        }
         if (data != null && data.hasRecognizedFields) {
-          _fillFromOcr(data);
+          final freshKtp = _ktpPath != null && _ocrAppliedPath != _ktpPath;
+          _fillFromOcr(data, overwrite: freshKtp);
+          if (freshKtp) _ocrAppliedPath = _ktpPath;
           if (data.nik == null || data.name == null) {
             _message(
                 'Sebagian data KTP belum terbaca. Periksa hasil atau ambil ulang foto.');
@@ -312,25 +455,75 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   }
 
   Future<void> _uploadDraftImages() async {
-    // A complete saved draft already has the three images on the server.
-    // Submitting its form must not require temporary files from an old session.
-    if (widget.history?.hasCompleteImages == true &&
-        widget.livenessPath == null &&
-        _ktpPath == null &&
-        _selfieKtpPath == null) {
-      return;
-    }
-    final livenessPath = widget.livenessPath;
+    // The server already has the current three images (a resumed complete
+    // draft or the automatic draft saved at the OCR step). Submitting must not
+    // require temporary files from an old session or upload them twice.
+    if (_imagesSavedOnServer) return;
+    // The upload API always takes all three files. Photos that were not
+    // redone (resumed draft or partial rejection) come from the server copy.
+    _ktpUploadPath ??= await _prepareServerCopy(_ktpServerPath);
+    _selfieKtpUploadPath ??= await _prepareServerCopy(_selfieKtpServerPath);
+    _livenessUploadPath ??= widget.livenessPath == null
+        ? await _prepareServerCopy(_livenessServerPath)
+        : null;
+    final livenessPath = widget.livenessPath ?? _livenessUploadPath;
     final ktpPath = _ktpUploadPath;
     final selfieKtpPath = _selfieKtpUploadPath;
-    if (livenessPath == null || ktpPath == null || selfieKtpPath == null) {
-      throw StateError('Foto liveness, KTP, dan selfie harus lengkap.');
+    if (livenessPath == null) {
+      throw StateError(
+          'Foto verifikasi wajah sebelumnya tidak tersedia dari server. Hubungi CS atau coba lagi nanti.');
+    }
+    if (ktpPath == null || selfieKtpPath == null) {
+      throw StateError(
+          'Foto verifikasi belum lengkap. Ambil ulang foto KTP dan selfie.');
     }
     await _verificationRepository.upload(
       livenessPath: livenessPath,
       ktpPath: ktpPath,
       selfieKtpPath: selfieKtpPath,
     );
+    _imagesSavedOnServer = true;
+    KycResumeFlow.historyChanged.value++;
+  }
+
+  Future<String?> _prepareServerCopy(String? path) async {
+    if (path == null) return null;
+    try {
+      return (await KycUploadImagePreparer.prepare(path)).path;
+    } on Exception catch (error) {
+      debugPrint('[KYC] Foto server gagal disiapkan: $error');
+      return null;
+    }
+  }
+
+  /// Uploads the three photos as a server draft without blocking the flow.
+  Future<bool> _autoSaveDraft() async {
+    try {
+      await _uploadDraftImages();
+      return true;
+    } catch (error) {
+      debugPrint('[KYC] Auto draft gagal: $error');
+      return false;
+    }
+  }
+
+  String _errorMessage(Object error, {required String fallback}) {
+    if (error is KycApiException) return error.message;
+    if (error is StateError) return error.message;
+    if (error is DioException) {
+      final body = error.response?.data;
+      if (body is Map) {
+        final meta = body['meta'];
+        final message = meta is Map ? meta['message'] : body['message'];
+        if (message != null && message.toString().trim().isNotEmpty) {
+          return message.toString();
+        }
+      }
+      if (error.response == null) {
+        return 'Terjadi kesalahan. Periksa koneksi Anda atau coba lagi.';
+      }
+    }
+    return fallback;
   }
 
   Future<void> _submitVerification() async {
@@ -368,9 +561,12 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
       });
       if (!mounted) return;
       locator<SuperappProfileBloc>().add(const FetchSuperappProfileEvent());
+      KycResumeFlow.historyChanged.value++;
       _showSubmissionResult();
-    } catch (_) {
-      _message('Pengajuan verifikasi gagal. Periksa NIK dan coba lagi.');
+    } catch (error) {
+      debugPrint('[KYC] Pengajuan gagal: $error');
+      _message(_errorMessage(error,
+          fallback: 'Pengajuan verifikasi gagal. Coba lagi.'));
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -385,15 +581,15 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   void _showSubmissionResult() {
     KycSuccessBottomSheet.show<void>(
       context,
-      title: 'Pengajuan Verifikasi KTP Berhasil',
-      subtitle: 'Silakan tunggu konfirmasi lebih lanjut selama 1x24 jam.',
-      imagePath: 'assets/images/ilustrated-success.svg',
+      title: 'Pengajuan Verifikasi KTP\nBerhasil',
+      subtitle: 'Silakan tunggu konfirmasi lebih lanjut\nselama 1×24 jam.',
+      imagePath: _successIllustration,
       buttonText: 'Selesai',
       onButtonPressed: () {
         final navigator = Navigator.of(context);
         navigator.pop(); // Success sheet.
         navigator.pop(); // Form page.
-        if (widget.history == null) navigator.pop(); // Liveness result page.
+        if (widget.livenessPath != null) navigator.pop(); // Liveness result.
       },
     );
   }
@@ -433,7 +629,9 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
 
   Widget _photoPage() {
     final selfie = _stage == _KycStage.selfieKtp;
-    final path = selfie ? _selfieKtpPath : _ktpPath;
+    final path = selfie
+        ? _selfieKtpPath ?? _selfieKtpServerPath
+        : _ktpPath ?? _ktpServerPath;
     final url = selfie ? _selfieKtpUrl : _ktpUrl;
     final hasPhoto = path != null || url != null;
     final cameraKey = selfie ? _selfieCameraKey : _ktpCameraKey;
@@ -488,16 +686,21 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                   capturedUrl: url,
                   onCaptured: (value) {
                     setState(() {
+                      _imagesSavedOnServer = false;
                       if (selfie) {
                         unawaited(_deleteTemporaryPhoto(_selfieKtpUploadPath));
                         _selfieKtpUploadPath = null;
                         _selfieKtpPath = value;
                         _selfieKtpUrl = null;
+                        unawaited(_deleteTemporaryPhoto(_selfieKtpServerPath));
+                        _selfieKtpServerPath = null;
                       } else {
                         unawaited(_deleteTemporaryPhoto(_ktpUploadPath));
                         _ktpUploadPath = null;
                         _ktpPath = value;
                         _ktpUrl = null;
+                        unawaited(_deleteTemporaryPhoto(_ktpServerPath));
+                        _ktpServerPath = null;
                       }
                     });
                     if (!selfie) {
@@ -528,16 +731,19 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                 if (_uploading || _preparingPhoto || _capturing) return;
                 unawaited(_deleteTemporaryPhoto(path));
                 setState(() {
+                  _imagesSavedOnServer = false;
                   if (selfie) {
                     unawaited(_deleteTemporaryPhoto(_selfieKtpUploadPath));
                     _selfieKtpUploadPath = null;
                     _selfieKtpPath = null;
                     _selfieKtpUrl = null;
+                    _selfieKtpServerPath = null;
                   } else {
                     unawaited(_deleteTemporaryPhoto(_ktpUploadPath));
                     _ktpUploadPath = null;
                     _ktpPath = null;
                     _ktpUrl = null;
+                    _ktpServerPath = null;
                     _ocrFuture = null;
                   }
                 });
@@ -661,21 +867,24 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
       if (!mounted) return;
       KycSuccessBottomSheet.show<void>(
         context,
-        title: 'Draft Verifikasi Berhasil Disimpan',
-        subtitle: 'Berkas verifikasi berhasil disimpan sebagai draft.',
-        imagePath: 'assets/images/ilustrated-success.svg',
-        buttonText: 'Selesai',
+        title: 'Data Disimpan sebagai\nDraft',
+        subtitle:
+            'Data KTP kamu akan disimpan sebagai draft dan bisa dilanjutkan nanti.',
+        imagePath: _successIllustration,
+        buttonText: 'Mengerti',
         onButtonPressed: () {
           final navigator = Navigator.of(context);
           navigator.pop();
           navigator.pop();
-          if (widget.history == null && widget.livenessPath != null) {
+          if (widget.livenessPath != null) {
             navigator.pop();
           }
         },
       );
-    } catch (_) {
-      _message('Draft belum berhasil disimpan. Pastikan semua foto tersedia.');
+    } catch (error) {
+      debugPrint('[KYC] Simpan draft gagal: $error');
+      _message(_errorMessage(error,
+          fallback: 'Draft belum berhasil disimpan. Coba lagi.'));
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -761,7 +970,17 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
             _field('Kecamatan', _district),
             _field('Kel/Desa', _village),
             _field('Alamat', _address, maxLines: 3),
-            _field('RT/RW', _rtRw),
+            _field('RT/RW', _rtRw,
+                maxLength: 7,
+                // Digits plus '/', e.g. 001/002 as printed on the KTP.
+                keyboardType: TextInputType.datetime,
+                formatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                ],
+                validator: (v) =>
+                    RegExp(r'^\d{1,3}/\d{1,3}$').hasMatch(v?.trim() ?? '')
+                        ? null
+                        : 'Format RT/RW: 001/002'),
             _field('Kode Pos', _postalCode,
                 keyboardType: TextInputType.number,
                 formatters: [FilteringTextInputFormatter.digitsOnly],

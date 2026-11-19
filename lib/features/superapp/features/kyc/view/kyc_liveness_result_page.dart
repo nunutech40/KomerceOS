@@ -3,15 +3,24 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_history.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_rejection_prompt.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_submission_page.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_cancel_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_ktp_guide_bottom_sheet.dart';
 
 /// Liveness result page shown before the KTP tutorial sheet.
 class KycLivenessResultPage extends StatefulWidget {
-  const KycLivenessResultPage({super.key, required this.livenessPath});
+  const KycLivenessResultPage({
+    super.key,
+    required this.livenessPath,
+    this.rejectedHistory,
+  });
 
   final String livenessPath;
+
+  /// Set when liveness was redone after a rejection.
+  final KycHistory? rejectedHistory;
 
   @override
   State<KycLivenessResultPage> createState() => _KycLivenessResultPageState();
@@ -32,7 +41,18 @@ class _KycLivenessResultPageState extends State<KycLivenessResultPage> {
     }
   }
 
-  void _showKtpGuide() {
+  Future<void> _showKtpGuide() async {
+    final history = widget.rejectedHistory;
+    // Liveness was the first rejection popup; the KTP rejection gets its own
+    // popup before the KTP part. "Tutup" stays on this page (AC).
+    if (history != null &&
+        history.isKtpRejected &&
+        history.rejectedItems.first != KycRejectedItem.ktp) {
+      final retry = await KycRejectionPrompt.show(context,
+          history: history, item: KycRejectedItem.ktp);
+      if (!retry || !mounted) return;
+    }
+    if (!mounted) return;
     KycKtpGuideBottomSheet.show<void>(
       context,
       onStartPhoto: () {
@@ -41,6 +61,7 @@ class _KycLivenessResultPageState extends State<KycLivenessResultPage> {
           builder: (_) => KycSubmissionPage(
             startWithKtpCamera: true,
             livenessPath: widget.livenessPath,
+            history: widget.rejectedHistory,
           ),
         ));
       },

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_liveness_sdk/flutter_liveness_sdk.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_upload_image_preparer.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_history.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_camera_permission_dialog.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/widget/kyc_liveness_bottom_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/view/kyc_liveness_result_page.dart';
@@ -16,16 +17,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Connects the KYC screens to the local Flutter liveness plugin.
 /// Android renders the capture page in the app while the SDK owns detection.
 abstract final class KycLivenessFlow {
-  static Future<void> start(BuildContext context) async {
+  /// [rejectedHistory] is set when redoing liveness after a rejection, so
+  /// the following KTP/selfie steps know which parts to redo.
+  static Future<void> start(BuildContext context,
+      {KycHistory? rejectedHistory}) async {
     await _removeLegacyLivenessCache();
     if (!context.mounted) return;
     await KycLivenessBottomSheet.show<void>(
       context,
-      onStart: () => unawaited(_beginCapture(context)),
+      onStart: () => unawaited(_beginCapture(context, rejectedHistory)),
     );
   }
 
-  static Future<void> _beginCapture(BuildContext context) async {
+  static Future<void> _beginCapture(
+      BuildContext context, KycHistory? rejectedHistory) async {
     bool granted = false;
     try {
       granted = (await Permission.camera.status).isGranted;
@@ -120,7 +125,7 @@ abstract final class KycLivenessFlow {
             await prepared.delete();
             return;
           }
-          _showResult(context, prepared.path);
+          _showResult(context, prepared.path, rejectedHistory);
           return;
         case LivenessStatus.cancelled:
           return;
@@ -152,9 +157,13 @@ abstract final class KycLivenessFlow {
     }
   }
 
-  static void _showResult(BuildContext context, String livenessPath) {
+  static void _showResult(BuildContext context, String livenessPath,
+      KycHistory? rejectedHistory) {
     Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => KycLivenessResultPage(livenessPath: livenessPath),
+      builder: (_) => KycLivenessResultPage(
+        livenessPath: livenessPath,
+        rejectedHistory: rejectedHistory,
+      ),
     ));
   }
 

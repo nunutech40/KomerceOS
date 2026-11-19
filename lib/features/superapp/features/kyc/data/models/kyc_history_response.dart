@@ -45,10 +45,13 @@ class KycHistoryResponse {
       status: field(data, 'status'),
       livenessStatus: field(liveness, 'status'),
       livenessUrl: field(liveness, 'url'),
+      livenessNotes: field(liveness, 'notes'),
       ktpStatus: field(ktp, 'status'),
       ktpUrl: field(ktp, 'url'),
+      ktpNotes: field(ktp, 'notes'),
       selfieKtpStatus: field(selfie, 'status'),
       selfieKtpUrl: field(selfie, 'url'),
+      selfieKtpNotes: field(selfie, 'notes'),
       partnerData: values,
     );
   }

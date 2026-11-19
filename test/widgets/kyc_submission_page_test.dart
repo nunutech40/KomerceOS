@@ -55,4 +55,47 @@ void main() {
     expect(find.text('Simpan sebagai Draft'), findsOneWidget);
     expect(find.byType(KycPhotoCaptureSection), findsNothing);
   });
+
+  testWidgets('RT/RW hanya menerima angka dan garis miring', (tester) async {
+    const history = KycHistory(
+      livenessStatus: 'draft',
+      ktpUrl: 'https://example.com/ktp.jpg',
+      selfieKtpUrl: 'https://example.com/selfie.jpg',
+    );
+    await tester.pumpWidget(const MaterialApp(
+      home: KycSubmissionPage(history: history),
+    ));
+
+    final rtRw = find.ancestor(
+      of: find.text('Masukkan RT/RW'),
+      matching: find.byType(TextFormField),
+    );
+    await tester.ensureVisible(rtRw);
+    await tester.enterText(rtRw, 'bw01/0a2x');
+    await tester.pump();
+
+    final field = tester.widget<TextFormField>(rtRw);
+    expect(field.controller!.text, '01/02');
+  });
+
+  testWidgets('RT/RW tanpa garis miring ditolak validasi', (tester) async {
+    const history = KycHistory(
+      livenessStatus: 'draft',
+      ktpUrl: 'https://example.com/ktp.jpg',
+      selfieKtpUrl: 'https://example.com/selfie.jpg',
+    );
+    await tester.pumpWidget(const MaterialApp(
+      home: KycSubmissionPage(history: history),
+    ));
+
+    final rtRw = find.ancestor(
+      of: find.text('Masukkan RT/RW'),
+      matching: find.byType(TextFormField),
+    );
+    await tester.ensureVisible(rtRw);
+    await tester.enterText(rtRw, '001002');
+    await tester.pump();
+
+    expect(find.text('Format RT/RW: 001/002'), findsOneWidget);
+  });
 }
