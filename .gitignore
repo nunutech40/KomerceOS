@@ -50,3 +50,6 @@ app.*.map.json
 
 # Local-only QA credentials and device notes. Never commit.
 .qa/
+
+# Local-only credential notes. Never commit.
+credential.md
