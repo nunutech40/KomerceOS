@@ -1,4 +1,5 @@
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/ktp_ocr_data.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_rt_rw.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/data/services/ktp_ocr_line.dart';
 
 /// Extracts conservative form candidates from the unstructured ML Kit output.
@@ -99,10 +100,9 @@ abstract final class KtpOcrParser {
     final rtRwRaw = value(RegExp(r'^RT\s*/\s*RW\b'));
     final rtRw = rtRwRaw == null
         ? null
-        : RegExp(r'\b\d{1,3}\s*/\s*\d{1,3}\b')
+        : KycRtRw.normalize(RegExp(r'\b\d{1,3}\s*/\s*\d{1,3}\b')
             .firstMatch(rtRwRaw)
-            ?.group(0)
-            ?.replaceAll(' ', '');
+            ?.group(0));
 
     final postalRaw = value(RegExp(r'^KODE\s*POS\b'));
     final postalCode = postalRaw == null

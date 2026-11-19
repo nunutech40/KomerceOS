@@ -13,6 +13,7 @@ import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_
 import 'package:komtim_partner/features/superapp/features/kyc/data/services/kyc_upload_image_preparer.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/ktp_ocr_data.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_history.dart';
+import 'package:komtim_partner/features/superapp/features/kyc/domain/entities/kyc_rt_rw.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/ktp_ocr_repository.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/domain/repositories/kyc_verification_repository.dart';
 import 'package:komtim_partner/features/superapp/features/kyc/flow/kyc_rejection_prompt.dart';
@@ -125,7 +126,8 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
       _district.text = previous['district'] ?? '';
       _village.text = previous['village'] ?? '';
       _address.text = previous['address'] ?? '';
-      _rtRw.text = previous['rt_rw'] ?? '';
+      final rtRw = previous['rt_rw'] ?? '';
+      _rtRw.text = KycRtRw.normalize(rtRw) ?? rtRw;
       _postalCode.text = previous['pos_code'] ?? '';
     }
     unawaited(_restoreServerPhotos());
@@ -287,7 +289,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
     fill(_district, data.district);
     fill(_village, data.village);
     fill(_address, data.address);
-    fill(_rtRw, data.rtRw);
+    fill(_rtRw, KycRtRw.normalize(data.rtRw) ?? data.rtRw);
     fill(_postalCode, data.postalCode);
   }
 
@@ -421,6 +423,9 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         }
         return;
       case _KycStage.identity:
+        // BE stores RT/RW as 001/002 (7 chars); show the padded value too.
+        final rtRw = KycRtRw.normalize(_rtRw.text);
+        if (rtRw != null && rtRw != _rtRw.text) _rtRw.text = rtRw;
         if (!_formKey.currentState!.validate() || !_confirmed) {
           if (!_confirmed) _message('Setujui pemeriksaan data identitas.');
           return;
@@ -556,7 +561,7 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         'district': _district.text.trim(),
         'village': _village.text.trim(),
         'address': _address.text.trim(),
-        'rt_rw': _rtRw.text.trim(),
+        'rt_rw': KycRtRw.normalize(_rtRw.text) ?? _rtRw.text.trim(),
         'pos_code': _postalCode.text.trim(),
       });
       if (!mounted) return;
@@ -977,10 +982,9 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
                 formatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
                 ],
-                validator: (v) =>
-                    RegExp(r'^\d{1,3}/\d{1,3}$').hasMatch(v?.trim() ?? '')
-                        ? null
-                        : 'Format RT/RW: 001/002'),
+                validator: (v) => KycRtRw.normalize(v) != null
+                    ? null
+                    : 'Format RT/RW: 001/002'),
             _field('Kode Pos', _postalCode,
                 keyboardType: TextInputType.number,
                 formatters: [FilteringTextInputFormatter.digitsOnly],
