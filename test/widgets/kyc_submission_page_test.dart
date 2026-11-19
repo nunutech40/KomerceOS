@@ -78,7 +78,7 @@ void main() {
     expect(field.controller!.text, '01/02');
   });
 
-  testWidgets('RT/RW tanpa garis miring ditolak validasi', (tester) async {
+  testWidgets('RT/RW tidak lengkap ditolak, 6 digit diterima', (tester) async {
     const history = KycHistory(
       livenessStatus: 'draft',
       ktpUrl: 'https://example.com/ktp.jpg',
@@ -93,9 +93,13 @@ void main() {
       matching: find.byType(TextFormField),
     );
     await tester.ensureVisible(rtRw);
+    await tester.enterText(rtRw, '12');
+    await tester.pump();
+    expect(find.text('Format RT/RW: 001/002'), findsOneWidget);
+
+    // Digits only are normalised to 001/002 before validation/submit.
     await tester.enterText(rtRw, '001002');
     await tester.pump();
-
-    expect(find.text('Format RT/RW: 001/002'), findsOneWidget);
+    expect(find.text('Format RT/RW: 001/002'), findsNothing);
   });
 }
