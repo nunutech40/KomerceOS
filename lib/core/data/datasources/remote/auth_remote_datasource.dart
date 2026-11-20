@@ -60,6 +60,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       data: {
         'email': email,
         'app': 'komerceOS',
+        'source_app': 'komerceos',
         if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
         'device': Platform.isAndroid ? 'android' : 'ios'
       },
@@ -104,6 +105,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final data = <String, dynamic>{
       'username_email': username,
       'password': password,
+      'source_app': 'komerceos',
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
       'device': Platform.isAndroid ? 'android' : 'ios',
     };
@@ -137,6 +139,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final data = <String, dynamic>{
       'token': loginToken,
       'type': method,
+      'source_app': 'komerceos',
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
       'device': Platform.isAndroid ? 'android' : 'ios',
     };
@@ -157,6 +160,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final data = <String, dynamic>{
       'token': otpToken,
       'otp_value': otp,
+      'source_app': 'komerceos',
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
       'device': Platform.isAndroid ? 'android' : 'ios',
     };

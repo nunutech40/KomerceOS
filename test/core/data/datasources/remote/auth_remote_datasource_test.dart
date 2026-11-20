@@ -87,6 +87,7 @@ void main() {
       verify(mockClient.post(Endpoints.checkEmail, data: {
         'email': email,
         'app': 'komerceOS',
+        'source_app': 'komerceos',
         'recaptcha_token': recaptchaToken,
         'device': Platform.isAndroid ? 'android' : 'ios',
       })).called(1);
@@ -355,6 +356,7 @@ void main() {
     final tExpectedBodyWithRecaptcha = {
       'username_email': tUser,
       'password': tPass,
+      'source_app': 'komerceos',
       'recaptcha_token': tRecaptcha,
       'device': Platform.isAndroid ? 'android' : 'ios',
     };
@@ -362,6 +364,7 @@ void main() {
     final tExpectedBodyWithoutRecaptcha = {
       'username_email': tUser,
       'password': tPass,
+      'source_app': 'komerceos',
       'device': Platform.isAndroid ? 'android' : 'ios',
     };
 
@@ -535,6 +538,7 @@ void main() {
     final tExpectedBody = {
       'token': tLoginToken,
       'type': tMethod,
+      'source_app': 'komerceos',
       'recaptcha_token': tRecaptcha,
       'device': Platform.isAndroid ? 'android' : 'ios',
     };
@@ -624,6 +628,7 @@ void main() {
     final tExpectedBody = {
       'token': tOtpToken,
       'otp_value': tOtp,
+      'source_app': 'komerceos',
       'recaptcha_token': tRecaptcha,
       'device': Platform.isAndroid ? 'android' : 'ios',
     };
