@@ -402,12 +402,13 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
         // Per AC 6 Nov: entering the OCR step saves the submission as Draft.
         final draftSaved = _autoSaveDraft();
         final data = await _ocrFuture;
-        final saved = await draftSaved;
+        final draftError = await draftSaved;
         if (!mounted || _stage != _KycStage.identity) return;
         Navigator.of(context).pop();
-        if (!saved) {
+        if (draftError != null) {
+          // Show the BE reason so a failed upload (e.g. 400) is not silent.
           _message(
-              'Draft belum tersimpan otomatis. Tekan "Simpan sebagai Draft" sebelum keluar.');
+              'Draft belum tersimpan otomatis ($draftError). Tekan "Simpan sebagai Draft" sebelum keluar.');
         }
         if (data != null && data.hasRecognizedFields) {
           final freshKtp = _ktpPath != null && _ocrAppliedPath != _ktpPath;
@@ -502,13 +503,14 @@ class _KycSubmissionPageState extends State<KycSubmissionPage> {
   }
 
   /// Uploads the three photos as a server draft without blocking the flow.
-  Future<bool> _autoSaveDraft() async {
+  /// Returns the failure reason, or null when the draft was saved.
+  Future<String?> _autoSaveDraft() async {
     try {
       await _uploadDraftImages();
-      return true;
+      return null;
     } catch (error) {
       debugPrint('[KYC] Auto draft gagal: $error');
-      return false;
+      return _errorMessage(error, fallback: 'gagal mengunggah foto');
     }
   }
 
