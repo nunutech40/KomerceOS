@@ -105,17 +105,17 @@ class Endpoints {
   static String get topupCeckTransaction =>
       '$_BaseURL/api/v1/mobile/transaction/check';
   static String get checkBill =>
-      '$_BaseURLSuperApp/xendit/api/v1/xendit/bill/check-bill/komship';
+      '$_BaseURLSuperApp/xendit/api/v1/pivot/bill/check-bill/kompay';
   static String get createInvoice =>
-      '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/create-invoice/komship';
+      '$_BaseURLSuperApp/xendit/api/v1/pivot/invoice/create-invoice/kompay';
   static String get createQrcode =>
-      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/create-qrcode/komship';
+      '$_BaseURLSuperApp/xendit/api/v1/pivot/qrcode/create-qrcode/kompay';
   static String get checkQrcode =>
-      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/get-qrcode';
+      '$_BaseURLSuperApp/xendit/api/v1/pivot/qrcode/get-qrcode';
   static String expireQrcode(String id) =>
-      '$_BaseURLSuperApp/xendit/api/v1/xendit/qrcode/expire-qrcode/$id';
+      '$_BaseURLSuperApp/xendit/api/v1/pivot/qrcode/expire-qrcode/$id';
   static String expireInvoice(String id) =>
-      '$_BaseURLSuperApp/xendit/api/v1/xendit/invoice/expire-invoice/$id';
+      '$_BaseURLSuperApp/xendit/api/v1/pivot/invoice/expire-invoice/$id';
 
 // PIN
   static String get checkPinExisting => '$_BaseURLKomship/api/v1/pin/check';
