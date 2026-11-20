@@ -232,23 +232,20 @@ class _KycVerificationBottomSheetState
         );
       }
 
+      // 1. Pembayaran mengubah status verifikasi & saldo di profil. Profil
+      // global harus sudah ter-update sebelum flow lanjut; Home tidak fetch
+      // ulang sendiri, jadi tanpa ini Penarikan memakai status lama (0) dan
+      // menagih pembayaran lagi (QA 19 Nov 2026).
+      await _refreshProfileAfterPayment();
+      if (!mounted || !safeContext.mounted) return;
+
       // Reset state tombol sebelum sheet di-pop
       setState(() {
         _buttonState = DsButtonState.enabled;
       });
 
-      // 1. Tutup sheet promosi verifikasi akun
+      // 2. Tutup sheet promosi verifikasi akun
       Navigator.pop(context);
-
-      // 2. Refresh profil superapp di background (potong saldo ter-reflect di BLoC & UI)
-      try {
-        locator<SuperappProfileRepositoryImpl>().notifyProfileRefresh();
-        safeContext
-            .read<SuperappProfileBloc>()
-            .add(const FetchSuperappProfileEvent());
-      } catch (e) {
-        debugPrint('[KYC] Trigger profile refresh error: $e');
-      }
 
       // 3. Tampilkan popup "Pembayaran Berhasil" dengan tombol "Oke".
       // Saat tombol "Oke" ditekan user, tombol berubah loading "Redirecting...",
@@ -296,6 +293,21 @@ class _KycVerificationBottomSheetState
         ),
       );
     }
+  }
+
+  /// Fetch ulang profil global dan tunggu sampai selesai, supaya status
+  /// verifikasi dan saldo di seluruh app (Home, Penarikan, Pengaturan)
+  /// langsung mengikuti hasil pembayaran.
+  Future<void> _refreshProfileAfterPayment() async {
+    final bloc = locator<SuperappProfileBloc>();
+    final done = bloc.stream
+        .firstWhere((state) => !state.isBalanceLoading)
+        .timeout(const Duration(seconds: 15), onTimeout: () => bloc.state);
+    bloc.add(const FetchSuperappProfileEvent());
+    final state = await done;
+    debugPrint('[KYC] Profil setelah bayar: verification_ktp_status='
+        '${state.displayProfile?.verificationKtpStatus}, '
+        'saldo=${state.displayProfile?.saldo}');
   }
 
   @override
