@@ -9,6 +9,7 @@ class WithdrawalNominalCheck {
     required this.ideal,
     this.potentialReturn,
     this.potentialIncome,
+    this.possible = true,
   });
 
   final int balance;
@@ -16,6 +17,10 @@ class WithdrawalNominalCheck {
   final int ideal;
   final int? potentialReturn;
   final int? potentialIncome;
+
+  /// `withdraw_possibilites`; 0 means a previous withdrawal is still waiting
+  /// for approval. Komship web disables "Ajukan Penarikan" in that case.
+  final bool possible;
 
   factory WithdrawalNominalCheck.fromJson(dynamic json) {
     if (json is! Map) {
@@ -34,6 +39,7 @@ class WithdrawalNominalCheck {
       ideal: ideal,
       potentialReturn: num.tryParse('${json['potency_retur'] ?? ''}')?.toInt(),
       potentialIncome: num.tryParse('${json['potency_income'] ?? ''}')?.toInt(),
+      possible: num.tryParse('${json['withdraw_possibilites'] ?? ''}') != 0,
     );
   }
 }

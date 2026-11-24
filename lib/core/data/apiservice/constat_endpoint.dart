@@ -82,8 +82,15 @@ class Endpoints {
       '$_BaseURL/api/v1/mobile/transaction/bank_accounts';
   static String get komshipBankAccounts =>
       '$_BaseURLKomship/api/v1/bank-account';
+  /// Riwayat mutasi saldo (dipakai Komship Android dan web partner).
+  static String get komshipTransactionBalance =>
+      '$_BaseURLKomship/api/v1/partner/order-transaction-balance';
   static String get komshipCheckPossibleWithdraw =>
       '$_BaseURLKomship/api/v1/partner/withdrawal/check-possible-withdraw';
+  /// Pengajuan penarikan saldo Kompay, sama dengan Komship web
+  /// (`withdrawalRequest`). Komship Android sudah mengarahkan ke web.
+  static String get kompayWithdrawalRequest =>
+      '$_BaseURLInternal/api/v1/partner-withdrawal';
   static String get komshipAvailableBanks =>
       '$_BaseURLKomshipHiring/api/xendit/disbursementbankAvailable';
   static String get komshipCheckBankOwner =>

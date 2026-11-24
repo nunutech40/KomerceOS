@@ -33,7 +33,7 @@ class WithdrawalBalanceSheet extends StatelessWidget {
         WithdrawalBalanceNotice.ideal =>
           'Sebagian saldo kamu masih ditahan sebagai cadangan Saldo Ideal Komship.',
         WithdrawalBalanceNotice.pending =>
-          'Menunggu withdrawal sebelumnya selesai.',
+          'Masih ada penarikan yang diproses. Silakan tunggu hingga selesai untuk mengajukan penarikan baru.',
         WithdrawalBalanceNotice.combined =>
           'Saldo kamu belum bisa digunakan karena sedang diproses untuk penarikan dan tertahan sebagai Saldo Ideal Komship.',
       };
@@ -139,20 +139,25 @@ class WithdrawalBalanceSheet extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
-                        Text(
-                            'Potensi pendapatan order dikirim: ${_money(ideal?.inComeOrderPotential)}',
-                            style: const TextStyle(
-                                fontSize: 12, color: AppColors.grey600)),
-                        Text(
-                            'Potensi ongkir retur: ${_money(ideal?.shippingReturPotential)}',
-                            style: const TextStyle(
-                                fontSize: 12, color: AppColors.grey600)),
-                        const SizedBox(height: 4),
-                        Text('Saldo Ideal: ${_money(ideal?.idealBalance)}',
-                            style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.errorBase)),
+                        // Same sentence as Figma and Komship
+                        // (label_description_ideal_saldo).
+                        Text.rich(
+                          TextSpan(children: [
+                            TextSpan(
+                                text:
+                                    'Potensi Pendapatan Order Dikirim (${_money(ideal?.inComeOrderPotential)}) - '
+                                    'Ongkir Retur Ketika Sampai (${_money(ideal?.shippingReturOnFinished)}) - '
+                                    'Resiko Ongkir Menjadi Retur (${_money(ideal?.shippingRiskBecomeRetur)}) = Saldo Ideal '),
+                            TextSpan(
+                                text: '(${_money(ideal?.idealBalance)})',
+                                style: const TextStyle(
+                                    color: AppColors.errorBase)),
+                          ]),
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.grey600,
+                              height: 1.4),
+                        ),
                       ]),
                 ),
               ] else ...[

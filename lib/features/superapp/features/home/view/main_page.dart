@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:komtim_partner/features/superapp/features/withdrawal/view/kompay_mutation_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:komtim_partner/common/global/design_system/app_colors.dart';
 import 'package:komtim_partner/common/global/design_system/components/ds_app_image.dart';
@@ -29,7 +30,7 @@ class NavigationData extends ChangeNotifier {
       SvgPicture.asset('assets/images/superapp/home/navbar/ic_finance_active.svg'),
       SvgPicture.asset('assets/images/superapp/home/navbar/ic_finance_inactive.svg'),
       "Mutasi",
-      const MutasiPage(),
+      const KompayMutationPage(embedded: true),
     ),
     NavItem(
       SvgPicture.asset('assets/images/superapp/home/navbar/ic_setting_active.svg'),
@@ -221,25 +222,6 @@ class HomePageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       const Center(child: Text("Halaman Utama"));
-}
-
-class MutasiPage extends StatelessWidget {
-  const MutasiPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: 5,
-      itemBuilder: (context, index) => Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        child: ListTile(
-          leading: const Icon(Icons.currency_exchange, color: Colors.orange),
-          title: Text("Transaksi #$index"),
-          subtitle: const Text("Rp 100.000"),
-        ),
-      ),
-    );
-  }
 }
 
 class ShortcutPage extends StatelessWidget {

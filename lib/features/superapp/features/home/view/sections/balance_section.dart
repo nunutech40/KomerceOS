@@ -27,8 +27,6 @@ import 'package:komtim_partner/features/superapp/features/setting/widget/bank_ac
 import 'package:komtim_partner/features/superapp/features/setting/domain/repositories/bank_account_repository.dart';
 import 'package:komtim_partner/features/superapp/features/setting/view/bank_account_page.dart';
 import 'package:komtim_partner/features/superapp/features/withdrawal/view/withdrawal_no_bank_sheet.dart';
-import 'package:komtim_partner/features/superapp/features/withdrawal/view/withdrawal_balance_sheet.dart';
-import 'package:komtim_partner/features/superapp/features/withdrawal/data/withdrawal_preview_session.dart';
 import 'package:komtim_partner/features/superapp/features/withdrawal/view/withdrawal_page.dart';
 import 'package:komtim_partner/features/superapp/features/topup/bloc/check_bill_bloc.dart';
 
@@ -359,18 +357,6 @@ class _ActionButtonsState extends State<_ActionButtons> {
   }
 
   Future<void> _handleWithdrawalTapOnce() async {
-    if (kDebugMode && WithdrawalPreviewSession.hasPendingRequest) {
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        barrierColor: const Color(0x73000000),
-        builder: (_) => const WithdrawalBalanceSheet(
-          notice: WithdrawalBalanceNotice.pending,
-        ),
-      );
-      return;
-    }
     final profileBloc = context.read<SuperappProfileBloc>();
     final profileState = profileBloc.state;
     final rawStatus = profileState.displayProfile?.verificationKtpStatus;

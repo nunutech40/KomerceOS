@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:komtim_partner/core/domain/entities/bank_accounts_model.dart';
+import 'package:komtim_partner/features/superapp/features/withdrawal/domain/entities/kompay_withdrawal.dart';
 import 'package:komtim_partner/features/superapp/features/withdrawal/view/withdrawal_balance_sheet.dart';
 import 'package:komtim_partner/features/superapp/features/withdrawal/view/withdrawal_page.dart';
 
@@ -20,7 +20,7 @@ void main() {
     await tester.pump();
 
     expect(
-        find.text('Menunggu withdrawal sebelumnya selesai.'), findsOneWidget);
+        find.text('Masih ada penarikan yang diproses. Silakan tunggu hingga selesai untuk mengajukan penarikan baru.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -40,15 +40,7 @@ void main() {
           const Scaffold(body: Center(child: Text('Form Withdrawal'))),
     ));
     navigatorKey.currentState!.push(MaterialPageRoute<void>(
-      builder: (_) => WithdrawalResultPreviewPage(
-        amount: 500000,
-        balance: 999999999,
-        bank: BankAccountsDataModel(
-          bankName: 'Mandiri',
-          bankOwnerName: 'Ibnu Mufadlol',
-          bankOwnerNumber: '12345678',
-        ),
-      ),
+      builder: (_) => const WithdrawalResultPage(withdrawal: _withdrawal),
     ));
     await tester.pumpAndSettle();
 
@@ -58,39 +50,52 @@ void main() {
     expect(find.text('Form Withdrawal'), findsNothing);
   });
 
-  testWidgets('pratinjau hasil membuka riwayat dan state gagal',
+  testWidgets('hasil berhasil memakai data response', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+        const MaterialApp(home: WithdrawalResultPage(withdrawal: _withdrawal)));
+    await tester.pump();
+    expect(find.text('Penarikan Saldo Berhasil'), findsOneWidget);
+    expect(find.textContaining('Mandiri Ibnu Mufadlol', findRichText: true),
+        findsOneWidget);
+    // "Lihat Riwayat Penarikan" opens the live Mutasi page (needs DI and
+    // API), covered by kompay_mutation_response_test.dart.
+    expect(find.text('Lihat Riwayat Penarikan'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('hasil gagal menampilkan pesan BE dan kembali ke form',
       (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final navigatorKey = GlobalKey<NavigatorState>();
     await tester.pumpWidget(MaterialApp(
-      home: WithdrawalResultPreviewPage(
-        amount: 500000,
-        balance: 999999999,
-        bank: BankAccountsDataModel(
-          bankName: 'Mandiri',
-          bankOwnerName: 'Ibnu Mufadlol',
-          bankOwnerNumber: '12345678',
-        ),
-      ),
+      navigatorKey: navigatorKey,
+      home: const Scaffold(body: Center(child: Text('Form Withdrawal'))),
     ));
-    await tester.pump();
-    expect(find.text('Penarikan Saldo Berhasil'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-
-    await tester.tap(find.text('Lihat Riwayat Penarikan'));
-    await tester.pumpAndSettle();
-    expect(find.text('Mutasi Transaksi'), findsOneWidget);
-    expect(find.text('PRATINJAU · BELUM ADA TRANSAKSI'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('State gagal'));
+    navigatorKey.currentState!.push(MaterialPageRoute<void>(
+      builder: (_) =>
+          const WithdrawalResultPage(failedMessage: 'Saldo tidak cukup'),
+    ));
     await tester.pumpAndSettle();
     expect(find.text('Penarikan Gagal Diproses'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    expect(find.textContaining('Saldo tidak cukup'), findsOneWidget);
+
+    await tester.tap(find.text('Kembali'));
+    await tester.pumpAndSettle();
+    expect(find.text('Form Withdrawal'), findsOneWidget);
   });
 }
+
+const _withdrawal = KompayWithdrawal(
+  nominal: 500000,
+  bankName: 'Mandiri',
+  bankOwnerName: 'Ibnu Mufadlol',
+);

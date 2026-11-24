@@ -10,13 +10,16 @@ import 'package:komtim_partner/common/global/bloc/superapp_profile/superapp_prof
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/common/utils/currency_format.dart';
 import 'package:komtim_partner/core/domain/entities/bank_accounts_model.dart';
+import 'package:komtim_partner/core/data/datasources/remote/komship_partner_id_resolver.dart';
 import 'package:komtim_partner/core/domain/entities/ideal_balance_model.dart';
+import 'package:komtim_partner/core/domain/usecases/get_ideal_balance_use_case.dart';
 import 'package:komtim_partner/features/superapp/features/setting/domain/repositories/bank_account_repository.dart';
 import 'package:komtim_partner/features/superapp/features/setting/view/bank_account_page.dart';
 import '../data/withdrawal_nominal_checker.dart';
-import '../data/withdrawal_preview_session.dart';
+import '../data/datasources/kompay_withdrawal_remote_datasource.dart';
+import '../domain/entities/kompay_withdrawal.dart';
 import 'withdrawal_balance_sheet.dart';
-import 'withdrawal_history_preview_page.dart';
+import 'kompay_mutation_page.dart';
 import 'withdrawal_no_bank_sheet.dart';
 
 class WithdrawalPage extends StatefulWidget {
@@ -26,7 +29,9 @@ class WithdrawalPage extends StatefulWidget {
 }
 
 class _WithdrawalPageState extends State<WithdrawalPage> {
-  static const _presets = [10000, 20000, 50000, 100000, 500000, 1000000];
+  /// Minimal pengajuan penarikan (requirement sprint withdrawal).
+  static const _minimum = 12000;
+  static const _presets = [12000, 20000, 50000, 100000, 500000, 1000000];
   final _amount = TextEditingController();
   List<BankAccountsDataModel> _banks = [];
   BankAccountsDataModel? _bank;
@@ -47,14 +52,22 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
   bool _submitting = false;
   String? _submitError;
 
+  /// Set when `partner-withdrawal` answers HTTP 400 (queue, per Komship web).
+  bool _queuedByServer = false;
+
+  /// A previous withdrawal is still waiting for approval: amount in process
+  /// from `balance_analytics`, `withdraw_possibilites == 0` from the nominal
+  /// check, or a 400 from the request. Komship web blocks "Ajukan" then.
+  bool get _queued =>
+      _pending > 0 || _queuedByServer || _nominalCheck?.possible == false;
+
   int get _balance =>
       context.read<SuperappProfileBloc>().state.displaySaldo ?? 0;
   int get _maximum => (_balance - _ideal).clamp(0, _balance);
   bool get _valid =>
       !_loading &&
       _loadError == null &&
-      _pending == 0 &&
-      _value >= 10000 &&
+      _value >= _minimum &&
       !_checkingNominal &&
       _nominalCheckError == null &&
       _checkedNominal == _value &&
@@ -103,6 +116,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
           _bank = null;
         }
       });
+      await _loadIdealBalance();
       if (!mounted) return;
       setState(() {
         _loading = false;
@@ -118,6 +132,33 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
         });
       }
     }
+  }
+
+  /// Saldo ideal breakdown and withdrawal in process (`on_withdrawl`) from
+  /// `kmpoin/balance_analytics`, so the notices show as soon as the form opens.
+  Future<void> _loadIdealBalance() async {
+    final int partnerId;
+    try {
+      partnerId = await di.locator<KomshipPartnerIdResolver>().resolve();
+    } catch (error) {
+      if (kDebugMode) debugPrint('Withdrawal partner id failed: $error');
+      return;
+    }
+    final result =
+        await di.locator<GetIdealBalanceUseCase>()(partnerId: partnerId);
+    if (!mounted) return;
+    result.fold(
+      (failure) {
+        if (kDebugMode) {
+          debugPrint('Withdrawal ideal balance load failed: ${failure.message}');
+        }
+      },
+      (data) => setState(() {
+        _idealData = data;
+        _ideal = (data.idealBalance ?? 0).toInt();
+        _pending = (data.onWithdrawl ?? 0).toInt();
+      }),
+    );
   }
 
   void _setAmount(int value) {
@@ -142,9 +183,9 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
       _checkedNominal = null;
       _nominalCheck = null;
       _nominalCheckError = null;
-      _checkingNominal = nominal >= 10000;
+      _checkingNominal = nominal >= _minimum;
     });
-    if (nominal < 10000) return;
+    if (nominal < _minimum) return;
     _nominalDebounce = Timer(const Duration(milliseconds: 350), () async {
       try {
         final check =
@@ -154,6 +195,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
           _checkedNominal = nominal;
           _nominalCheck = check;
           _checkingNominal = false;
+          _ideal = check.ideal;
         });
       } catch (_) {
         if (!mounted || requestVersion != _nominalRequestVersion) return;
@@ -165,12 +207,13 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
     });
   }
 
-  void _showBalanceNotice() {
-    final notice = _ideal > 0 && _pending > 0
-        ? WithdrawalBalanceNotice.combined
-        : _pending > 0
-            ? WithdrawalBalanceNotice.pending
-            : WithdrawalBalanceNotice.ideal;
+  void _showBalanceNotice({WithdrawalBalanceNotice? only}) {
+    final notice = only ??
+        (_ideal > 0 && _queued
+            ? WithdrawalBalanceNotice.combined
+            : _queued
+                ? WithdrawalBalanceNotice.pending
+                : WithdrawalBalanceNotice.ideal);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -199,31 +242,72 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
         _checkedNominal = requestedAmount;
         _nominalCheck = check;
         _ideal = check.ideal;
-        _idealData = IdealBalanceModel(
+        _idealData ??= IdealBalanceModel(
           idealBalance: check.ideal,
           shippingReturPotential: check.potentialReturn,
           inComeOrderPotential: check.potentialIncome,
         );
       });
-      if (requestedAmount > check.maximum || _pending > 0) {
+      if (requestedAmount > check.maximum || _queued) {
         _showBalanceNotice();
         return;
       }
-      if (kDebugMode) WithdrawalPreviewSession.hasPendingRequest = true;
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => WithdrawalResultPreviewPage(
-          amount: requestedAmount,
-          bank: selectedBank!,
-          balance: _balance,
-        ),
-      ));
     } catch (error) {
       if (kDebugMode) {
         debugPrint('Withdrawal ideal balance check failed: $error');
       }
       if (mounted) {
+        setState(() {
+          _submitting = false;
+          _submitError =
+              'Saldo penarikan belum bisa diperiksa. Silakan coba lagi.';
+        });
+      }
+      return;
+    }
+    // PIN sudah diverifikasi di Home sebelum form dibuka.
+    final bank = selectedBank!;
+    final userId = context.read<SuperappProfileBloc>().state.displayProfile?.id;
+    if (userId == null || bank.bankAccountsId == null) {
+      setState(() {
+        _submitting = false;
+        _submitError = 'Data akun belum dimuat. Silakan coba lagi.';
+      });
+      return;
+    }
+    try {
+      await di.locator<KompayWithdrawalRemoteDataSource>().request(
+            userId: userId,
+            nominal: requestedAmount,
+            bankAccountId: bank.bankAccountsId!,
+          );
+      if (!mounted) return;
+      // Saldo dan antrean penarikan berubah setelah pengajuan.
+      context.read<SuperappProfileBloc>().add(const FetchSuperappProfileEvent());
+      // Sama seperti Komship web: pesan berhasil memakai data form.
+      unawaited(Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
+        builder: (_) => WithdrawalResultPage(
+          withdrawal: KompayWithdrawal(
+            nominal: requestedAmount,
+            bankName: bank.bankName ?? '',
+            bankOwnerName: bank.bankOwnerName ?? '',
+          ),
+        ),
+      )));
+    } on KompayWithdrawalQueued {
+      if (!mounted) return;
+      setState(() => _queuedByServer = true);
+      _showBalanceNotice(only: WithdrawalBalanceNotice.pending);
+    } on KompayWithdrawalRejected catch (error) {
+      if (!mounted) return;
+      unawaited(Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => WithdrawalResultPage(failedMessage: error.message),
+      )));
+    } catch (error) {
+      if (kDebugMode) debugPrint('Withdrawal request failed: $error');
+      if (mounted) {
         setState(() => _submitError =
-            'Saldo penarikan belum bisa diperiksa. Silakan coba lagi.');
+            'Penarikan belum bisa diajukan. Periksa koneksi lalu coba lagi.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -242,14 +326,27 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
     setState(() => _openBanks = !_openBanks);
   }
 
+  /// Nominal is blocked only by the saldo ideal limit (AC20/AC22).
+  bool get _blockedByIdeal {
+    final check = _nominalCheck;
+    return check != null &&
+        _checkedNominal == _value &&
+        _value <= check.balance &&
+        _value > check.maximum;
+  }
+
   String? get _amountError {
     if (_value == 0) return null;
-    if (_value < 10000) return 'Minimal nominal penarikan Rp 10.000';
+    if (_value < _minimum) return 'Minimal nominal penarikan Rp 12.000';
     if (_checkingNominal) return null;
     if (_nominalCheckError != null) return _nominalCheckError;
-    final maximum = _nominalCheck?.maximum;
-    if (maximum != null && _value > maximum) {
-      return 'Saldo tidak mencukupi. Maksimal penarikan ${_money(maximum)}';
+    final check = _nominalCheck;
+    if (check == null) return null;
+    if (_value > check.balance) {
+      return 'Saldo tidak mencukupi. Nominal penarikan melebihi saldo tersedia (${_money(check.balance)})';
+    }
+    if (_value > check.maximum) {
+      return 'Nominal melebihi batas penarikan karena Saldo Ideal. Maksimal penarikan ${_money(check.maximum)}';
     }
     return null;
   }
@@ -372,7 +469,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      hintText: 'Minimal Penarikan Rp 10.000',
+                      hintText: 'Minimal Penarikan Rp 12.000',
                       hintStyle: const TextStyle(
                           fontSize: 12, color: AppColors.grey600),
                       filled: true,
@@ -394,6 +491,19 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                     Text(_amountError!,
                         style: const TextStyle(
                             fontSize: 11, color: AppColors.errorBase)),
+                    if (_blockedByIdeal)
+                      InkWell(
+                        onTap: () => _showBalanceNotice(
+                            only: WithdrawalBalanceNotice.ideal),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4),
+                          child: Text('Lihat rincian Saldo Ideal',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.infoBase,
+                                  decoration: TextDecoration.underline)),
+                        ),
+                      ),
                   ],
                   if (_checkingNominal) ...[
                     const SizedBox(height: 6),
@@ -487,7 +597,13 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                 height: 48,
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: !_valid || _submitting ? null : _submit,
+                  onPressed: _submitting
+                      ? null
+                      : _queued && !_loading
+                          ? _showBalanceNotice
+                          : _valid
+                              ? _submit
+                              : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBase,
                     foregroundColor: Colors.white,
@@ -544,116 +660,91 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
       );
 }
 
-/// Visual result state from Figma, reachable only through the preview screen.
-class WithdrawalResultPreviewPage extends StatelessWidget {
-  const WithdrawalResultPreviewPage(
-      {super.key,
-      required this.amount,
-      required this.bank,
-      required this.balance,
-      this.failed = false});
+/// Result of a withdrawal request (Figma success/failed states).
+class WithdrawalResultPage extends StatelessWidget {
+  const WithdrawalResultPage({super.key, this.withdrawal, this.failedMessage})
+      : assert(withdrawal != null || failedMessage != null);
 
-  final int amount;
-  final BankAccountsDataModel bank;
-  final int balance;
-  final bool failed;
+  final KompayWithdrawal? withdrawal;
+  final String? failedMessage;
+
+  bool get failed => withdrawal == null;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Expanded(
-                      child: Text('PRATINJAU · BELUM DIAJUKAN',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 11, color: AppColors.grey600)),
-                    ),
-                    if (kDebugMode && !failed)
-                      TextButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                              builder: (_) => WithdrawalResultPreviewPage(
-                                    amount: amount,
-                                    bank: bank,
-                                    balance: balance,
-                                    failed: true,
-                                  )),
-                        ),
-                        child: const Text('State gagal',
-                            style: TextStyle(fontSize: 11)),
-                      ),
-                  ],
-                ),
-                const Spacer(flex: 2),
+  Widget build(BuildContext context) {
+    final result = withdrawal;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
+              Text(
+                  failed
+                      ? 'Penarikan Gagal Diproses'
+                      : 'Penarikan Saldo Berhasil',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 16),
+              if (result == null)
                 Text(
-                    failed
-                        ? 'Penarikan Gagal Diproses'
-                        : 'Penarikan Saldo Berhasil',
+                    'Oops, penarikan belum dapat diproses. $failedMessage',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-                if (failed)
-                  const Text(
-                      'Oops, penarikan belum dapat diproses. Silakan coba lagi beberapa saat lagi.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: AppColors.grey600))
-                else
-                  Text.rich(
-                    TextSpan(children: [
-                      const TextSpan(text: 'Penarikan sebesar '),
-                      TextSpan(
-                          text: CurrencyFormat.convertToIdrWithSpasi(amount, 0),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black)),
-                      const TextSpan(
-                          text: ' akan segera diproses ke rekening '),
-                      TextSpan(
-                          text: '${bank.bankName} ${bank.bankOwnerName ?? ''}',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black)),
-                      const TextSpan(text: ' dalam 1x24 jam'),
-                    ]),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 16, color: AppColors.grey600, height: 1.45),
-                  ),
-                const SizedBox(height: 30),
-                SvgPicture.asset(
-                    failed
-                        ? 'assets/images/superapp/setting/failed_img.svg'
-                        : 'assets/images/team/success_payment.svg',
-                    width: failed ? 240 : 184,
-                    height: failed ? 226 : 248),
-                const SizedBox(height: 24),
-                DsButton(
-                    text: 'Lihat Riwayat Penarikan',
-                    onPressed: () =>
-                        Navigator.of(context).push(MaterialPageRoute<void>(
-                          builder: (_) => WithdrawalHistoryPreviewPage(
-                            amount: amount,
-                            balance: balance,
-                          ),
-                        ))),
-                const SizedBox(height: 16),
-                TextButton(
-                    onPressed: () => Navigator.of(context)
-                        .popUntil((route) => route.isFirst),
-                    child: const Text('Kembali')),
-                const Spacer(),
-              ],
-            ),
+                    style:
+                        const TextStyle(fontSize: 16, color: AppColors.grey600))
+              else
+                Text.rich(
+                  TextSpan(children: [
+                    const TextSpan(text: 'Penarikan sebesar '),
+                    TextSpan(
+                        text: CurrencyFormat.convertToIdrWithSpasi(
+                            result.nominal, 0),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black)),
+                    const TextSpan(text: ' akan segera diproses ke rekening '),
+                    TextSpan(
+                        text: '${result.bankName} ${result.bankOwnerName}'
+                            .trim(),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black)),
+                    const TextSpan(text: ' dalam 1x24 jam'),
+                  ]),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 16, color: AppColors.grey600, height: 1.45),
+                ),
+              const SizedBox(height: 30),
+              SvgPicture.asset(
+                  failed
+                      ? 'assets/images/superapp/setting/failed_img.svg'
+                      : 'assets/images/team/success_payment.svg',
+                  width: failed ? 240 : 184,
+                  height: failed ? 226 : 248),
+              const SizedBox(height: 24),
+              DsButton(
+                  text: 'Lihat Riwayat Penarikan',
+                  onPressed: () =>
+                      Navigator.of(context).push(MaterialPageRoute<void>(
+                        builder: (_) =>
+                            const KompayMutationPage(backToHome: true),
+                      ))),
+              const SizedBox(height: 16),
+              TextButton(
+                  onPressed: () => failed
+                      ? Navigator.of(context).pop()
+                      : Navigator.of(context)
+                          .popUntil((route) => route.isFirst),
+                  child: const Text('Kembali')),
+              const Spacer(),
+            ],
           ),
         ),
-      );
+      ),
+    );
+  }
 }

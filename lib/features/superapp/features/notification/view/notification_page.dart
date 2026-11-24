@@ -8,7 +8,9 @@ import 'package:komtim_partner/common/time_convert.dart';
 
 import '../bloc/notification_v2_bloc.dart';
 import '../widget/app_notification_card.dart';
+import '../widget/notification_display.dart';
 import '../widget/notification_icon.dart';
+import '../../withdrawal/view/kompay_mutation_page.dart';
 import '../widget/notification_shimmer.dart';
 
 class NotificationPage extends StatelessWidget {
@@ -257,44 +259,24 @@ class _NotificationPageViewState extends State<NotificationPageView>
                             itemBuilder: (context, itemIdx) {
                               final item = items[itemIdx];
 
-                              String displayTitle = item.title ?? '';
-                              String? displayStatus;
-                              Color? displayStatusColor;
-
-                              if (displayTitle
-                                  .toLowerCase()
-                                  .contains('- ditolak')) {
-                                displayStatus = 'Ditolak';
-                                displayStatusColor = const Color(0xFFE53935);
-                                displayTitle = displayTitle.replaceAll(
-                                    RegExp(r'\s*-\s*ditolak',
-                                        caseSensitive: false),
-                                    '');
-                              } else if (displayTitle
-                                  .toLowerCase()
-                                  .contains('- disetujui')) {
-                                displayStatus = 'Disetujui';
-                                displayStatusColor = const Color(0xFF34A853);
-                                displayTitle = displayTitle.replaceAll(
-                                    RegExp(r'\s*-\s*disetujui',
-                                        caseSensitive: false),
-                                    '');
-                              }
+                              final parts =
+                                  NotificationTitleParts.parse(item.title);
 
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: AppNotificationCard(
-                                  leading: const NotificationIcon(
+                                  leading: NotificationIcon(
                                     backgroundColor: Colors.white,
-                                    child: Icon(
-                                      Icons.notifications_none,
-                                      color: Color(0xFFF95E16),
-                                      size: 24,
+                                    child: NotificationLeadingImage(
+                                      notificationType: item.notificationType,
+                                      service: item.service,
+                                      imagePath: item.imagePath,
+                                      logoPath: item.logoPath,
                                     ),
                                   ),
-                                  title: displayTitle,
-                                  status: displayStatus,
-                                  statusColor: displayStatusColor,
+                                  title: parts.title,
+                                  status: parts.status,
+                                  statusColor: parts.statusColor,
                                   date: item.createdAt != null
                                       ? dateConvertWithT(item.createdAt!)
                                       : '',
@@ -308,6 +290,17 @@ class _NotificationPageViewState extends State<NotificationPageView>
                                       context.read<NotificationV2Bloc>().add(
                                             ReadNotificationV2Event(item.id!),
                                           );
+                                    }
+                                    // Komship opens the withdrawal detail for
+                                    // `withdrawal`; Figma pairs the
+                                    // notification with Mutasi Transaksi.
+                                    if (item.notificationType == 'withdrawal') {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) =>
+                                              const KompayMutationPage(),
+                                        ),
+                                      );
                                     }
                                   },
                                 ),

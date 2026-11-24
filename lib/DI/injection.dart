@@ -217,6 +217,11 @@ import '../features/superapp/features/setting/domain/repositories/bank_account_r
 import '../features/superapp/features/setting/data/datasources/setting_profile_remote_datasource.dart';
 import '../features/superapp/features/setting/data/repositories/setting_profile_repository_impl.dart';
 import '../features/superapp/features/setting/domain/repositories/setting_profile_repository.dart';
+import '../core/data/datasources/remote/komship_partner_id_resolver.dart';
+import '../features/superapp/features/withdrawal/data/datasources/kompay_mutation_remote_datasource.dart';
+import '../features/superapp/features/withdrawal/data/datasources/kompay_withdrawal_remote_datasource.dart';
+import '../features/superapp/features/withdrawal/data/repositories/kompay_mutation_repository_impl.dart';
+import '../features/superapp/features/withdrawal/domain/repositories/kompay_mutation_repository.dart';
 
 final locator = GetIt.instance;
 
@@ -456,6 +461,8 @@ Future<void> initDependencies() async {
       () => InvoiceRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<WithdrawalKompayRepository>(
       () => KompayRepositoryImpl(remoteDataSource: locator()));
+  locator.registerLazySingleton<KompayMutationRepository>(
+      () => KompayMutationRepositoryImpl(remoteDataSource: locator()));
   locator.registerLazySingleton<PinRepository>(() =>
       PinRepositoryImpl(remoteDataSource: locator(), sharedPref: locator()));
   locator.registerLazySingleton<KompoinRepository>(
@@ -543,6 +550,13 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<KompayRemoteDataSource>(() =>
       KompayRemoteDataSourceImpl(
           client: locator(), responseParser: locator(), sharedPref: locator()));
+  locator.registerLazySingleton(() =>
+      KomshipPartnerIdResolver(client: locator(), sharedPref: locator()));
+  locator.registerLazySingleton<KompayMutationRemoteDataSource>(() =>
+      KompayMutationRemoteDataSourceImpl(
+          client: locator(), partnerIdResolver: locator()));
+  locator.registerLazySingleton(() =>
+      KompayWithdrawalRemoteDataSource(client: locator()));
   locator.registerLazySingleton<PinRemoteDataSource>(() =>
       PinRemoteDataSourceImpl(client: locator(), responseParser: locator()));
   locator.registerLazySingleton<BankAccountRemoteDataSource>(
