@@ -243,12 +243,9 @@ class _SplashCreenPageState extends State<SplashCreenPage> {
 
   Future<void> _performSplashScreenLogic(String remote, String local) async {
     await Future.delayed(const Duration(seconds: 2));
-    await isRemoteGreater(remote, local);
-
-    if (isgreater == true && typeUpdate == 'major') {
-      AppRouter.router.go(PAGES.forceUpdatePage.screenPath);
-      return;
-    }
+    // Cek versi via Remote Config dimatikan dulu: config-nya masih bawaan
+    // project Komtim, jadi build Super App selalu dianggap versi lama dan
+    // terkunci di halaman "Aplikasi perlu diperbarui".
 
     // Tunggu AuthBloc selesai cek session sebelum navigasi
     // agar router redirect yang berbasis AuthStatus tidak konflik

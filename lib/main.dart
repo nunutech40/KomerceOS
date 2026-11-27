@@ -11,7 +11,6 @@ import 'package:komtim_partner/DI/injection.dart' as di;
 import 'package:komtim_partner/app_life_cycle_manager.dart';
 import 'package:komtim_partner/common/global/design_system/design_system.dart';
 import 'package:komtim_partner/firebase_options.dart';
-import 'package:upgrader/upgrader.dart';
 
 import 'common/global/bloc/auth/auth_bloc.dart';
 import 'common/global/bloc/auth/auth_event.dart';
@@ -200,63 +199,60 @@ class MyApp extends StatelessWidget {
               ],
               child: ConnectivityWrapper(
                 navigatorKey: AppRouter.navigatorKey,
-                child: UpgradeAlert(
-                  child: BlocListener<GlobalAlertBloc, GlobalAlertState>(
-                    listener: (context, state) {
-                      if (state is GlobalAlertShowServerError) {
-                        if (_isServerErrorShowing) return;
+                child: BlocListener<GlobalAlertBloc, GlobalAlertState>(
+                  listener: (context, state) {
+                    if (state is GlobalAlertShowServerError) {
+                      if (_isServerErrorShowing) return;
 
-                        final navContext =
-                            AppRouter.navigatorKey.currentContext;
-                        if (navContext == null) return;
+                      final navContext = AppRouter.navigatorKey.currentContext;
+                      if (navContext == null) return;
 
-                        _isServerErrorShowing = true;
-                        DsBottomSheet.show(
-                          context: navContext,
-                          isDismissible: true,
-                          title: 'Server Error',
-                          description:
-                              'Terjadi kendala pada sistem. Silakan\ncoba kembali beberapa saat lagi.',
-                          image: SvgPicture.asset(
-                            'assets/images/superapp/auth/server_error.svg',
-                            width: 160,
-                            height: 200,
-                          ),
-                          secondaryButtonText: 'Kembali',
-                          onSecondaryPressed: () {
-                            Navigator.pop(navContext);
-                          },
-                          primaryButtonText: 'Coba Lagi',
-                          onPrimaryPressed: () {
-                            Navigator.pop(navContext);
-                          },
-                          onClosePressed: () {
-                            Navigator.pop(navContext);
-                          },
-                        ).whenComplete(() {
-                          _isServerErrorShowing = false;
-                        });
-                      }
-                    },
-                    child: MaterialApp.router(
-                      title: 'Komerce OS',
-                      debugShowCheckedModeBanner: false,
-                      theme: ThemeData(
-                        scaffoldBackgroundColor: Colors.white,
-                        textTheme: GoogleFonts.plusJakartaSansTextTheme(),
-                        useMaterial3: true,
-                        bottomSheetTheme: const BottomSheetThemeData(
-                            backgroundColor: Colors.white),
-                        appBarTheme: const AppBarTheme(
-                          backgroundColor: Colors.white,
+                      _isServerErrorShowing = true;
+                      DsBottomSheet.show(
+                        context: navContext,
+                        isDismissible: true,
+                        title: 'Server Error',
+                        description:
+                            'Terjadi kendala pada sistem. Silakan\ncoba kembali beberapa saat lagi.',
+                        image: SvgPicture.asset(
+                          'assets/images/superapp/auth/server_error.svg',
+                          width: 160,
+                          height: 200,
                         ),
+                        secondaryButtonText: 'Kembali',
+                        onSecondaryPressed: () {
+                          Navigator.pop(navContext);
+                        },
+                        primaryButtonText: 'Coba Lagi',
+                        onPrimaryPressed: () {
+                          Navigator.pop(navContext);
+                        },
+                        onClosePressed: () {
+                          Navigator.pop(navContext);
+                        },
+                      ).whenComplete(() {
+                        _isServerErrorShowing = false;
+                      });
+                    }
+                  },
+                  child: MaterialApp.router(
+                    title: 'Komerce OS',
+                    debugShowCheckedModeBanner: false,
+                    theme: ThemeData(
+                      scaffoldBackgroundColor: Colors.white,
+                      textTheme: GoogleFonts.plusJakartaSansTextTheme(),
+                      useMaterial3: true,
+                      bottomSheetTheme: const BottomSheetThemeData(
+                          backgroundColor: Colors.white),
+                      appBarTheme: const AppBarTheme(
+                        backgroundColor: Colors.white,
                       ),
-                      routeInformationProvider:
-                          AppRouter.router.routeInformationProvider,
-                      routeInformationParser:
-                          AppRouter.router.routeInformationParser,
-                      routerDelegate: AppRouter.router.routerDelegate,
                     ),
+                    routeInformationProvider:
+                        AppRouter.router.routeInformationProvider,
+                    routeInformationParser:
+                        AppRouter.router.routeInformationParser,
+                    routerDelegate: AppRouter.router.routerDelegate,
                   ),
                 ),
               ),
